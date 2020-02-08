@@ -4,46 +4,37 @@
 #include "Arduino.h"
 #include "Adafruit_GFX.h"
 #include "SPI.h"
+#include "MCUFRIEND_kbv.h"
 
 class gfxButton {
   public:
-    gfxButton(int x, int y, int w, int h, bool roundedRect, int radius);
+    gfxButton();
+    gfxButton(String _screen, int _x, int _y, int _w, int _h, bool _roundedRect, int _radius);
+    void begin(MCUFRIEND_kbv &tft);
+    gfxButton initButton(String screen, int x, int y, int w, int h, bool roundedRect, int radius);
+    void drawButton(gfxButton &button, int colour);
+
+    String screen;
     int x, y, w, h, radius;
     bool roundedRect;
-
-    // void getAttributes();
-    // void setAttributes(String buttonName, String page, String action, String touchPadding, String touch_indicator);
-    // void drawButton(int x, int y, int w, int h, bool roundedRect, int radius);
-    // void addButton();
-    // void getButtonByPage();
-  private:
-    // button attributes
-    // String _buttonName
-    // String _page;
-    // String _action;
-    // int _touchPadding;
-    // String _touchIndicator;
-    // button
-    int _x;
-    int _y;
-    int _w;
-    int _h;
-    bool _roundedRect;
-    int _radius;
-};
-
-class TouchDisplay {
-  public:
-    TouchDisplay();
-    gfxButton initButton(int x, int y, int w, int h, bool roundedRect, int radius);
+    MCUFRIEND_kbv _tft;
 
   private:
-    int _x;
-    int _y;
-    int _w;
-    int _h;
+    String _screen;
+    int _x, _y, _w, _h, _radius;
     bool _roundedRect;
-    int _radius;
 };
+
+// class TouchDisplay {
+//   public:
+//     TouchDisplay();
+//     gfxButton initButton(String screen, int x, int y, int w, int h, bool roundedRect, int radius);
+//     void drawButton(gfxButton &button, int colour);
+//
+//   private:
+//     String _screen;
+//     int _x, _y, _w, _h, _radius;
+//     bool _roundedRect;
+// };
 
 #endif
