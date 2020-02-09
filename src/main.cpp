@@ -1,5 +1,6 @@
 #include "gfxButton.h"
 #include "MCUFRIEND_kbv.h"
+#include "TouchScreen.h"
 
 #define LCD_CS A3 // Chip Select goes to Analog 3
 #define LCD_CD A2 // Command/Data goes to Analog 2
@@ -9,10 +10,29 @@
 #define	BLACK   						0x0000
 #define CUSTOM_RED          0xFBCC
 
+#define TS_MINX 					316
+#define TS_MAXX 					762
+#define TS_MINY 					242
+#define TS_MAXY 					805
+
+// pin definitions for touch inputs
+#define YP 								A3 						// must be an analog pin, use "An" notation!
+#define XM 								A2            // must be an analog pin, use "An" notation!
+#define YM 								9             // can be a digital pin
+#define XP 								8             // can be a digital pin
+
 // TouchDisplay td = TouchDisplay();
-gfxButton gfx;
+gfxButton gfxB;
+gfxTouch gfxT;
 MCUFRIEND_kbv tft;
-void addButton();
+TouchScreen	ts = TouchScreen(XP, YP, XM, YM, 300);
+
+void addButtons();
+void drawButtons();
+#define arrayElements 10
+gfxButton buttonArray[arrayElements];
+
+long timer;
 
 void setup(void) {
   Serial.begin(9600);
@@ -29,36 +49,40 @@ void setup(void) {
   tft.begin(ID);
   tft.fillScreen(0x0000);
 
-  gfx.begin(tft);
-  addButton();
+  gfxB.begin(tft);
+  // gfxT.begin()
+  addButtons();
+  drawButtons();
+
+  timer = millis();
 }
 
 
 void loop() {
+  if (millis() - timer >= 10) {
+    TSPoint point = ts.getPoint();
 
+    timer = millis();
+  }
 }
 
 
-void addButton() {
-  gfxButton newButton = gfx.initButton("testPage", 100, 110, 50, 40, true, 5);
-  gfx.drawButton(newButton, CUSTOM_RED);
-  gfxButton newButton2 = gfx.initButton("testPage2", 200, 110, 50, 40, true, 5);
-  gfx.drawButton(newButton2, CUSTOM_RED);
-  // tft.fillRoundRect(newButton.x, newButton.y, newButton.w, newButton.h, newButton.radius, CUSTOM_RED);
-  gfxButton myArray[] = {newButton, newButton2};
-  Serial.print("array: ");
-  Serial.println(myArray[0].x);
+void addButtons() {
+  // screen    x    y    w   h   roundedRect  r
+  gfxButton newButton = gfxB.addButton("testPage", "drawRoundRect", 100, 110, 50, 40, 5, CUSTOM_RED);
+  gfxButton newButton2 = gfxB.addButton("testPage", "fillRoundRect", 200, 110, 50, 40, 5, CUSTOM_RED);
 
-  Serial.print("x: ");
-  Serial.println(newButton.x);
-  Serial.print("y: ");
-  Serial.println(newButton.y);
-  Serial.print("w: ");
-  Serial.println(newButton.w);
-  Serial.print("h: ");
-  Serial.println(newButton.h);
-  Serial.print("roundedRect: ");
-  Serial.println(newButton.roundedRect);
-  Serial.print("radius: ");
-  Serial.println(newButton.radius);
+  buttonArray[0] = newButton;
+  buttonArray[1] = newButton2;
+
+  gfxT.setTouchBoundary(newButton);
+}
+
+
+void drawButtons() {
+  for(int i=0; i < arrayElements; i++) {
+    if (buttonArray[i].screen == "testPage") {
+      gfxB.drawButtons(buttonArray[i]);
+    }
+  }
 }
