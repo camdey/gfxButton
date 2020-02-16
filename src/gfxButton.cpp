@@ -109,7 +109,9 @@ gfxTouch::gfxTouch() {};
 
 
 // return class object with touch perimeter for button
-gfxTouch::gfxTouch(int _xMin, int _yMin, int _xMax, int _yMax) {
+gfxTouch::gfxTouch(String _screen, String _name, int _xMin, int _yMin, int _xMax, int _yMax) {
+  screen = _screen;
+  name =_name;
   xMin = _xMin;
   yMin = _yMin;
   xMax = _xMax;
@@ -123,7 +125,9 @@ void gfxTouch::begin(TSPoint &point) {
 }
 
 
-gfxTouch gfxTouch::addTouch(gfxButton &button, int percent) {
+gfxTouch gfxTouch::addTouch(gfxButton &button, String name, int percent) {
+  _screen = button.screen;
+  _name = name;
   _x = button.x;
   _y = button.y;
   _w = button.w;
@@ -131,8 +135,8 @@ gfxTouch gfxTouch::addTouch(gfxButton &button, int percent) {
   _r = button.r;
 
   // get new w,h dimensions
-  int _pad_w = round(_w * (100 + percent)/100);
-  int _pad_h = round(_h * (100 + percent)/100);
+  int _pad_w = ceil(_w * (100 + percent)/100);
+  int _pad_h = ceil(_h * (100 + percent)/100);
   // offset xy position by half the difference between original dimensions and padded dimensions
   int _yMin = _y - (_pad_h - _h)/2;
   int _xMin = _x - (_pad_w - _w)/2;
@@ -140,5 +144,20 @@ gfxTouch gfxTouch::addTouch(gfxButton &button, int percent) {
   int _xMax = _xMin + _pad_w;
   int _yMax = _yMin + _pad_h;
 
-  return gfxTouch(_xMin, _yMin, _xMax, _yMax);
+  return gfxTouch(_screen, _name, _xMin, _yMin, _xMax, _yMax);
+}
+
+
+void gfxTouch::checkButtons(gfxTouch &button, String screen, int x, int y) {
+  Serial.print("x: ");
+  Serial.println(x);
+  Serial.print("y: ");
+  Serial.println(y);
+
+  if (button.screen == screen) {
+    if ((x >= button.xMin && x <= button.xMax) && (y >= button.yMin && y <= button.yMax)) {
+      Serial.print("touch detected on button: ");
+      Serial.println(button.name);
+    }
+  }
 }

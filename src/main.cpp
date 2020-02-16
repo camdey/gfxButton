@@ -10,10 +10,10 @@
 #define	BLACK   						0x0000
 #define CUSTOM_RED          0xFBCC
 
-#define TS_MINX 					316
-#define TS_MAXX 					762
-#define TS_MINY 					242
-#define TS_MAXY 					805
+#define TS_MINX 					839
+#define TS_MAXX 					148
+#define TS_MINY 					935
+#define TS_MAXY 					144
 
 // pin definitions for touch inputs
 #define YP 								A3 						// must be an analog pin, use "An" notation!
@@ -25,12 +25,14 @@
 gfxButton gfxB;
 gfxTouch gfxT;
 MCUFRIEND_kbv tft;
-TouchScreen	ts = TouchScreen(XP, YP, XM, YM, 300);
+TouchScreen	ts = TouchScreen(XP, YP, XM, YM, 200);
 
 void addButtons();
 void drawButtons();
+void checkButtons(String screen);
 #define arrayElements 10
 gfxButton buttonArray[arrayElements];
+gfxTouch touchArray[arrayElements];
 
 long timer;
 
@@ -48,6 +50,7 @@ void setup(void) {
   //    ID = 0x9329;                             // force ID
   tft.begin(ID);
   tft.fillScreen(0x0000);
+  tft.setRotation(1);
 
   gfxB.begin(tft);
   // gfxT.begin()
@@ -59,9 +62,8 @@ void setup(void) {
 
 
 void loop() {
-  if (millis() - timer >= 10) {
-    TSPoint point = ts.getPoint();
-
+  if (millis() - timer >= 150) {
+    checkButtons("testPage");
     timer = millis();
   }
 }
@@ -71,11 +73,27 @@ void addButtons() {
   // screen    x    y    w   h   roundedRect  r
   gfxButton newButton = gfxB.addButton("testPage", "drawRoundRect", 100, 110, 50, 40, 5, CUSTOM_RED);
   gfxButton newButton2 = gfxB.addButton("testPage", "fillRoundRect", 200, 110, 50, 40, 5, CUSTOM_RED);
+  gfxTouch newTouch = gfxT.addTouch(newButton, "newButton", 10);
+  gfxTouch newTouch2 = gfxT.addTouch(newButton2, "newButton2", 10);
+
+  Serial.print("screen: ");
+  Serial.println(newTouch.screen);
+  Serial.print("xMin: ");
+  Serial.println(newTouch.xMin);
+  Serial.print("xMax: ");
+  Serial.println(newTouch.xMax);
+  Serial.print("yMin: ");
+  Serial.println(newTouch.yMin);
+  Serial.print("yMax: ");
+  Serial.println(newTouch.yMax);
 
   buttonArray[0] = newButton;
   buttonArray[1] = newButton2;
 
-  gfxT.setTouchBoundary(newButton);
+  touchArray[0] = newTouch;
+  touchArray[1] = newTouch2;
+
+  tft.drawCircle(20, 20, 5, CUSTOM_RED);
 }
 
 
@@ -86,3 +104,22 @@ void drawButtons() {
     }
   }
 }
+
+
+void checkButtons(String screen) {
+  TSPoint point = ts.getPoint();
+
+  int x = map(point.y, 937, 140, 0, 480);
+  int y = map(point.x, 846, 148, 0, 320);
+
+  if (point.z >= 100 && point.z <= 1000) {
+    for(int i=0; i < arrayElements; i++) {
+      gfxT.checkButtons(touchArray[i], screen, x, y);
+    }
+  }
+}
+
+// xMin: 98
+// xMax: 153
+// yMin: 108
+// yMax: 152
