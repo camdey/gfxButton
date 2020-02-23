@@ -30,6 +30,8 @@ TouchScreen	ts = TouchScreen(XP, YP, XM, YM, 200);
 void addButtons();
 void drawButtons();
 void checkButtons(String screen);
+void testFunction();
+void testFunction2();
 #define arrayElements 10
 gfxButton buttonArray[arrayElements];
 gfxTouch touchArray[arrayElements];
@@ -73,8 +75,8 @@ void addButtons() {
   // screen    x    y    w   h   roundedRect  r
   gfxButton newButton = gfxB.addButton("testPage", "drawRoundRect", 100, 110, 50, 40, 5, CUSTOM_RED);
   gfxButton newButton2 = gfxB.addButton("testPage", "fillRoundRect", 200, 110, 50, 40, 5, CUSTOM_RED);
-  gfxTouch newTouch = gfxT.addTouch(newButton, "newButton", 10);
-  gfxTouch newTouch2 = gfxT.addTouch(newButton2, "newButton2", 10);
+  gfxTouch newTouch = gfxT.addTouch(newButton, testFunction, "newButton", 10);
+  gfxTouch newTouch2 = gfxT.addTouch(newButton2, testFunction2, "newButton2", 10);
 
   Serial.print("screen: ");
   Serial.println(newTouch.screen);
@@ -109,17 +111,20 @@ void drawButtons() {
 void checkButtons(String screen) {
   TSPoint point = ts.getPoint();
 
-  int x = map(point.y, 937, 140, 0, 480);
-  int y = map(point.x, 846, 148, 0, 320);
+  int touch_x = map(point.y, 937, 140, 0, 480);
+  int touch_y = map(point.x, 846, 148, 0, 320);
 
   if (point.z >= 100 && point.z <= 1000) {
     for(int i=0; i < arrayElements; i++) {
-      gfxT.checkButtons(touchArray[i], screen, x, y);
+      gfxT.checkButtons(touchArray[i], screen, touch_x, touch_y);
     }
   }
 }
 
-// xMin: 98
-// xMax: 153
-// yMin: 108
-// yMax: 152
+void testFunction() {
+  Serial.println("test function");
+}
+
+void testFunction2() {
+  Serial.println("test function2");
+}

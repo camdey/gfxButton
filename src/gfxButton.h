@@ -28,15 +28,16 @@ class gfxButton {
 class gfxTouch {
   public:
     gfxTouch();
-    gfxTouch(String screen, String name, int min_x, int min_y, int max_x, int max_y);
+    gfxTouch(String screen, String name, int min_x, int min_y, int max_x, int max_y, void (*btnFunction)());
     void begin(TSPoint &point);
-    gfxTouch addTouch(gfxButton &button, String name, int percent);
+    gfxTouch addTouch(gfxButton &button, void (*btnFunction)(), String name, int percent);
     void checkButtons(gfxTouch &button, String screen, int x, int y);
 
     TSPoint _point;
     int percent, x, y;
     int xMin, xMax, yMin, yMax;
     String screen, name;
+    void (*btnFunc)();
   private:
     String _screen, _shape, _name;
     int _x, _y, _w, _h, _r, _colour, _defaultColour;

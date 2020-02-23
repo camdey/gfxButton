@@ -109,13 +109,14 @@ gfxTouch::gfxTouch() {};
 
 
 // return class object with touch perimeter for button
-gfxTouch::gfxTouch(String _screen, String _name, int _xMin, int _yMin, int _xMax, int _yMax) {
+gfxTouch::gfxTouch(String _screen, String _name, int _xMin, int _yMin, int _xMax, int _yMax, void (*btnFunction)()) {
   screen = _screen;
   name =_name;
   xMin = _xMin;
   yMin = _yMin;
   xMax = _xMax;
   yMax = _yMax;
+  btnFunc = *btnFunction;
 }
 
 
@@ -125,7 +126,7 @@ void gfxTouch::begin(TSPoint &point) {
 }
 
 
-gfxTouch gfxTouch::addTouch(gfxButton &button, String name, int percent) {
+gfxTouch gfxTouch::addTouch(gfxButton &button, void (*btnFunction)(), String name, int percent) {
   _screen = button.screen;
   _name = name;
   _x = button.x;
@@ -144,20 +145,21 @@ gfxTouch gfxTouch::addTouch(gfxButton &button, String name, int percent) {
   int _xMax = _xMin + _pad_w;
   int _yMax = _yMin + _pad_h;
 
-  return gfxTouch(_screen, _name, _xMin, _yMin, _xMax, _yMax);
+  return gfxTouch(_screen, _name, _xMin, _yMin, _xMax, _yMax, *btnFunction);
 }
 
 
 void gfxTouch::checkButtons(gfxTouch &button, String screen, int x, int y) {
-  Serial.print("x: ");
-  Serial.println(x);
-  Serial.print("y: ");
-  Serial.println(y);
+  // Serial.print("x: ");
+  // Serial.println(x);
+  // Serial.print("y: ");
+  // Serial.println(y);
 
   if (button.screen == screen) {
     if ((x >= button.xMin && x <= button.xMax) && (y >= button.yMin && y <= button.yMax)) {
       Serial.print("touch detected on button: ");
       Serial.println(button.name);
+      button.btnFunc();
     }
   }
 }
