@@ -29,9 +29,12 @@ class gfxTouch {
   public:
     gfxTouch();
     gfxTouch(String screen, String name, int min_x, int min_y, int max_x, int max_y, void (*btnFunction)());
-    void begin(TSPoint &point);
     gfxTouch addTouch(gfxButton &button, void (*btnFunction)(), String name, int percent);
-    void checkButtons(gfxTouch &button, String screen, int x, int y);
+    void begin(TSPoint &point);
+    // void checkButtons(gfxTouch &button, String screen, int x, int y);
+    void checkButtons(String screen2, int x, int y);
+    bool getState();
+    void setState(bool btnActive);
 
     TSPoint _point;
     int percent, x, y;
@@ -42,6 +45,7 @@ class gfxTouch {
     String _screen, _shape, _name;
     int _x, _y, _w, _h, _r, _colour, _defaultColour;
     int _xMin, _xMax, _yMin, _yMax;
+    bool _btnActive;
 };
 
 #endif

@@ -145,21 +145,45 @@ gfxTouch gfxTouch::addTouch(gfxButton &button, void (*btnFunction)(), String nam
   int _xMax = _xMin + _pad_w;
   int _yMax = _yMin + _pad_h;
 
+  // initialise button as off
+  setState(false);
+
   return gfxTouch(_screen, _name, _xMin, _yMin, _xMax, _yMax, *btnFunction);
 }
 
 
-void gfxTouch::checkButtons(gfxTouch &button, String screen, int x, int y) {
+// void gfxTouch::checkButtons(gfxTouch &button, String screen, int x, int y) {
+void gfxTouch::checkButtons(String screen2, int x, int y) {
   // Serial.print("x: ");
   // Serial.println(x);
   // Serial.print("y: ");
   // Serial.println(y);
 
-  if (button.screen == screen) {
-    if ((x >= button.xMin && x <= button.xMax) && (y >= button.yMin && y <= button.yMax)) {
+  if (screen == screen2) {
+    if ((x >= xMin && x <= xMax) && (y >= yMin && y <= yMax)) {
       Serial.print("touch detected on button: ");
-      Serial.println(button.name);
-      button.btnFunc();
+      Serial.println(name);
+
+      // set button state
+      setState(!getState());
+      Serial.print("from lib getState: ");
+      Serial.println(getState());
+      // run function tied to button
+      btnFunc();
     }
   }
+}
+
+
+// fetch current state of button
+// false is off / default
+// true is on / active
+bool gfxTouch::getState() {
+  return _btnActive;
+}
+
+
+// set state of button
+void gfxTouch::setState(bool btnActive) {
+  _btnActive = btnActive;
 }
