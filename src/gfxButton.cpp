@@ -23,12 +23,6 @@ gfxButton::gfxButton(String _screen, String _shape, int _x, int _y, int _w, int 
 }
 
 
-// referemce to display library instance
-void gfxButton::begin(MCUFRIEND_kbv &tft) {
-  _tft = tft;
-}
-
-
 // initialise a new button
 gfxButton gfxButton::addButton(String screen, String shape, int x, int y, int w, int h, int r, int defaultColour) {
   _screen = screen;
@@ -45,26 +39,26 @@ gfxButton gfxButton::addButton(String screen, String shape, int x, int y, int w,
 
 
 // draw a single button with a different colour
-void gfxButton::drawButton(gfxButton &button, int colour) {
-  if (button.shape == "drawRect") {
-    _tft.drawRect(button.x, button.y, button.w, button.h, colour);
+void gfxButton::drawButton(MCUFRIEND_kbv _tft, int colour) {
+  if (shape == "drawRect") {
+    _tft.drawRect(x, y, w, h, colour);
   }
-  else if (button.shape == "fillRect") {
-    _tft.fillRect(button.x, button.y, button.w, button.h, colour);
+  else if (shape == "fillRect") {
+    _tft.fillRect(x, y, w, h, colour);
   }
-  else if (button.shape == "drawRoundRect") {
-    _tft.drawRoundRect(button.x, button.y, button.w, button.h, button.r, colour);
+  else if (shape == "drawRoundRect") {
+    _tft.drawRoundRect(x, y, w, h, r, colour);
   }
-  else if (button.shape == "fillRoundRect") {
-    _tft.fillRoundRect(button.x, button.y, button.w, button.h, button.r, colour);
+  else if (shape == "fillRoundRect") {
+    _tft.fillRoundRect(x, y, w, h, r, colour);
   }
-  else if (button.shape == "drawCircle") {
-    _tft.drawCircle(button.x, button.y, button.r, colour);
+  else if (shape == "drawCircle") {
+    _tft.drawCircle(x, y, r, colour);
   }
-  else if (button.shape == "fillCircle") {
-    _tft.fillCircle(button.x, button.y, button.r, colour);
+  else if (shape == "fillCircle") {
+    _tft.fillCircle(x, y, r, colour);
   }
-  // TODO support triagnles
+  // TODO support triangles
   // else if (button.shape == "drawTriangle") {
   //   _tft.drawTriangle(button.x, button.y, button.w, button.h, colour);
   // }
@@ -75,26 +69,26 @@ void gfxButton::drawButton(gfxButton &button, int colour) {
 
 
 // draw each button based on default settings
-void gfxButton::drawButtons(gfxButton &button) {
-  if (button.shape == "drawRect") {
-    _tft.drawRect(button.x, button.y, button.w, button.h, button.defaultColour);
+void gfxButton::drawButtons(MCUFRIEND_kbv _tft) {
+  if (shape == "drawRect") {
+    _tft.drawRect(x, y, w, h, defaultColour);
   }
-  else if (button.shape == "fillRect") {
-    _tft.fillRect(button.x, button.y, button.w, button.h, button.defaultColour);
+  else if (shape == "fillRect") {
+    _tft.fillRect(x, y, w, h, defaultColour);
   }
-  else if (button.shape == "drawRoundRect") {
-    _tft.drawRoundRect(button.x, button.y, button.w, button.h, button.r, button.defaultColour);
+  else if (shape == "drawRoundRect") {
+    _tft.drawRoundRect(x, y, w, h, r, defaultColour);
   }
-  else if (button.shape == "fillRoundRect") {
-    _tft.fillRoundRect(button.x, button.y, button.w, button.h, button.r, button.defaultColour);
+  else if (shape == "fillRoundRect") {
+    _tft.fillRoundRect(x, y, w, h, r, defaultColour);
   }
-  else if (button.shape == "drawCircle") {
-    _tft.drawCircle(button.x, button.y, button.r, button.defaultColour);
+  else if (shape == "drawCircle") {
+    _tft.drawCircle(x, y, r, defaultColour);
   }
-  else if (button.shape == "fillCircle") {
-    _tft.fillCircle(button.x, button.y, button.r, button.defaultColour);
+  else if (shape == "fillCircle") {
+    _tft.fillCircle(x, y, r, defaultColour);
   }
-  // TODO support triagnles
+  // TODO support triangles
   // else if (button.shape == "drawTriangle") {
   //   _tft.drawTriangle(button.x, button.y, button.w, button.h, button.defaultColour);
   // }
@@ -109,7 +103,7 @@ gfxTouch::gfxTouch() {};
 
 
 // return class object with touch perimeter for button
-gfxTouch::gfxTouch(String _screen, String _name, int _xMin, int _yMin, int _xMax, int _yMax, void (*btnFunction)()) {
+gfxTouch::gfxTouch(String _screen, String _name, int _xMin, int _yMin, int _xMax, int _yMax, void (*btnFunction)(bool state)) {
   screen = _screen;
   name =_name;
   xMin = _xMin;
@@ -126,7 +120,7 @@ void gfxTouch::begin(TSPoint &point) {
 }
 
 
-gfxTouch gfxTouch::addTouch(gfxButton &button, void (*btnFunction)(), String name, int percent) {
+gfxTouch gfxTouch::addTouch(gfxButton &button, void (*btnFunction)(bool state), String name, int percent) {
   _screen = button.screen;
   _name = name;
   _x = button.x;
@@ -152,26 +146,24 @@ gfxTouch gfxTouch::addTouch(gfxButton &button, void (*btnFunction)(), String nam
 }
 
 
-// void gfxTouch::checkButtons(gfxTouch &button, String screen, int x, int y) {
-void gfxTouch::checkButtons(String screen2, int x, int y) {
-  // Serial.print("x: ");
-  // Serial.println(x);
-  // Serial.print("y: ");
-  // Serial.println(y);
-
-  if (screen == screen2) {
+void gfxTouch::checkButtons(String s, int x, int y) {
+  if (screen == s) {
     if ((x >= xMin && x <= xMax) && (y >= yMin && y <= yMax)) {
       Serial.print("touch detected on button: ");
       Serial.println(name);
 
       // set button state
       setState(!getState());
-      Serial.print("from lib getState: ");
-      Serial.println(getState());
+
       // run function tied to button
-      btnFunc();
+      runFunction();
     }
   }
+}
+
+
+void gfxTouch::runFunction() {
+  btnFunc(getState());
 }
 
 

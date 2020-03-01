@@ -36,8 +36,8 @@ TouchScreen	ts = TouchScreen(XP, YP, XM, YM, 200);
 void addButtons();
 void drawButtons();
 void buttonCheck(String screen);
-void testFunction();
-void testFunction2();
+void testFunction(bool btnActive);
+void testFunction2(bool btnActive);
 #define arrayElements 10
 gfxButton buttonArray[arrayElements];
 gfxTouch touchArray[arrayElements];
@@ -64,7 +64,7 @@ void setup(void) {
   tft.fillScreen(0x0000);
   tft.setRotation(1);
 
-  gfxB.begin(tft);
+  // gfxB.begin(tft);
   // gfxT.begin()
   addButtons();
   drawButtons();
@@ -87,16 +87,16 @@ void addButtons() {
   // gfxTouch newTouch = gfxT.addTouch(newButton, testFunction, "newButton", 10);
   // gfxTouch newTouch2 = gfxT.addTouch(newButton2, testFunction2, "newButton2", 10);
 
-  Serial.print("screen: ");
-  Serial.println(newTouch.screen);
-  Serial.print("xMin: ");
-  Serial.println(newTouch.xMin);
-  Serial.print("xMax: ");
-  Serial.println(newTouch.xMax);
-  Serial.print("yMin: ");
-  Serial.println(newTouch.yMin);
-  Serial.print("yMax: ");
-  Serial.println(newTouch.yMax);
+  // Serial.print("screen: ");
+  // Serial.println(newTouch.screen);
+  // Serial.print("xMin: ");
+  // Serial.println(newTouch.xMin);
+  // Serial.print("xMax: ");
+  // Serial.println(newTouch.xMax);
+  // Serial.print("yMin: ");
+  // Serial.println(newTouch.yMin);
+  // Serial.print("yMax: ");
+  // Serial.println(newTouch.yMax);
 
   buttonArray[0] = newButton;
   buttonArray[1] = newButton2;
@@ -109,7 +109,7 @@ void addButtons() {
 void drawButtons() {
   for(int i=0; i < arrayElements; i++) {
     if (buttonArray[i].screen == "testPage") {
-      gfxB.drawButtons(buttonArray[i]);
+      buttonArray[i].drawButtons(tft);
     }
   }
 }
@@ -127,33 +127,29 @@ void buttonCheck(String screen) {
 
   if (point.z >= 100 && point.z <= 1000) {
     for(int i=0; i < arrayElements; i++) {
-      // gfxT.checkButtons(touchArray[i], screen, touch_x, touch_y);
       touchArray[i].checkButtons(screen, touch_x, touch_y);
     }
   }
 }
 
-void testFunction() {
+void testFunction(bool btnActive) {
   Serial.println("test function");
 
-  buttonState = newTouch.getState();
+  // buttonState = newTouch.getState();
 
-  if (buttonState == true) {
-    gfxB.drawButton(newButton, CUSTOM_GREEN);
+  if (btnActive == true) {
+    newButton.drawButton(tft, CUSTOM_GREEN);
   }
-  else {gfxB.drawButton(newButton, CUSTOM_RED);}
+  else {newButton.drawButton(tft, CUSTOM_RED);}
 }
 
-void testFunction2() {
-  Serial.println("test function2");
+void testFunction2(bool btnActive) {
+  Serial.println("test function 2");
+  // bool btnActive = newTouch2.getState();
+  // Serial.println(newTouch2._btnActive);
 
-  Serial.print("from func getstate: ");
-  Serial.println(newTouch2.getState());
-
-  bool btnState = newTouch2.getState();
-
-  if (btnState == true) {
-    gfxB.drawButton(newButton2, CUSTOM_GREEN);
+  if (btnActive == true) {
+    newButton2.drawButton(tft, CUSTOM_GREEN);
   }
-  else {gfxB.drawButton(newButton2, CUSTOM_RED);}
+  else {newButton2.drawButton(tft, CUSTOM_RED);}
 }
