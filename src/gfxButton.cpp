@@ -103,24 +103,20 @@ gfxTouch::gfxTouch() {};
 
 
 // return class object with touch perimeter for button
-gfxTouch::gfxTouch(String _screen, String _name, int _xMin, int _yMin, int _xMax, int _yMax, void (*btnFunction)(bool state)) {
+gfxTouch::gfxTouch(String _screen, String _name, int _xMin, int _yMin, int _xMax, int _yMax, String _btnType, void (*btnFunction)(bool state)) {
   screen = _screen;
   name =_name;
   xMin = _xMin;
   yMin = _yMin;
   xMax = _xMax;
   yMax = _yMax;
+  btnType = _btnType;
+  lastTouched = 0UL;
   btnFunc = *btnFunction;
 }
 
 
-// reference to TSPoint point from TouchScreen library
-void gfxTouch::begin(TSPoint &point) {
-  _point = point;
-}
-
-
-gfxTouch gfxTouch::addTouch(gfxButton &button, void (*btnFunction)(bool state), String name, int percent) {
+gfxTouch gfxTouch::addToggle(gfxButton &button, void (*btnFunction)(bool state), String name, int percent) {
   _screen = button.screen;
   _name = name;
   _x = button.x;
@@ -128,6 +124,7 @@ gfxTouch gfxTouch::addTouch(gfxButton &button, void (*btnFunction)(bool state), 
   _w = button.w;
   _h = button.h;
   _r = button.r;
+  _btnType = "toggle";
 
   // get new w,h dimensions
   int _pad_w = ceil(_w * (100 + percent)/100);
@@ -142,27 +139,76 @@ gfxTouch gfxTouch::addTouch(gfxButton &button, void (*btnFunction)(bool state), 
   // initialise button as off
   setState(false);
 
-  return gfxTouch(_screen, _name, _xMin, _yMin, _xMax, _yMax, *btnFunction);
+  return gfxTouch(_screen, _name, _xMin, _yMin, _xMax, _yMax, _btnType, *btnFunction);
 }
 
 
-void gfxTouch::checkButtons(String s, int x, int y) {
-  if (screen == s) {
-    if ((x >= xMin && x <= xMax) && (y >= yMin && y <= yMax)) {
-      Serial.print("touch detected on button: ");
-      Serial.println(name);
+gfxTouch gfxTouch::addMomentary(gfxButton &button, void (*btnFunction)(bool state), String name, int percent) {
+  _screen = button.screen;
+  _name = name;
+  _x = button.x;
+  _y = button.y;
+  _w = button.w;
+  _h = button.h;
+  _r = button.r;
+  _btnType = "momentary";
 
-      // set button state
-      setState(!getState());
+  // get new w,h dimensions
+  int _pad_w = ceil(_w * (100 + percent)/100);
+  int _pad_h = ceil(_h * (100 + percent)/100);
+  // offset xy position by half the difference between original dimensions and padded dimensions
+  int _yMin = _y - (_pad_h - _h)/2;
+  int _xMin = _x - (_pad_w - _w)/2;
+  // add the padded dimensions to the new xy positions
+  int _xMax = _xMin + _pad_w;
+  int _yMax = _yMin + _pad_h;
 
-      // run function tied to button
-      runFunction();
+  // initialise button as off
+  setState(false);
+
+  return gfxTouch(_screen, _name, _xMin, _yMin, _xMax, _yMax, _btnType, *btnFunction);
+}
+
+
+void gfxTouch::checkButton(String currentScreen, int touch_x, int touch_y) {
+  unsigned long currentTime = millis();
+
+  if (btnType == "momentary") {
+    if (screen == currentScreen && (currentTime - lastTouched >= _momentary_delay)) {
+      if ((touch_x >= xMin && touch_x <= xMax) && (touch_y >= yMin && touch_y <= yMax)) {
+        Serial.print("touch detected on button: ");
+        Serial.println(name);
+        lastTouched = currentTime;
+        // set button state
+        setState(!getState());
+        // run function tied to button
+        runButtonFunction();
+      }
+    }
+  }
+  else if (btnType == "toggle" && _coolOff == false) {
+    if (screen == currentScreen && (currentTime - lastTouched >= _toggle_delay)) {
+      if ((touch_x >= xMin && touch_x <= xMax) && (touch_y >= yMin && touch_y <= yMax)) {
+        Serial.print("touch detected on button: ");
+        Serial.println(name);
+        lastTouched = currentTime;
+        // set button state
+        setState(!getState());
+        // don't allow toggle again until touch pressure is zeroed
+        _coolOff = true;
+        // run function tied to button
+        runButtonFunction();
+      }
     }
   }
 }
 
 
-void gfxTouch::runFunction() {
+void gfxTouch::toggleCoolOff() {
+  _coolOff = false;
+}
+
+void gfxTouch::runButtonFunction() {
   btnFunc(getState());
 }
 
@@ -178,4 +224,18 @@ bool gfxTouch::getState() {
 // set state of button
 void gfxTouch::setState(bool btnActive) {
   _btnActive = btnActive;
+}
+
+// init global variables shared across class instances
+unsigned long gfxTouch::_toggle_delay = 0;
+unsigned long gfxTouch::_momentary_delay = 0;
+
+
+void gfxTouch::setToggleDebounce(unsigned long toggle_delay) {
+  _toggle_delay = toggle_delay;
+}
+
+
+void gfxTouch::setMomentaryDebounce(unsigned long momentary_delay) {
+  _momentary_delay = momentary_delay;
 }

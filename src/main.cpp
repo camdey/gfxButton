@@ -38,7 +38,7 @@ void drawButtons();
 void buttonCheck(String screen);
 void testFunction(bool btnActive);
 void testFunction2(bool btnActive);
-#define arrayElements 10
+#define arrayElements 2
 gfxButton buttonArray[arrayElements];
 gfxTouch touchArray[arrayElements];
 
@@ -47,57 +47,35 @@ bool buttonState = false;
 
 gfxButton newButton = gfxB.addButton("testPage", "drawRoundRect", 100, 110, 50, 40, 5, CUSTOM_RED);
 gfxButton newButton2 = gfxB.addButton("testPage", "fillRoundRect", 200, 110, 50, 40, 5, CUSTOM_RED);
-gfxTouch newTouch = gfxT.addTouch(newButton, testFunction, "newButton", 20);
-gfxTouch newTouch2 = gfxT.addTouch(newButton2, testFunction2, "newButton2", 20);
+gfxTouch newTouch = gfxT.addToggle(newButton, testFunction, "newButton", 20);
+gfxTouch newTouch2 = gfxT.addMomentary(newButton2, testFunction2, "newButton2", 20);
+
 
 void setup(void) {
   Serial.begin(9600);
   tft.reset();
-  uint32_t when = millis();
-  if (!Serial) delay(5000);
-  Serial.println("Serial took " + String((millis() - when)) + "ms to start");
   uint16_t ID = tft.readID(); //
-  Serial.print("ID = 0x");
-  Serial.println(ID, HEX);
-  if (ID == 0xD3D3) ID = 0x9481;
   tft.begin(ID);
   tft.fillScreen(0x0000);
   tft.setRotation(1);
 
-  // gfxB.begin(tft);
-  // gfxT.begin()
+  gfxT.setToggleDebounce(250);
+  gfxT.setMomentaryDebounce(100);
+
   addButtons();
   drawButtons();
 }
 
 
 void loop() {
-  if (millis() - timer >= 150) {
+  if (millis() - timer >= 10) {
     buttonCheck("testPage");
     timer = millis();
-    // gfxB.drawButton(newButton2, CUSTOM_GREEN);
   }
 }
 
 
 void addButtons() {
-  // screen    x    y    w   h   roundedRect  r
-  // gfxButton newButton = gfxB.addButton("testPage", "drawRoundRect", 100, 110, 50, 40, 5, CUSTOM_RED);
-  // gfxButton newButton2 = gfxB.addButton("testPage", "fillRoundRect", 200, 110, 50, 40, 5, CUSTOM_RED);
-  // gfxTouch newTouch = gfxT.addTouch(newButton, testFunction, "newButton", 10);
-  // gfxTouch newTouch2 = gfxT.addTouch(newButton2, testFunction2, "newButton2", 10);
-
-  // Serial.print("screen: ");
-  // Serial.println(newTouch.screen);
-  // Serial.print("xMin: ");
-  // Serial.println(newTouch.xMin);
-  // Serial.print("xMax: ");
-  // Serial.println(newTouch.xMax);
-  // Serial.print("yMin: ");
-  // Serial.println(newTouch.yMin);
-  // Serial.print("yMax: ");
-  // Serial.println(newTouch.yMax);
-
   buttonArray[0] = newButton;
   buttonArray[1] = newButton2;
 
@@ -115,7 +93,7 @@ void drawButtons() {
 }
 
 
-void buttonCheck(String screen) {
+void buttonCheck(String currentScreen) {
   TSPoint point = ts.getPoint();
 
   // reset pinmodes for tft
@@ -124,10 +102,19 @@ void buttonCheck(String screen) {
 
   int touch_x = map(point.y, 937, 140, 0, 480);
   int touch_y = map(point.x, 846, 148, 0, 320);
+  int touch_z = point.z;
 
-  if (point.z >= 100 && point.z <= 1000) {
-    for(int i=0; i < arrayElements; i++) {
-      touchArray[i].checkButtons(screen, touch_x, touch_y);
+  if (touch_z >= 100 && touch_z <= 1000) {
+    for (int i=0; i < arrayElements; i++) {
+      touchArray[i].checkButton(currentScreen, touch_x, touch_y);
+    }
+  }
+  // allow toggling button again once touch pressure zeroed
+  if (touch_z == 0) {
+    for (int i=0; i < arrayElements; i++) {
+      if (touchArray[i].btnType == "toggle") {
+        touchArray[i].toggleCoolOff();
+      }
     }
   }
 }
