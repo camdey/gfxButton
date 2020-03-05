@@ -38,17 +38,22 @@ void drawButtons();
 void buttonCheck(String screen);
 void testFunction(bool btnActive);
 void testFunction2(bool btnActive);
-#define arrayElements 2
+void testFunction3(bool btnActive);
+#define arrayElements 3
 gfxButton buttonArray[arrayElements];
 gfxTouch touchArray[arrayElements];
 
 long timer = 0;
 bool buttonState = false;
 
-gfxButton newButton = gfxB.addButton("testPage", "drawRoundRect", 100, 110, 50, 40, 5, CUSTOM_RED);
-gfxButton newButton2 = gfxB.addButton("testPage", "fillRoundRect", 200, 110, 50, 40, 5, CUSTOM_RED);
-gfxTouch newTouch = gfxT.addToggle(newButton, testFunction, "newButton", 20);
-gfxTouch newTouch2 = gfxT.addMomentary(newButton2, testFunction2, "newButton2", 20);
+gfxButton newButton   =   gfxB.addButton("testPage", "drawRoundRect", 100, 110, 50, 40, 5, CUSTOM_RED);
+gfxButton newButton2  =   gfxB.addButton("testPage", "fillRoundRect", 200, 110, 50, 40, 5, CUSTOM_RED);
+gfxButton newButton3  =   gfxB.addButton("testPage", "fillCircle", 350, 200, 0, 0, 50, CUSTOM_BLUE);
+gfxTouch  newTouch    =   gfxT.addToggle(newButton, testFunction, "newButton", 20);
+gfxTouch  newTouch2   =   gfxT.addMomentary(newButton2, testFunction2, "newButton2", 20);
+gfxTouch  newTouch3   =   gfxT.addMomentary(newButton3, testFunction3, "newButton3", 20);
+
+// tft.getTextBounds(String(flashOnValue), 30, 155, &x, &y, &w, &h);
 
 
 void setup(void) {
@@ -78,9 +83,24 @@ void loop() {
 void addButtons() {
   buttonArray[0] = newButton;
   buttonArray[1] = newButton2;
+  buttonArray[2] = newButton3;
 
   touchArray[0] = newTouch;
   touchArray[1] = newTouch2;
+  touchArray[2] = newTouch3;
+
+  Serial.print("screen");
+  Serial.println(newTouch3.screen);
+  Serial.print("name");
+  Serial.println(newTouch3.name);
+  Serial.print("xMin");
+  Serial.println(newTouch3.xMin);
+  Serial.print("yMin");
+  Serial.println(newTouch3.yMin);
+  Serial.print("xMax");
+  Serial.println(newTouch3.xMax);
+  Serial.print("yMax");
+  Serial.println(newTouch3.yMax);
 }
 
 
@@ -139,4 +159,15 @@ void testFunction2(bool btnActive) {
     newButton2.drawButton(tft, CUSTOM_GREEN);
   }
   else {newButton2.drawButton(tft, CUSTOM_RED);}
+}
+
+void testFunction3(bool btnActive) {
+  Serial.println("test function 3");
+  // bool btnActive = newTouch2.getState();
+  // Serial.println(newTouch2._btnActive);
+
+  if (btnActive == true) {
+    newButton3.drawButton(tft, CUSTOM_GREEN);
+  }
+  else {newButton3.drawButton(tft, CUSTOM_BLUE);}
 }

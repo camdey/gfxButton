@@ -27,9 +27,10 @@ class gfxButton {
 class gfxTouch {
   public:
     gfxTouch();
-    gfxTouch(String _screen, String _name, int _xMin, int _yMin, int _xMax, int _yMax, String _btnType, void (*btnFunction)(bool state));
+    gfxTouch(String _screen, String _name, int _xMin, int _xMax, int _yMin, int _yMax, String _btnType, void (*btnFunction)(bool state));
     gfxTouch addToggle(gfxButton &button, void (*btnFunction)(bool state), String name, int percent);
     gfxTouch addMomentary(gfxButton &button, void (*btnFunction)(bool state), String name, int percent);
+    void setTouchBoundary(int _x, int _y, int _w, int _h, int _r);
     void checkButton(String currentScreen, int touch_x, int touch_y);
     void runButtonFunction();
     bool getState();
@@ -45,9 +46,9 @@ class gfxTouch {
 
   private:
     TSPoint _point;
-    String _screen, _shape, _name, _btnType;
-    int _x, _y, _w, _h, _r, _colour, _defaultColour;
-    // int _xMin, _xMax, _yMin, _yMax;
+    // String _screen, _shape, _name, _btnType;
+    // int _x, _y, _w, _h, _r, _colour, _defaultColour;
+    int _xMin, _xMax, _yMin, _yMax;
     int touch_x, touch_y;
     bool _btnActive, _coolOff;
     unsigned long lastTouched, toggle_delay, momentary_delay;
