@@ -11,17 +11,15 @@ class gfxButton {
   public:
     gfxButton();
     gfxButton(String _screen, String shape, int _x, int _y, int _w, int _h, int _r, int defaultColour);
-    gfxButton addButton(String screen, String shape, int x, int y, int w, int h, int r, int defaultColour);
+    gfxButton initButton(String screen, String shape, int x, int y, int w, int h, int r, int defaultColour);
     void drawButton(MCUFRIEND_kbv _tft, int colour);
-    void drawButtons(MCUFRIEND_kbv _tft);
+    void drawButton(MCUFRIEND_kbv _tft);
+    void writeText(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour, String _alignment);
 
     String screen, shape;
     int x, y, w, h, r, colour, defaultColour;
 
   private:
-    String _screen, _shape;
-    int _x, _y, _w, _h, _r, _colour, _defaultColour;
-    static MCUFRIEND_kbv _tft;
 };
 
 class gfxTouch {
@@ -46,8 +44,6 @@ class gfxTouch {
 
   private:
     TSPoint _point;
-    // String _screen, _shape, _name, _btnType;
-    // int _x, _y, _w, _h, _r, _colour, _defaultColour;
     int _xMin, _xMax, _yMin, _yMax;
     int touch_x, touch_y;
     bool _btnActive, _coolOff;

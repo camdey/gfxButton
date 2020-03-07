@@ -24,39 +24,31 @@ gfxButton::gfxButton(String _screen, String _shape, int _x, int _y, int _w, int 
 
 
 // initialise a new button
-gfxButton gfxButton::addButton(String screen, String shape, int x, int y, int w, int h, int r, int defaultColour) {
-  _screen = screen;
-  _shape = shape;
-  _x = x;
-  _y = y;
-  _w = w;
-  _h = h;
-  _r = r;
-  _defaultColour = defaultColour;
-
-  return gfxButton(_screen, _shape, _x, _y, _w, _h, _r, _defaultColour);
+gfxButton gfxButton::initButton(String screen, String shape, int x, int y, int w, int h, int r, int defaultColour) {
+  return gfxButton(screen, shape, x, y, w, h, r, defaultColour);
 }
 
+// TODO support bitmaps as buttons
 
 // draw a single button with a different colour
-void gfxButton::drawButton(MCUFRIEND_kbv _tft, int colour) {
+void gfxButton::drawButton(MCUFRIEND_kbv _tft, int _colour) {
   if (shape == "drawRect") {
-    _tft.drawRect(x, y, w, h, colour);
+    _tft.drawRect(x, y, w, h, _colour);
   }
   else if (shape == "fillRect") {
-    _tft.fillRect(x, y, w, h, colour);
+    _tft.fillRect(x, y, w, h, _colour);
   }
   else if (shape == "drawRoundRect") {
-    _tft.drawRoundRect(x, y, w, h, r, colour);
+    _tft.drawRoundRect(x, y, w, h, r, _colour);
   }
   else if (shape == "fillRoundRect") {
-    _tft.fillRoundRect(x, y, w, h, r, colour);
+    _tft.fillRoundRect(x, y, w, h, r, _colour);
   }
   else if (shape == "drawCircle") {
-    _tft.drawCircle(x, y, r, colour);
+    _tft.drawCircle(x, y, r, _colour);
   }
   else if (shape == "fillCircle") {
-    _tft.fillCircle(x, y, r, colour);
+    _tft.fillCircle(x, y, r, _colour);
   }
   // TODO support triangles
   // else if (button.shape == "drawTriangle") {
@@ -69,7 +61,7 @@ void gfxButton::drawButton(MCUFRIEND_kbv _tft, int colour) {
 
 
 // draw each button based on default settings
-void gfxButton::drawButtons(MCUFRIEND_kbv _tft) {
+void gfxButton::drawButton(MCUFRIEND_kbv _tft) {
   if (shape == "drawRect") {
     _tft.drawRect(x, y, w, h, defaultColour);
   }
@@ -95,6 +87,49 @@ void gfxButton::drawButtons(MCUFRIEND_kbv _tft) {
   // else if (button.shape == "fillTriangle") {
   //   _tft.fillTriangle(button.x, button.y, button.w, button.h, button.defaultColour);
   // }
+}
+
+
+// TODO support text alignment for circles and triangles
+void gfxButton::writeText(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour, String _alignment = "c") {
+  int _btnX = x;
+  int _btnY = y + h; // text is printed from bottom left so add height value to y
+  int _btnW = w;
+  int _btnH = h;
+
+  int16_t _textX, _textY;
+  uint16_t _textW, _textH;
+  // set font to get text size
+  _tft.setFont(&_font);
+  // set cursor to 0 as only text box dimensions required
+  _tft.getTextBounds(_btnText, 0, 0, &_textX, &_textY, &_textW, &_textH);
+
+  // find space left over after text added, divide by two to get x and y padding
+  int _xPad = (_btnW - _textW)/2;
+  int _yPad = (_btnH - _textH)/2;
+
+  int _xPos;
+  int _yPos;
+
+  // centre align text
+  if (_alignment == "c") {
+    _xPos = _btnX + _xPad;
+    _yPos = _btnY - _yPad;
+  }
+  // left align text
+  else if (_alignment == "l") {
+    _xPos = _btnX + ceil(_btnW * 0.05);
+    _yPos = _btnY - _yPad;
+  }
+  // right align text
+  else if (_alignment == "r") {
+    _xPos = (_btnX + _btnW) - (_textW + ceil(_btnW * 0.05));
+    _yPos = _btnY - _yPad;
+  }
+
+  _tft.setTextColor(_colour);
+  _tft.setCursor(_xPos, _yPos);
+  _tft.print(_btnText);
 }
 
 

@@ -1,6 +1,7 @@
 #include "gfxButton.h"
 #include "MCUFRIEND_kbv.h"
 #include "TouchScreen.h"
+#include "Arimo_Regular_24.h"
 
 #define LCD_CS A3 // Chip Select goes to Analog 3
 #define LCD_CD A2 // Command/Data goes to Analog 2
@@ -8,6 +9,7 @@
 #define LCD_RD A0 // LCD Read goes to Analog 0
 #define LCD_RESET A4 // Can alternately just connect to Arduino's reset pin
 #define	BLACK   						0x0000
+#define	WHITE   						0xFFFF
 #define CUSTOM_GREEN_LITE		0x9736
 #define CUSTOM_GREEN				0x4ECC
 #define CUSTOM_RED					0xFBCC
@@ -33,8 +35,10 @@ gfxTouch gfxT;
 MCUFRIEND_kbv tft;
 TouchScreen	ts = TouchScreen(XP, YP, XM, YM, 200);
 
-void addButtons();
+void initButtons();
 void drawButtons();
+void fontSize();
+void placeText();
 void buttonCheck(String screen);
 void testFunction(bool btnActive);
 void testFunction2(bool btnActive);
@@ -46,14 +50,13 @@ gfxTouch touchArray[arrayElements];
 long timer = 0;
 bool buttonState = false;
 
-gfxButton newButton   =   gfxB.addButton("testPage", "drawRoundRect", 100, 110, 50, 40, 5, CUSTOM_RED);
-gfxButton newButton2  =   gfxB.addButton("testPage", "fillRoundRect", 200, 110, 50, 40, 5, CUSTOM_RED);
-gfxButton newButton3  =   gfxB.addButton("testPage", "fillCircle", 350, 200, 0, 0, 50, CUSTOM_BLUE);
+gfxButton newButton   =   gfxB.initButton("testPage", "drawRoundRect", 100, 110, 50, 40, 5, CUSTOM_RED);
+gfxButton newButton2  =   gfxB.initButton("testPage", "fillRoundRect", 200, 110, 175, 40, 5, CUSTOM_RED);
+gfxButton newButton3  =   gfxB.initButton("testPage", "fillCircle", 350, 250, 0, 0, 50, CUSTOM_BLUE);
 gfxTouch  newTouch    =   gfxT.addToggle(newButton, testFunction, "newButton", 20);
 gfxTouch  newTouch2   =   gfxT.addMomentary(newButton2, testFunction2, "newButton2", 20);
 gfxTouch  newTouch3   =   gfxT.addMomentary(newButton3, testFunction3, "newButton3", 20);
 
-// tft.getTextBounds(String(flashOnValue), 30, 155, &x, &y, &w, &h);
 
 
 void setup(void) {
@@ -67,8 +70,9 @@ void setup(void) {
   gfxT.setToggleDebounce(250);
   gfxT.setMomentaryDebounce(100);
 
-  addButtons();
+  initButtons();
   drawButtons();
+  newButton2.writeText(tft, Arimo_Regular_24, String("Test Text"), WHITE, "c");
 }
 
 
@@ -80,7 +84,7 @@ void loop() {
 }
 
 
-void addButtons() {
+void initButtons() {
   buttonArray[0] = newButton;
   buttonArray[1] = newButton2;
   buttonArray[2] = newButton3;
@@ -88,26 +92,13 @@ void addButtons() {
   touchArray[0] = newTouch;
   touchArray[1] = newTouch2;
   touchArray[2] = newTouch3;
-
-  Serial.print("screen");
-  Serial.println(newTouch3.screen);
-  Serial.print("name");
-  Serial.println(newTouch3.name);
-  Serial.print("xMin");
-  Serial.println(newTouch3.xMin);
-  Serial.print("yMin");
-  Serial.println(newTouch3.yMin);
-  Serial.print("xMax");
-  Serial.println(newTouch3.xMax);
-  Serial.print("yMax");
-  Serial.println(newTouch3.yMax);
 }
 
 
 void drawButtons() {
   for(int i=0; i < arrayElements; i++) {
     if (buttonArray[i].screen == "testPage") {
-      buttonArray[i].drawButtons(tft);
+      buttonArray[i].drawButton(tft);
     }
   }
 }
@@ -139,6 +130,7 @@ void buttonCheck(String currentScreen) {
   }
 }
 
+
 void testFunction(bool btnActive) {
   Serial.println("test function");
 
@@ -150,6 +142,7 @@ void testFunction(bool btnActive) {
   else {newButton.drawButton(tft, CUSTOM_RED);}
 }
 
+
 void testFunction2(bool btnActive) {
   Serial.println("test function 2");
   // bool btnActive = newTouch2.getState();
@@ -157,9 +150,14 @@ void testFunction2(bool btnActive) {
 
   if (btnActive == true) {
     newButton2.drawButton(tft, CUSTOM_GREEN);
+    newButton2.writeText(tft, Arimo_Regular_24, String("Test Text"), WHITE, "l");
   }
-  else {newButton2.drawButton(tft, CUSTOM_RED);}
+  else {
+    newButton2.drawButton(tft, CUSTOM_RED);
+    newButton2.writeText(tft, Arimo_Regular_24, String("Button Text"), WHITE, "r");
+  }
 }
+
 
 void testFunction3(bool btnActive) {
   Serial.println("test function 3");
