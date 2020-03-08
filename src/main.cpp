@@ -2,6 +2,7 @@
 #include "MCUFRIEND_kbv.h"
 #include "TouchScreen.h"
 #include "Arimo_Regular_24.h"
+#include "Aperture_Icon.h"
 
 #define LCD_CS A3 // Chip Select goes to Analog 3
 #define LCD_CD A2 // Command/Data goes to Analog 2
@@ -34,28 +35,43 @@ gfxButton gfxB;
 gfxTouch gfxT;
 MCUFRIEND_kbv tft;
 TouchScreen	ts = TouchScreen(XP, YP, XM, YM, 200);
-
 void initButtons();
 void drawButtons();
 void fontSize();
 void placeText();
 void buttonCheck(String screen);
-void testFunction(bool btnActive);
+void testFunction1(bool btnActive);
 void testFunction2(bool btnActive);
 void testFunction3(bool btnActive);
-#define arrayElements 3
-gfxButton buttonArray[arrayElements];
-gfxTouch touchArray[arrayElements];
+void testFunction4(bool btnActive);
+void testFunction5(bool btnActive);
 
 long timer = 0;
 bool buttonState = false;
 
-gfxButton newButton   =   gfxB.initButton("testPage", "drawRoundRect", 100, 110, 50, 40, 5, CUSTOM_RED);
-gfxButton newButton2  =   gfxB.initButton("testPage", "fillRoundRect", 200, 110, 175, 40, 5, CUSTOM_RED);
-gfxButton newButton3  =   gfxB.initButton("testPage", "fillCircle", 350, 250, 0, 0, 50, CUSTOM_BLUE);
-gfxTouch  newTouch    =   gfxT.addToggle(newButton, testFunction, "newButton", 20);
+// gfxButton newButton1   =   gfxB.initButton("testPage", "drawRoundRect", 100, 110, 50, 40, 5, CUSTOM_RED);
+// gfxButton newButton2  =   gfxB.initButton("testPage", "fillRoundRect", 200, 110, 175, 40, 5, CUSTOM_RED);
+// gfxButton newButton3  =   gfxB.initButton("testPage", "fillCircle", 350, 250, 0, 0, 50, CUSTOM_BLUE);
+// gfxTouch  newTouch1    =   gfxT.addToggle(newButton, testFunction, "newButton", 20);
+// gfxTouch  newTouch2   =   gfxT.addMomentary(newButton2, testFunction2, "newButton2", 20);
+// gfxTouch  newTouch3   =   gfxT.addMomentary(newButton3, testFunction3, "newButton3", 20);
+
+gfxButton newButton1  =   gfxB.initButton("testPage", "fillRoundRect", 10,  10, 150, 60, 5, CUSTOM_RED);
+gfxButton newButton2  =   gfxB.initButton("testPage", "fillRoundRect", 10,  90, 150, 60, 5, CUSTOM_BLUE);
+gfxButton newButton3  =   gfxB.initButton("testPage", "fillRoundRect", 10, 170, 150, 60, 5, CUSTOM_GREEN);
+gfxButton newButton4  =   gfxB.initButton("testPage", "fillRoundRect", 10, 250, 150, 60, 5, CUSTOM_GREY);
+gfxButton newBitmap1  =   gfxB.initBitmapButton("testPage", aperture, 200, 150, 50, 50, CUSTOM_RED);
+gfxTouch  newTouch1   =   gfxT.addMomentary(newButton1, testFunction1, "newButton1", 20);
 gfxTouch  newTouch2   =   gfxT.addMomentary(newButton2, testFunction2, "newButton2", 20);
-gfxTouch  newTouch3   =   gfxT.addMomentary(newButton3, testFunction3, "newButton3", 20);
+gfxTouch  newTouch3   =   gfxT.addToggle(newButton3, testFunction3, "newButton3", 20);
+gfxTouch  newTouch4   =   gfxT.addToggle(newButton4, testFunction4, "newButton4", 20);
+gfxTouch  newTouch5   =   gfxT.addMomentary(newBitmap1, testFunction5, "newBitmap1", 20);
+#define arrayElements 5
+gfxButton buttonArray[arrayElements];
+gfxTouch touchArray[arrayElements];
+
+              // xPos  yPos icon    w     h   color
+// tft.drawBitmap(155, 95, cogWheel, 50, 50, GRAY);
 
 
 
@@ -72,7 +88,14 @@ void setup(void) {
 
   initButtons();
   drawButtons();
-  newButton2.writeText(tft, Arimo_Regular_24, String("Test Text"), WHITE, "c");
+  // newButton2.writeText(tft, Arimo_Regular_24, String("Test Text"), WHITE, "c");
+  // newButton3.writeText(tft, Arimo_Regular_24, String("Circle"), WHITE);
+  newButton1.writeText(tft, Arimo_Regular_24, String("Step Dist."), WHITE, "c");
+  newButton2.writeText(tft, Arimo_Regular_24, String("Step Nr"), WHITE, "c");
+  newButton3.writeText(tft, Arimo_Regular_24, String("Rail Pos"), WHITE, "c");
+  newButton4.writeText(tft, Arimo_Regular_24, String("Flash"), BLACK, "c");
+
+  // tft.drawBitmap(200, 150, newBitmap1.bitmap, 50, 50, CUSTOM_RED);
 }
 
 
@@ -85,13 +108,27 @@ void loop() {
 
 
 void initButtons() {
-  buttonArray[0] = newButton;
+  buttonArray[0] = newButton1;
   buttonArray[1] = newButton2;
   buttonArray[2] = newButton3;
+  buttonArray[3] = newButton4;
+  buttonArray[4] = newBitmap1;
 
-  touchArray[0] = newTouch;
+  touchArray[0] = newTouch1;
   touchArray[1] = newTouch2;
   touchArray[2] = newTouch3;
+  touchArray[3] = newTouch4;
+  touchArray[4] = newTouch5;
+
+  Serial.println(newTouch4.name);
+  Serial.print("xmin: ");
+  Serial.println(newTouch4.xMin);
+  Serial.print("xmax: ");
+  Serial.println(newTouch4.xMax);
+  Serial.print("ymin: ");
+  Serial.println(newTouch4.yMin);
+  Serial.print("ymax: ");
+  Serial.println(newTouch4.yMax);
 }
 
 
@@ -123,7 +160,7 @@ void buttonCheck(String currentScreen) {
   // allow toggling button again once touch pressure zeroed
   if (touch_z == 0) {
     for (int i=0; i < arrayElements; i++) {
-      if (touchArray[i].btnType == "toggle") {
+      if (touchArray[i].touchType == "toggle") {
         touchArray[i].toggleCoolOff();
       }
     }
@@ -131,22 +168,20 @@ void buttonCheck(String currentScreen) {
 }
 
 
-void testFunction(bool btnActive) {
+void testFunction1(bool btnActive) {
   Serial.println("test function");
 
-  // buttonState = newTouch.getState();
-
   if (btnActive == true) {
-    newButton.drawButton(tft, CUSTOM_GREEN);
+    newButton1.drawButton(tft, CUSTOM_GREEN);
   }
-  else {newButton.drawButton(tft, CUSTOM_RED);}
+  else {
+    newButton1.drawButton(tft, CUSTOM_RED);
+  }
 }
 
 
 void testFunction2(bool btnActive) {
   Serial.println("test function 2");
-  // bool btnActive = newTouch2.getState();
-  // Serial.println(newTouch2._btnActive);
 
   if (btnActive == true) {
     newButton2.drawButton(tft, CUSTOM_GREEN);
@@ -161,11 +196,39 @@ void testFunction2(bool btnActive) {
 
 void testFunction3(bool btnActive) {
   Serial.println("test function 3");
-  // bool btnActive = newTouch2.getState();
-  // Serial.println(newTouch2._btnActive);
 
   if (btnActive == true) {
     newButton3.drawButton(tft, CUSTOM_GREEN);
+    newButton3.writeText(tft, Arimo_Regular_24, String("Circle"), WHITE);
   }
-  else {newButton3.drawButton(tft, CUSTOM_BLUE);}
+  else {
+    newButton3.drawButton(tft, CUSTOM_BLUE);
+    newButton3.writeText(tft, Arimo_Regular_24, String("Circle"), WHITE);
+  }
+}
+
+
+void testFunction4(bool btnActive) {
+  Serial.println("test function 4");
+
+  if (btnActive == true) {
+    newButton4.drawButton(tft, CUSTOM_GREEN);
+    newButton4.writeText(tft, Arimo_Regular_24, String("Circle"), WHITE);
+  }
+  else {
+    newButton4.drawButton(tft, CUSTOM_BLUE);
+    newButton4.writeText(tft, Arimo_Regular_24, String("Circle"), WHITE);
+  }
+}
+
+
+void testFunction5(bool btnActive) {
+  Serial.println("test function 5");
+
+  if (btnActive == true) {
+    newBitmap1.drawButton(tft, CUSTOM_GREEN);
+  }
+  else {
+    newBitmap1.drawButton(tft, CUSTOM_BLUE);
+  }
 }

@@ -10,10 +10,15 @@
 gfxButton::gfxButton() {};
 
 
-// return new button object
-gfxButton::gfxButton(String _screen, String _shape, int _x, int _y, int _w, int _h, int _r, int _defaultColour) {
+/******************************************************
+/              Create a Button Instance
+/ Creates a button instance for GFX shapes that will allow
+/ you to add touch functionality for using the shape
+/ as a touch screen button.
+******************************************************/
+gfxButton::gfxButton(String _screen, String _buttonType, int _x, int _y, int _w, int _h, int _r, int _defaultColour) {
   screen = _screen;
-  shape = _shape;
+  buttonType = _buttonType;
   x = _x;
   y = _y;
   w = _w;
@@ -23,75 +28,135 @@ gfxButton::gfxButton(String _screen, String _shape, int _x, int _y, int _w, int 
 }
 
 
-// initialise a new button
-gfxButton gfxButton::initButton(String screen, String shape, int x, int y, int w, int h, int r, int defaultColour) {
-  return gfxButton(screen, shape, x, y, w, h, r, defaultColour);
+/******************************************************
+/           Create a Bitmap Button Instance
+/ Creates a button instance for bitmaps that will allow
+/ you to add touch functionality for using the bitmap
+/ as a touch screen button.
+******************************************************/
+gfxButton::gfxButton(String _screen, const unsigned char* _bitmap, int _x, int _y, int _w, int _h, int _defaultColour) {
+  screen = _screen;
+  bitmap = _bitmap;
+  buttonType = "bitmap";
+  x = _x;
+  y = _y;
+  w = _w;
+  h = _h;
+  r = 0;
+  defaultColour = _defaultColour;
 }
 
-// TODO support bitmaps as buttons
 
-// draw a single button with a different colour
+/******************************************************
+/                Init a new Button
+/ Initiates a button instance for GFX shapes, returns input
+/ values to instance constructor.
+******************************************************/
+gfxButton gfxButton::initButton(String screen, String buttonType, int x, int y, int w, int h, int r, int defaultColour) {
+  return gfxButton(screen, buttonType, x, y, w, h, r, defaultColour);
+}
+
+
+/******************************************************
+/             Init a new Bitmap Button
+/ Initiates a button instance for bitmaps, returns input
+/ values to instance constructor.
+******************************************************/
+gfxButton gfxButton::initBitmapButton(String screen, const unsigned char* bitmap, int x, int y, int w, int h, int defaultColour) {
+  return gfxButton(screen, bitmap, x, y, w, h, defaultColour);
+}
+
+
+// TODO can drawButton be one function with button colour property as default?
+
+/******************************************************
+/               Draw Button Shapes
+/ Draws a button based on the GFX Library commands.
+/ Can draw different types of buttons based on the
+/ buttonType parameter set for the button.
+******************************************************/
 void gfxButton::drawButton(MCUFRIEND_kbv _tft, int _colour) {
-  if (shape == "drawRect") {
+  if (buttonType == "drawRect") {
     _tft.drawRect(x, y, w, h, _colour);
   }
-  else if (shape == "fillRect") {
+  else if (buttonType == "fillRect") {
     _tft.fillRect(x, y, w, h, _colour);
   }
-  else if (shape == "drawRoundRect") {
+  else if (buttonType == "drawRoundRect") {
     _tft.drawRoundRect(x, y, w, h, r, _colour);
   }
-  else if (shape == "fillRoundRect") {
+  else if (buttonType == "fillRoundRect") {
     _tft.fillRoundRect(x, y, w, h, r, _colour);
   }
-  else if (shape == "drawCircle") {
+  else if (buttonType == "drawCircle") {
     _tft.drawCircle(x, y, r, _colour);
   }
-  else if (shape == "fillCircle") {
+  else if (buttonType == "fillCircle") {
     _tft.fillCircle(x, y, r, _colour);
   }
+  else if (buttonType == "fillCircle") {
+    _tft.fillCircle(x, y, r, _colour);
+  }
+  else if (buttonType == "bitmap") {
+    _tft.drawBitmap(x, y, bitmap, w, h, _colour);
+  }
   // TODO support triangles
-  // else if (button.shape == "drawTriangle") {
+  // else if (button.buttonType == "drawTriangle") {
   //   _tft.drawTriangle(button.x, button.y, button.w, button.h, colour);
   // }
-  // else if (button.shape == "fillTriangle") {
+  // else if (button.buttonType == "fillTriangle") {
   //   _tft.fillTriangle(button.x, button.y, button.w, button.h, colour);
   // }
 }
 
 
-// draw each button based on default settings
+/******************************************************
+/               Draw Button Shapes
+/ Draws a button based on the GFX Library commands.
+/ Can draw different types of buttons based on the
+/ buttonType parameter set for the button.
+******************************************************/
 void gfxButton::drawButton(MCUFRIEND_kbv _tft) {
-  if (shape == "drawRect") {
+  if (buttonType == "drawRect") {
     _tft.drawRect(x, y, w, h, defaultColour);
   }
-  else if (shape == "fillRect") {
+  else if (buttonType == "fillRect") {
     _tft.fillRect(x, y, w, h, defaultColour);
   }
-  else if (shape == "drawRoundRect") {
+  else if (buttonType == "drawRoundRect") {
     _tft.drawRoundRect(x, y, w, h, r, defaultColour);
   }
-  else if (shape == "fillRoundRect") {
+  else if (buttonType == "fillRoundRect") {
     _tft.fillRoundRect(x, y, w, h, r, defaultColour);
   }
-  else if (shape == "drawCircle") {
+  else if (buttonType == "drawCircle") {
     _tft.drawCircle(x, y, r, defaultColour);
   }
-  else if (shape == "fillCircle") {
+  else if (buttonType == "fillCircle") {
     _tft.fillCircle(x, y, r, defaultColour);
   }
+  else if (buttonType == "bitmap") {
+    _tft.drawBitmap(x, y, bitmap, w, h, defaultColour);
+  }
   // TODO support triangles
-  // else if (button.shape == "drawTriangle") {
+  // else if (button.buttonType == "drawTriangle") {
   //   _tft.drawTriangle(button.x, button.y, button.w, button.h, button.defaultColour);
   // }
-  // else if (button.shape == "fillTriangle") {
+  // else if (button.buttonType == "fillTriangle") {
   //   _tft.fillTriangle(button.x, button.y, button.w, button.h, button.defaultColour);
   // }
 }
 
 
 // TODO support text alignment for circles and triangles
-void gfxButton::writeText(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour, String _alignment = "c") {
+/******************************************************
+/          Write Text for Buttons
+/ Calculates the x,y,w,h dimensions for a piece of text
+/ based on font and size and uses this to find the closest
+/ centre/left/right aligned point within a button's
+/ dimensions to print the text.
+******************************************************/
+void gfxButton::writeText(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour, String _alignment) {
   int _btnX = x;
   int _btnY = y + h; // text is printed from bottom left so add height value to y
   int _btnW = w;
@@ -104,27 +169,42 @@ void gfxButton::writeText(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, in
   // set cursor to 0 as only text box dimensions required
   _tft.getTextBounds(_btnText, 0, 0, &_textX, &_textY, &_textW, &_textH);
 
-  // find space left over after text added, divide by two to get x and y padding
-  int _xPad = (_btnW - _textW)/2;
-  int _yPad = (_btnH - _textH)/2;
-
+  int _xPad;
+  int _yPad;
   int _xPos;
   int _yPos;
 
-  // centre align text
-  if (_alignment == "c") {
-    _xPos = _btnX + _xPad;
-    _yPos = _btnY - _yPad;
+  // if circle, else rectangle
+  if (buttonType == "drawCircle" || buttonType == "fillCircle") {
+    // for cicles, x and y define centre so divide
+    // text w/h by two to offset centre point
+    _xPad = (_textW / 2);
+    _yPad = (_textH / 2);
+
+    _xPos = _btnX - _xPad;
+    _yPos = _btnY + _yPad;
   }
-  // left align text
-  else if (_alignment == "l") {
-    _xPos = _btnX + ceil(_btnW * 0.05);
-    _yPos = _btnY - _yPad;
-  }
-  // right align text
-  else if (_alignment == "r") {
-    _xPos = (_btnX + _btnW) - (_textW + ceil(_btnW * 0.05));
-    _yPos = _btnY - _yPad;
+  else {
+    // find space left over after text added
+    // divide by two to get x and y padding
+    _xPad = (_btnW - _textW) / 2;
+    _yPad = (_btnH - _textH) / 2;
+
+    // centre align text
+    if (_alignment == "c") {
+      _xPos = _btnX + _xPad;
+      _yPos = _btnY - _yPad;
+    }
+    // left align text
+    else if (_alignment == "l") {
+      _xPos = _btnX + ceil(_btnW * 0.05);
+      _yPos = _btnY - _yPad;
+    }
+    // right align text
+    else if (_alignment == "r") {
+      _xPos = (_btnX + _btnW) - (_textW + ceil(_btnW * 0.05));
+      _yPos = _btnY - _yPad;
+    }
   }
 
   _tft.setTextColor(_colour);
@@ -133,60 +213,83 @@ void gfxButton::writeText(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, in
 }
 
 
-// constructor
+
 gfxTouch::gfxTouch() {};
 
 
-// return class object with touch perimeter for button
-gfxTouch::gfxTouch(String _screen, String _name, int _xMin, int _xMax, int _yMin, int _yMax, String _btnType, void (*btnFunction)(bool state)) {
+/******************************************************
+/         Constructor for gfxTouch instance
+/ Takes gfxButton instance as argument and calculates
+/ min/max boundaries for touch registration. Also takes
+/ an pointer to a function that should be caLled when
+/ the button is pressed.
+******************************************************/
+gfxTouch::gfxTouch(String _screen, String _name, int _xMin, int _xMax, int _yMin, int _yMax, String _touchType, void (*btnFunction)(bool state)) {
   screen = _screen;
   name =_name;
   xMin = _xMin;
   xMax = _xMax;
   yMin = _yMin;
   yMax = _yMax;
-  btnType = _btnType;
+  touchType = _touchType;
   lastTouched = 0UL;
   btnFunc = *btnFunction;
 }
 
 
-// add toggle type button - can only change state once per button press
+/******************************************************
+/                Init new Toggle
+/ Initiates a toggle type instance based on a
+/ previously  created button instance. Will allow
+/ triggering that button with toggle functionality
+/ and call a function on button state change
+******************************************************/
 gfxTouch gfxTouch::addToggle(gfxButton &button, void (*btnFunction)(bool state), String name, int percent) {
   String _screen = button.screen;
   String _name = name;
-  String _btnType = "toggle";
+  String _touchType = "toggle";
 
   // set xMin, xMax, yMin, yMax
-  setTouchBoundary(button.x, button.y, button.w, button.h, button.r);
+  setTouchBoundary(button.x, button.y, button.w, button.h, button.r, percent);
   // initialise button as off
   setState(false);
 
-  return gfxTouch(_screen, _name, _xMin, _xMax, _yMin, _yMax, _btnType, *btnFunction);
+  return gfxTouch(_screen, _name, _xMin, _xMax, _yMin, _yMax, _touchType, *btnFunction);
 }
 
 
-// add momentary type button - can change state as long as your finger is held on the button
+/******************************************************
+/                Init new Momentary
+/ Initiates a momentary type instance based on a
+/ previously  created button instance. Will allow
+/ triggering that button with momentary functionality
+/ and call a function on button state change
+******************************************************/
 gfxTouch gfxTouch::addMomentary(gfxButton &button, void (*btnFunction)(bool state), String name, int percent) {
   String _screen = button.screen;
   String _name = name;
-  String _btnType = "momentary";
+  String _touchType = "momentary";
 
   // set xMin, xMax, yMin, yMax
-  setTouchBoundary(button.x, button.y, button.w, button.h, button.r);
+  setTouchBoundary(button.x, button.y, button.w, button.h, button.r, percent);
   // initialise button as off
   setState(false);
 
-  return gfxTouch(_screen, _name, _xMin, _xMax, _yMin, _yMax, _btnType, *btnFunction);
+  return gfxTouch(_screen, _name, _xMin, _xMax, _yMin, _yMax, _touchType, *btnFunction);
 }
 
 
-// set touch boundary for button
-void gfxTouch::setTouchBoundary(int _x, int _y, int _w, int _h, int _r) {
+/******************************************************
+/         Set Touch Boundary for Button
+/ Determines min and max XY values for where a
+/ touch needs to register to trigger the button
+/ Boundary size can be modified by percent value
+******************************************************/
+void gfxTouch::setTouchBoundary(int _x, int _y, int _w, int _h, int _r, int _percent) {
   // if w and h dimensions are zero and radius > 0, then button is circle
   if (_w == 0 && _h == 0 && _r > 0) {
     // get new padded radius dimension
-    int _pad_r = ceil(_r * (100 + percent)/100);
+    int _pad_r = ceil(_r * (100 + _percent)/100);
     // circles are drawn from the centre point
     _xMin = _x - _pad_r;
     _xMax = _x + _pad_r;
@@ -196,24 +299,39 @@ void gfxTouch::setTouchBoundary(int _x, int _y, int _w, int _h, int _r) {
   // else button must be a rectangle
   else {
     // get new w,h dimensions
-    int _pad_w = ceil(_w * (100 + percent)/100);
-    int _pad_h = ceil(_h * (100 + percent)/100);
+    int _pad_w = ceil((_w * (100 + _percent))/100);
+    int _pad_h = ceil((_h * (100 + _percent))/100);
     // offset xy position by half the difference between original dimensions and padded dimensions
-    _yMin = _y - (_pad_h - _h)/2;
     _xMin = _x - (_pad_w - _w)/2;
+    _yMin = _y - (_pad_h - _h)/2;
     // add the padded dimensions to the new xy positions
     _xMax = _xMin + _pad_w;
     _yMax = _yMin + _pad_h;
   }
+
+  // limit possible boundary values by screen size
+  // TODO include screen size parameter - maybe in begin()?
+  _xMin = _xMin >= 0 ? _xMin : 0;
+  _yMin = _yMin >= 0 ? _yMin : 0;
+  _xMax = _xMax <= 480 ? _xMax : 480;
+  _yMax = _yMax <= 320 ? _yMax : 320;
 }
 
 
-// check button for touch reading
+/******************************************************
+/             Check Button for Touch
+/ Checks against current screen shown to user as well
+/ as how long it has been since the previous touch and
+/ if that is longer than the specified debounce time.
+/ Will then check if XY co-ordinates are within button
+/ boundary. Toggle  requires cooloff time before next
+/ trigger.
+******************************************************/
 void gfxTouch::checkButton(String currentScreen, int touch_x, int touch_y) {
   unsigned long currentTime = millis();
 
-  if (btnType == "momentary") {
-    if (screen == currentScreen && (currentTime - lastTouched >= _momentary_delay)) {
+  if (touchType == "momentary") {
+    if (screen == currentScreen && (currentTime - lastTouched >= g_momentary_delay)) {
       if ((touch_x >= xMin && touch_x <= xMax) && (touch_y >= yMin && touch_y <= yMax)) {
         Serial.print("touch detected on button: ");
         Serial.println(name);
@@ -225,8 +343,8 @@ void gfxTouch::checkButton(String currentScreen, int touch_x, int touch_y) {
       }
     }
   }
-  else if (btnType == "toggle" && _coolOff == false) {
-    if (screen == currentScreen && (currentTime - lastTouched >= _toggle_delay)) {
+  else if (touchType == "toggle" && _coolOff == false) {
+    if (screen == currentScreen && (currentTime - lastTouched >= g_toggle_delay)) {
       if ((touch_x >= xMin && touch_x <= xMax) && (touch_y >= yMin && touch_y <= yMax)) {
         Serial.print("touch detected on button: ");
         Serial.println(name);
@@ -243,43 +361,66 @@ void gfxTouch::checkButton(String currentScreen, int touch_x, int touch_y) {
 }
 
 
-// wait for touch reading of zero before
-// allowing toggle to change state again
+/******************************************************
+/            Cool Off Period for Toggles
+/ Toggle buttons require a pressure reading of 0 before
+/ the user can toggle that button again.
+******************************************************/
 void gfxTouch::toggleCoolOff() {
   _coolOff = false;
 }
 
 
-// run function attached to touch button
+/******************************************************
+/            Run function tied to Button
+/ Run the function assigned to that button when it
+/ has been triggered by a touch.
+******************************************************/
 void gfxTouch::runButtonFunction() {
   btnFunc(getState());
 }
 
 
-// fetch current state of button
-// false is off / default, true is on / active
+/******************************************************
+/               Get Button State
+/ Get the latest state of the button, false if inactive.
+******************************************************/
 bool gfxTouch::getState() {
   return _btnActive;
 }
 
 
-// set state of button
+/******************************************************
+/               Set Button State
+/ Set the latest state of the button, false if inactive.
+******************************************************/
 void gfxTouch::setState(bool btnActive) {
   _btnActive = btnActive;
 }
 
-// init global variables shared across class instances
-unsigned long gfxTouch::_toggle_delay = 0;
-unsigned long gfxTouch::_momentary_delay = 0;
+/******************************************************
+/           Declare Debouncing Delay Variables
+/ Declare variables for debouncing toggle and momentary
+/ buttons. These values are shared across instances and
+/ will be used by all buttons of that type.
+******************************************************/
+unsigned long gfxTouch::g_toggle_delay = 0;
+unsigned long gfxTouch::g_momentary_delay = 0;
 
 
-// set debounce delay value between state changes
+/******************************************************
+/              Set Debouncing Delay Values
+/ Set debouncing delay for toggle buttons.
+******************************************************/
 void gfxTouch::setToggleDebounce(unsigned long toggle_delay) {
-  _toggle_delay = toggle_delay;
+  g_toggle_delay = toggle_delay;
 }
 
 
-// set debounce delay value between state changes
+/******************************************************
+/              Set Debouncing Delay Values
+/ Set debouncing delay for momentary buttons.
+******************************************************/
 void gfxTouch::setMomentaryDebounce(unsigned long momentary_delay) {
-  _momentary_delay = momentary_delay;
+  g_momentary_delay = momentary_delay;
 }
