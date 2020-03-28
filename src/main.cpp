@@ -73,7 +73,7 @@ gfxTouch touchArray[arrayElements];
               // xPos  yPos icon    w     h   color
 // tft.drawBitmap(155, 95, cogWheel, 50, 50, GRAY);
 
-
+bool setupFlag = false;
 
 void setup(void) {
   Serial.begin(9600);
@@ -86,20 +86,31 @@ void setup(void) {
   gfxT.setToggleDebounce(250);
   gfxT.setMomentaryDebounce(100);
 
-  initButtons();
-  drawButtons();
+  // initButtons();
+  // drawButtons();
   // newButton2.writeText(tft, Arimo_Regular_24, String("Test Text"), WHITE, "c");
   // newButton3.writeText(tft, Arimo_Regular_24, String("Circle"), WHITE);
-  newButton1.writeTextTopCentre(tft, Arimo_Regular_24, String("Step Dist."), WHITE);
-  newButton2.writeTextCentre(tft, Arimo_Regular_24, String("Step Nr"), WHITE);
-  newButton3.writeTextCentre(tft, Arimo_Regular_24, String("Rail Pos"), WHITE);
-  newButton4.writeTextCentre(tft, Arimo_Regular_24, String("Flash"), BLACK);
+  // newButton1.writeTextTopCentre(tft, Arimo_Regular_24, String("Step Dist."), WHITE);
+  // newButton2.writeTextCentre(tft, Arimo_Regular_24, String("Step Nr"), WHITE);
+  // newButton3.writeTextCentre(tft, Arimo_Regular_24, String("Rail Pos"), WHITE);
+  // newButton4.writeTextCentre(tft, Arimo_Regular_24, String("Flash"), BLACK);
 
   // tft.drawBitmap(200, 150, newBitmap1.bitmap, 50, 50, CUSTOM_RED);
 }
 
 
 void loop() {
+  if (setupFlag == false) {
+    delay(2000);
+    initButtons();
+    drawButtons();
+    newButton1.writeTextTopCentre(tft, Arimo_Regular_24, String("Step Dist."), WHITE);
+    newButton2.writeTextLeft(tft, Arimo_Regular_24, String("Step Nr"), WHITE);
+    newButton3.writeTextRight(tft, Arimo_Regular_24, String("Rail Pos"), WHITE);
+    newButton4.writeTextBottomCentre(tft, Arimo_Regular_24, String("Flash"), BLACK);
+
+    setupFlag = true;
+  }
   if (millis() - timer >= 10) {
     buttonCheck("testPage");
     timer = millis();
@@ -135,7 +146,8 @@ void initButtons() {
 void drawButtons() {
   for(int i=0; i < arrayElements; i++) {
     if (buttonArray[i].screen == "testPage") {
-      buttonArray[i].drawButton(tft);
+      buttonArray[i].drawButton(tft); // calling btn via array creates new scope :|
+      newButton1.drawButton(tft);
     }
   }
 }
@@ -186,12 +198,12 @@ void testFunction2(bool btnActive) {
   Serial.println("test function 2");
 
   if (btnActive == true) {
-    newButton2.drawButton(tft, CUSTOM_GREEN);
+    // newButton2.drawButton(tft, CUSTOM_GREEN);
     newButton2.writeTextLeft(tft, Arimo_Regular_24, String("Test Text"), WHITE);
   }
   else {
-    newButton2.drawButton(tft, CUSTOM_RED);
-    newButton2.writeTextRight(tft, Arimo_Regular_24, String("Button Text"), WHITE);
+    // newButton2.drawButton(tft, CUSTOM_RED);
+    newButton2.writeTextLeft(tft, Arimo_Regular_24, String("Button Text"), WHITE);
   }
 }
 
@@ -201,11 +213,11 @@ void testFunction3(bool btnActive) {
 
   if (btnActive == true) {
     newButton3.drawButton(tft, CUSTOM_GREEN);
-    newButton3.writeTextCircle(tft, Arimo_Regular_24, String("Circle"), WHITE);
+    newButton3.writeTextRight(tft, Arimo_Regular_24, String("Circle"), WHITE);
   }
   else {
     newButton3.drawButton(tft, CUSTOM_BLUE);
-    newButton3.writeTextCircle(tft, Arimo_Regular_24, String("Circle"), WHITE);
+    newButton3.writeTextRight(tft, Arimo_Regular_24, String("Circle"), WHITE);
   }
 }
 
@@ -215,11 +227,11 @@ void testFunction4(bool btnActive) {
 
   if (btnActive == true) {
     newButton4.drawButton(tft, CUSTOM_GREEN);
-    newButton4.writeTextCircle(tft, Arimo_Regular_24, String("Circle"), WHITE);
+    newButton4.writeTextBottomCentre(tft, Arimo_Regular_24, String("Circle"), WHITE);
   }
   else {
     newButton4.drawButton(tft, CUSTOM_BLUE);
-    newButton4.writeTextCircle(tft, Arimo_Regular_24, String("Circle"), WHITE);
+    newButton4.writeTextBottomCentre(tft, Arimo_Regular_24, String("Circle"), WHITE);
   }
 }
 
