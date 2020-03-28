@@ -100,6 +100,11 @@ void gfxButton::drawButton(MCUFRIEND_kbv _tft, int _colour) {
   else if (buttonType == "bitmap") {
     _tft.drawBitmap(x, y, bitmap, w, h, _colour);
   }
+
+  // store button colour, used for overwriting text
+  setButtonColour(_colour);
+  Serial.print(getButtonColour());
+
   // TODO support triangles
   // else if (button.buttonType == "drawTriangle") {
   //   _tft.drawTriangle(button.x, button.y, button.w, button.h, colour);
@@ -138,6 +143,10 @@ void gfxButton::drawButton(MCUFRIEND_kbv _tft) {
   else if (buttonType == "bitmap") {
     _tft.drawBitmap(x, y, bitmap, w, h, defaultColour);
   }
+
+  // store button colour, used for overwriting text
+  setButtonColour(defaultColour);
+  Serial.print(getButtonColour());
   // TODO support triangles
   // else if (button.buttonType == "drawTriangle") {
   //   _tft.drawTriangle(button.x, button.y, button.w, button.h, button.defaultColour);
@@ -148,7 +157,7 @@ void gfxButton::drawButton(MCUFRIEND_kbv _tft) {
 }
 
 
-// TODO support text alignment for circles and triangles
+// TODO support text alignment for triangles
 /******************************************************
 /          Write Text for Buttons
 / Calculates the x,y,w,h dimensions for a piece of text
@@ -156,7 +165,7 @@ void gfxButton::drawButton(MCUFRIEND_kbv _tft) {
 / centre/left/right aligned point within a button's
 / dimensions to print the text.
 ******************************************************/
-void gfxButton::writeText(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour, String _alignment) {
+void gfxButton::writeTextCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour) {
   int _btnX = x;
   int _btnY = y + h; // text is printed from bottom left so add height value to y
   int _btnW = w;
@@ -174,42 +183,229 @@ void gfxButton::writeText(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, in
   int _xPos;
   int _yPos;
 
-  // if circle, else rectangle
-  if (buttonType == "drawCircle" || buttonType == "fillCircle") {
-    // for cicles, x and y define centre so divide
-    // text w/h by two to offset centre point
-    _xPad = (_textW / 2);
-    _yPad = (_textH / 2);
+  // find space left over after text added
+  // divide by two to get x and y padding
+  _xPad = (_btnW - _textW) / 2;
+  _yPad = (_btnH - _textH) / 2;
 
-    _xPos = _btnX - _xPad;
-    _yPos = _btnY + _yPad;
-  }
-  else {
-    // find space left over after text added
-    // divide by two to get x and y padding
-    _xPad = (_btnW - _textW) / 2;
-    _yPad = (_btnH - _textH) / 2;
-
-    // centre align text
-    if (_alignment == "c") {
-      _xPos = _btnX + _xPad;
-      _yPos = _btnY - _yPad;
-    }
-    // left align text
-    else if (_alignment == "l") {
-      _xPos = _btnX + ceil(_btnW * 0.05);
-      _yPos = _btnY - _yPad;
-    }
-    // right align text
-    else if (_alignment == "r") {
-      _xPos = (_btnX + _btnW) - (_textW + ceil(_btnW * 0.05));
-      _yPos = _btnY - _yPad;
-    }
-  }
+  // centre align text
+  _xPos = _btnX + _xPad;
+  _yPos = _btnY - _yPad;
 
   _tft.setTextColor(_colour);
   _tft.setCursor(_xPos, _yPos);
   _tft.print(_btnText);
+}
+
+
+/******************************************************
+/          Top centre align text on button
+******************************************************/
+void gfxButton::writeTextTopCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour) {
+  int _btnX = x;
+  int _btnY = y + (h / 2);  // text is printed from bottom left so add half height value to y
+  int _btnW = w;
+  int _btnH = (h / 2);      // treat button as if it is only half the height
+
+  int16_t _textX, _textY;
+  uint16_t _textW, _textH;
+  // set font to get text size
+  _tft.setFont(&_font);
+  // set cursor to 0 as only text box dimensions required
+  _tft.getTextBounds(_btnText, 0, 0, &_textX, &_textY, &_textW, &_textH);
+
+  int _xPad;
+  int _yPad;
+  int _xPos;
+  int _yPos;
+
+  // find space left over after text added
+  // divide by two to get x and y padding
+  _xPad = (_btnW - _textW) / 2;
+  _yPad = (_btnH - _textH) / 2;
+
+  // centre align text
+  _xPos = _btnX + _xPad;
+  _yPos = _btnY - _yPad;
+
+  // get previous text string and colour for this button
+  String _prevText = getPreviousText();
+  int _buttonColour = getButtonColour();
+
+  int16_t _prevTextX, _prevTextY;
+  uint16_t _prevTextW, _prevTextH;
+  // get size of previous text string
+  _tft.getTextBounds(_prevText, 0, 0, &_prevTextX, &_prevTextY, &_prevTextW, &_prevTextH);
+  Serial.println(_buttonColour);
+  // calculate previous text x,y co-ordinates
+  int _prevXPos = _btnX + ((_btnW - _prevTextW) / 2) + _prevTextX;
+  // rect drawn from top left, so use prexTextY position as it is normalised against 0
+  int _prevYPos = _btnY - ((_btnH - _prevTextH) / 2) + _prevTextY;
+  // fill over previous text value
+  _tft.fillRect(_prevXPos, _prevYPos, _prevTextW, _prevTextH, _buttonColour);
+  // set new value as previous value
+  setPreviousText(_btnText);
+
+  _tft.setTextColor(_colour);
+  _tft.setCursor(_xPos, _yPos);
+  _tft.print(_btnText);
+}
+
+
+/******************************************************
+/          Bottom centre align text on button
+******************************************************/
+void gfxButton::writeTextBottomCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour) {
+  int _btnX = x;
+  int _btnY = y + 2;    // text is printed from bottom left so add height value to y
+  int _btnW = w;
+  int _btnH = (h / 2);  // treat button as if it is only half the height
+
+  int16_t _textX, _textY;
+  uint16_t _textW, _textH;
+  // set font to get text size
+  _tft.setFont(&_font);
+  // set cursor to 0 as only text box dimensions required
+  _tft.getTextBounds(_btnText, 0, 0, &_textX, &_textY, &_textW, &_textH);
+
+  int _xPad;
+  int _yPad;
+  int _xPos;
+  int _yPos;
+
+  // find space left over after text added
+  // divide by two to get x and y padding
+  _xPad = (_btnW - _textW) / 2;
+  _yPad = (_btnH - _textH) / 2;
+
+  // centre align text
+  _xPos = _btnX + _xPad;
+  _yPos = _btnY - _yPad;
+
+  _tft.setTextColor(_colour);
+  _tft.setCursor(_xPos, _yPos);
+  _tft.print(_btnText);
+}
+
+
+/******************************************************
+/           Left align text on button
+******************************************************/
+void gfxButton::writeTextLeft(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour) {
+  int _btnX = x;
+  int _btnY = y + h; // text is printed from bottom left so add height value to y
+  int _btnW = w;
+  int _btnH = h;
+
+  int16_t _textX, _textY;
+  uint16_t _textW, _textH;
+  // set font to get text size
+  _tft.setFont(&_font);
+  // set cursor to 0 as only text box dimensions required
+  _tft.getTextBounds(_btnText, 0, 0, &_textX, &_textY, &_textW, &_textH);
+
+  int _yPad;
+  int _xPos;
+  int _yPos;
+
+  // find space left over after text added
+  // divide by two to y padding
+  _yPad = (_btnH - _textH) / 2;
+
+  // left align text
+  _xPos = _btnX + ceil(_btnW * 0.05);
+  _yPos = _btnY - _yPad;
+
+  _tft.setTextColor(_colour);
+  _tft.setCursor(_xPos, _yPos);
+  _tft.print(_btnText);
+}
+
+
+/******************************************************
+/           Right align text on button
+******************************************************/
+void gfxButton::writeTextRight(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour) {
+  int _btnX = x;
+  int _btnY = y + h; // text is printed from bottom left so add height value to y
+  int _btnW = w;
+  int _btnH = h;
+
+  int16_t _textX, _textY;
+  uint16_t _textW, _textH;
+  // set font to get text size
+  _tft.setFont(&_font);
+  // set cursor to 0 as only text box dimensions required
+  _tft.getTextBounds(_btnText, 0, 0, &_textX, &_textY, &_textW, &_textH);
+
+  int _yPad;
+  int _xPos;
+  int _yPos;
+
+  // find space left over after text added
+  // divide by two to get y padding
+  _yPad = (_btnH - _textH) / 2;
+
+  // right align text
+  _xPos = (_btnX + _btnW) - (_textW + ceil(_btnW * 0.05));
+  _yPos = _btnY - _yPad;
+
+  _tft.setTextColor(_colour);
+  _tft.setCursor(_xPos, _yPos);
+  _tft.print(_btnText);
+}
+
+
+/******************************************************
+/         Centre align text on circle button
+******************************************************/
+void gfxButton::writeTextCircle(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour) {
+  int _btnX = x;
+  int _btnY = y + h; // text is printed from bottom left so add height value to y
+
+  int16_t _textX, _textY;
+  uint16_t _textW, _textH;
+  // set font to get text size
+  _tft.setFont(&_font);
+  // set cursor to 0 as only text box dimensions required
+  _tft.getTextBounds(_btnText, 0, 0, &_textX, &_textY, &_textW, &_textH);
+
+  int _xPad;
+  int _yPad;
+  int _xPos;
+  int _yPos;
+
+  // for cicles, x and y define centre so divide
+  // text w/h by two to offset centre point
+  _xPad = (_textW / 2);
+  _yPad = (_textH / 2);
+
+  _xPos = _btnX - _xPad;
+  _yPos = _btnY + _yPad;
+
+  _tft.setTextColor(_colour);
+  _tft.setCursor(_xPos, _yPos);
+  _tft.print(_btnText);
+}
+
+
+String gfxButton::getPreviousText() {
+  return _previousText;
+}
+
+
+void gfxButton::setPreviousText(String _text) {
+  _previousText = _text;
+}
+
+
+int gfxButton::getButtonColour() {
+  return _buttonColour;
+}
+
+
+void gfxButton::setButtonColour(int _colour) {
+  _buttonColour = _colour;
 }
 
 

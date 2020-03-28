@@ -90,10 +90,10 @@ void setup(void) {
   drawButtons();
   // newButton2.writeText(tft, Arimo_Regular_24, String("Test Text"), WHITE, "c");
   // newButton3.writeText(tft, Arimo_Regular_24, String("Circle"), WHITE);
-  newButton1.writeText(tft, Arimo_Regular_24, String("Step Dist."), WHITE, "c");
-  newButton2.writeText(tft, Arimo_Regular_24, String("Step Nr"), WHITE, "c");
-  newButton3.writeText(tft, Arimo_Regular_24, String("Rail Pos"), WHITE, "c");
-  newButton4.writeText(tft, Arimo_Regular_24, String("Flash"), BLACK, "c");
+  newButton1.writeTextTopCentre(tft, Arimo_Regular_24, String("Step Dist."), WHITE);
+  newButton2.writeTextCentre(tft, Arimo_Regular_24, String("Step Nr"), WHITE);
+  newButton3.writeTextCentre(tft, Arimo_Regular_24, String("Rail Pos"), WHITE);
+  newButton4.writeTextCentre(tft, Arimo_Regular_24, String("Flash"), BLACK);
 
   // tft.drawBitmap(200, 150, newBitmap1.bitmap, 50, 50, CUSTOM_RED);
 }
@@ -172,10 +172,12 @@ void testFunction1(bool btnActive) {
   Serial.println("test function");
 
   if (btnActive == true) {
-    newButton1.drawButton(tft, CUSTOM_GREEN);
+    // newButton1.drawButton(tft, CUSTOM_GREEN);
+    newButton1.writeTextTopCentre(tft, Arimo_Regular_24, String("Something"), WHITE);
   }
   else {
-    newButton1.drawButton(tft, CUSTOM_RED);
+    // newButton1.drawButton(tft, CUSTOM_RED);
+    newButton1.writeTextTopCentre(tft, Arimo_Regular_24, String("Fuck"), WHITE);
   }
 }
 
@@ -185,11 +187,11 @@ void testFunction2(bool btnActive) {
 
   if (btnActive == true) {
     newButton2.drawButton(tft, CUSTOM_GREEN);
-    newButton2.writeText(tft, Arimo_Regular_24, String("Test Text"), WHITE, "l");
+    newButton2.writeTextLeft(tft, Arimo_Regular_24, String("Test Text"), WHITE);
   }
   else {
     newButton2.drawButton(tft, CUSTOM_RED);
-    newButton2.writeText(tft, Arimo_Regular_24, String("Button Text"), WHITE, "r");
+    newButton2.writeTextRight(tft, Arimo_Regular_24, String("Button Text"), WHITE);
   }
 }
 
@@ -199,11 +201,11 @@ void testFunction3(bool btnActive) {
 
   if (btnActive == true) {
     newButton3.drawButton(tft, CUSTOM_GREEN);
-    newButton3.writeText(tft, Arimo_Regular_24, String("Circle"), WHITE);
+    newButton3.writeTextCircle(tft, Arimo_Regular_24, String("Circle"), WHITE);
   }
   else {
     newButton3.drawButton(tft, CUSTOM_BLUE);
-    newButton3.writeText(tft, Arimo_Regular_24, String("Circle"), WHITE);
+    newButton3.writeTextCircle(tft, Arimo_Regular_24, String("Circle"), WHITE);
   }
 }
 
@@ -213,11 +215,11 @@ void testFunction4(bool btnActive) {
 
   if (btnActive == true) {
     newButton4.drawButton(tft, CUSTOM_GREEN);
-    newButton4.writeText(tft, Arimo_Regular_24, String("Circle"), WHITE);
+    newButton4.writeTextCircle(tft, Arimo_Regular_24, String("Circle"), WHITE);
   }
   else {
     newButton4.drawButton(tft, CUSTOM_BLUE);
-    newButton4.writeText(tft, Arimo_Regular_24, String("Circle"), WHITE);
+    newButton4.writeTextCircle(tft, Arimo_Regular_24, String("Circle"), WHITE);
   }
 }
 

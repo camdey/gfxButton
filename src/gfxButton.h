@@ -16,13 +16,24 @@ class gfxButton {
     gfxButton initBitmapButton(String screen, const unsigned char* bitmap, int x, int y, int w, int h, int defaultColour);
     void drawButton(MCUFRIEND_kbv _tft, int colour);
     void drawButton(MCUFRIEND_kbv _tft);
-    void writeText(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour, String _alignment = "c");
+    void writeTextCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour);
+    void writeTextTopCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour);
+    void writeTextBottomCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour);
+    void writeTextLeft(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour);
+    void writeTextRight(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour);
+    void writeTextCircle(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, int _colour);
+    void setPreviousText(String _text);
+    String getPreviousText();
+    void setButtonColour(int _colour);
+    int getButtonColour();
 
     String screen, buttonType;
     const unsigned char* bitmap;
     int x, y, w, h, r, colour, defaultColour;
 
   private:
+    String _previousText;
+    int _buttonColour;
 };
 
 class gfxTouch {
