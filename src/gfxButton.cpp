@@ -574,7 +574,7 @@ void gfxTouch::checkButton(String currentScreen, int touch_x, int touch_y) {
         Serial.println(name);
         lastTouched = currentTime;
         // set button state
-        setState(!getState());
+        setState(true); // momentary buttons are always active when pressed
         // run function tied to button
         runButtonFunction();
       }
