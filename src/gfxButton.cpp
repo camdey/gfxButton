@@ -191,7 +191,7 @@ void gfxButton::writeTextCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnTe
   _xPos = _btnX + _xPad;
   _yPos = _btnY - _yPad;
 
-  replaceButtonText(_tft, "centre", _btnX, _btnY, _textW, _btnH);
+  replaceButtonText(_tft, _btnText, "centre", _btnX, _btnY, _textW, _btnH);
   setPreviousText(_btnText);
 
   _tft.setTextColor(_colour);
@@ -227,7 +227,7 @@ void gfxButton::writeTextTopCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _bt
   _xPos = _btnX + _xPad;
   _yPos = _btnY - _yPad;
 
-  replaceButtonText(_tft, "centre", _btnX, _btnY, _btnW, _btnH);
+  replaceButtonText(_tft, _btnText, "centre", _btnX, _btnY, _btnW, _btnH);
   setPreviousText(_btnText);
 
   _tft.setTextColor(_colour);
@@ -241,7 +241,7 @@ void gfxButton::writeTextTopCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _bt
 ******************************************************/
 void gfxButton::writeTextBottomCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour) {
   int _btnX = x;
-  int _btnY = y + 2;    // text is printed from bottom left so add height value to y
+  int _btnY = y + h;    // text is printed from bottom left so add height value to y
   int _btnW = w;
   int _btnH = (h / 2);  // treat button as if it is only half the height
 
@@ -263,7 +263,7 @@ void gfxButton::writeTextBottomCentre(MCUFRIEND_kbv _tft, GFXfont _font, String 
   _xPos = _btnX + _xPad;
   _yPos = _btnY - _yPad;
 
-  replaceButtonText(_tft, "centre", _btnX, _btnY, _btnW, _btnH);
+  replaceButtonText(_tft, _btnText, "centre", _btnX, _btnY, _btnW, _btnH);
   setPreviousText(_btnText);
 
   _tft.setTextColor(_colour);
@@ -298,7 +298,7 @@ void gfxButton::writeTextLeft(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText
   _xPos = _btnX + ceil(_btnW * 0.05);
   _yPos = _btnY - _yPad;
 
-  replaceButtonText(_tft, "left", _btnX, _btnY, _btnW, _btnH);
+  replaceButtonText(_tft, _btnText, "left", _btnX, _btnY, _btnW, _btnH);
   setPreviousText(_btnText);
 
   _tft.setTextColor(_colour);
@@ -333,7 +333,7 @@ void gfxButton::writeTextRight(MCUFRIEND_kbv _tft, GFXfont _font, String _btnTex
   _xPos = (_btnX + _btnW) - (_textW + ceil(_btnW * 0.05));
   _yPos = _btnY - _yPad;
 
-  replaceButtonText(_tft, "right", _btnX, _btnY, _btnW, _btnH);
+  replaceButtonText(_tft, _btnText, "right", _btnX, _btnY, _btnW, _btnH);
   setPreviousText(_btnText);
 
   _tft.setTextColor(_colour);
@@ -366,7 +366,7 @@ void gfxButton::writeTextCircle(MCUFRIEND_kbv _tft, GFXfont _font, String _btnTe
   _xPos = _btnX - _xPad;
   _yPos = _btnY + _yPad;
 
-  replaceButtonText(_tft, "centre", _btnX, _btnY);
+  replaceButtonText(_tft, _btnText, "centre", _btnX, _btnY);
   setPreviousText(_btnText);
 
   _tft.setTextColor(_colour);
@@ -380,11 +380,12 @@ void gfxButton::writeTextCircle(MCUFRIEND_kbv _tft, GFXfont _font, String _btnTe
 / Replaces the previous text on a button with the
 / colour of the button before new text is written to it
 ******************************************************/
-void gfxButton::replaceButtonText(MCUFRIEND_kbv _tft, String aligned, int _btnX, int _btnY, int _btnW, int _btnH) {
+void gfxButton::replaceButtonText(MCUFRIEND_kbv _tft, String _newText, String _aligned, int _btnX, int _btnY, int _btnW, int _btnH) {
   // get previous text string and colour for this button
   String _prevText = getPreviousText();
-  // only replace if there is text to replace
-  if (_prevText.length() > 0) {
+
+  // only replace if there is text to replace and it's different from current text
+  if (_prevText.length() > 0 && _prevText != _newText) {
     unsigned long _buttonColour = getButtonColour();
     Serial.print("color: ");
     Serial.println(_buttonColour);
@@ -395,17 +396,29 @@ void gfxButton::replaceButtonText(MCUFRIEND_kbv _tft, String aligned, int _btnX,
 
     // calculate previous text x,y co-ordinates
     int _prevXPos, _prevYPos;
-    if (aligned == "centre") {
+    if (_aligned == "centre") {
       _prevXPos = _btnX + (abs(_btnW - _textW) / 2) + _textX;
       _prevYPos = _btnY - (abs(_btnH - _textH) / 2) + _textY;
     }
-    else if (aligned == "left") {
+    else if (_aligned == "left") {
       _prevXPos = _btnX + ceil(_btnW * 0.05) + _textX;
       _prevYPos = _btnY - (abs(_btnH - _textH) / 2) + _textY;
     }
-    else if (aligned == "right") {;
+    else if (_aligned == "right") {;
       _prevXPos = (_btnX + _btnW) - (_textW + ceil(_btnW * 0.05)) + _textX;
       _prevYPos = _btnY - (abs(_btnH - _textH) / 2) + _textY;
+    }
+
+    int btn_x_right = (_btnX + _btnW);
+    int txt_x_right = (_prevXPos + _textW);
+    int btn_y_bottom = (_btnY + _btnH);
+    int txt_y_bottom = (_prevYPos + _textH);
+    // if box fill larger than btn dimensions, fix
+    if (txt_x_right > btn_x_right) {
+      _textW = _textW - (txt_x_right - btn_x_right);
+    }
+    if (txt_y_bottom > btn_y_bottom) {
+      _textH = _textH - (txt_y_bottom - btn_y_bottom);
     }
 
     // fill over previous text value
@@ -425,6 +438,9 @@ void gfxButton::setPreviousText(String _text) {
 
 
 int gfxButton::getButtonColour() {
+  if (_buttonColour == 0) {
+    _buttonColour = defaultColour;
+  }
   return _buttonColour;
 }
 

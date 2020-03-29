@@ -22,7 +22,7 @@ class gfxButton {
     void writeTextLeft(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
     void writeTextRight(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
     void writeTextCircle(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
-    void replaceButtonText(MCUFRIEND_kbv _tft, String aligned, int _btnX, int _btnY, int _btnW = 0, int _btnH = 0);
+    void replaceButtonText(MCUFRIEND_kbv _tft, String _newText, String _aligned, int _btnX, int _btnY, int _btnW = 0, int _btnH = 0);
     void setPreviousText(String _text);
     String getPreviousText();
     void setButtonColour(unsigned long _colour);
