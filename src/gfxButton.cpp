@@ -570,8 +570,6 @@ void gfxTouch::checkButton(String currentScreen, int touch_x, int touch_y) {
   if (touchType == "momentary") {
     if (screen == currentScreen && (currentTime - lastTouched >= g_momentary_delay)) {
       if ((touch_x >= xMin && touch_x <= xMax) && (touch_y >= yMin && touch_y <= yMax)) {
-        Serial.print("touch detected on button: ");
-        Serial.println(name);
         lastTouched = currentTime;
         // set button state
         setState(true); // momentary buttons are always active when pressed
@@ -583,8 +581,6 @@ void gfxTouch::checkButton(String currentScreen, int touch_x, int touch_y) {
   else if (touchType == "toggle" && _coolOff == false) {
     if (screen == currentScreen && (currentTime - lastTouched >= g_toggle_delay)) {
       if ((touch_x >= xMin && touch_x <= xMax) && (touch_y >= yMin && touch_y <= yMax)) {
-        Serial.print("touch detected on button: ");
-        Serial.println(name);
         lastTouched = currentTime;
         // set button state
         setState(!getState());

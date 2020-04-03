@@ -19,10 +19,17 @@
 #define CUSTOM_GREY					0xCE7A
 #define CUSTOM_GREY_LITE		0xDEFB
 
-#define TS_MINX 					839
-#define TS_MAXX 					148
-#define TS_MINY 					935
-#define TS_MAXY 					144
+// grand central M4 + 3.5" TFT
+// #define TS_MINX 					846
+// #define TS_MAXX 					148
+// #define TS_MINY 					937
+// #define TS_MAXY 					140
+
+// grand central M4 + 2.8" TFT
+#define TS_MINX 					320
+#define TS_MAXX 					760
+#define TS_MINY 					235
+#define TS_MAXY 					810
 
 // pin definitions for touch inputs
 #define YP 								A3 						// must be an analog pin, use "An" notation!
@@ -147,12 +154,14 @@ void initButtons() {
 
 
 void drawButtons() {
-  for(int i=0; i < arrayElements; i++) {
-    if (buttonArray[i].screen == "testPage") {
-      buttonArray[i].drawButton(tft); // calling btn via array creates new scope :|
-      // newButton1.drawButton(tft);
-    }
-  }
+  // for(int i=0; i < arrayElements; i++) {
+  //   if (buttonArray[i].screen == "testPage") {
+  //     buttonArray[i].drawButton(tft); // calling btn via array creates new scope :|
+  //     // newButton1.drawButton(tft);
+  //   }
+  // }
+
+  tft.drawRect(160, 120, 100, 60, CUSTOM_RED);
 }
 
 
@@ -163,23 +172,30 @@ void buttonCheck(String currentScreen) {
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
 
-  int touch_x = map(point.y, 937, 140, 0, 480);
-  int touch_y = map(point.x, 846, 148, 0, 320);
+
+  int touch_x = map(point.y, TS_MINY, TS_MAXY, 0, tft.width());
+  int touch_y = map(point.x, TS_MINX, TS_MAXX, 0, tft.height());
   int touch_z = point.z;
 
   if (touch_z >= 100 && touch_z <= 1000) {
-    for (int i=0; i < arrayElements; i++) {
-      touchArray[i].checkButton(currentScreen, touch_x, touch_y);
-    }
+
+    Serial.print("point.y: "); Serial.print(point.y);
+    Serial.print("   touch.x: ");Serial.println(touch_x);
+    Serial.print("point.x: "); Serial.print(point.x);
+    Serial.print("   touch.y: ");Serial.println(touch_y);
+
+    // for (int i=0; i < arrayElements; i++) {
+    //   touchArray[i].checkButton(currentScreen, touch_x, touch_y);
+    // }
   }
   // allow toggling button again once touch pressure zeroed
-  if (touch_z == 0) {
-    for (int i=0; i < arrayElements; i++) {
-      if (touchArray[i].touchType == "toggle") {
-        touchArray[i].toggleCoolOff();
-      }
-    }
-  }
+  // if (touch_z == 0) {
+  //   for (int i=0; i < arrayElements; i++) {
+  //     if (touchArray[i].touchType == "toggle") {
+  //       touchArray[i].toggleCoolOff();
+  //     }
+  //   }
+  // }
 }
 
 
