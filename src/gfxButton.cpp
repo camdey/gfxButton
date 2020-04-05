@@ -191,7 +191,7 @@ void gfxButton::writeTextCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnTe
   _xPos = _btnX + _xPad;
   _yPos = _btnY - _yPad;
 
-  replaceButtonText(_tft, _btnText, "centre", _btnX, _btnY, _textW, _btnH);
+  replaceButtonText(_tft, _btnText, "centre", _btnX, _btnY, _btnW, _btnH);
   setPreviousText(_btnText);
 
   _tft.setTextColor(_colour);
