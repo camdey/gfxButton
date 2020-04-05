@@ -140,16 +140,6 @@ void initButtons() {
   touchArray[2] = newTouch3;
   touchArray[3] = newTouch4;
   touchArray[4] = newTouch5;
-
-  Serial.println(newTouch4.name);
-  Serial.print("xmin: ");
-  Serial.println(newTouch4.xMin);
-  Serial.print("xmax: ");
-  Serial.println(newTouch4.xMax);
-  Serial.print("ymin: ");
-  Serial.println(newTouch4.yMin);
-  Serial.print("ymax: ");
-  Serial.println(newTouch4.yMax);
 }
 
 

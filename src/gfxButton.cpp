@@ -387,8 +387,7 @@ void gfxButton::replaceButtonText(MCUFRIEND_kbv _tft, String _newText, String _a
   // only replace if there is text to replace and it's different from current text
   if (_prevText.length() > 0 && _prevText != _newText) {
     unsigned long _buttonColour = getButtonColour();
-    Serial.print("color: ");
-    Serial.println(_buttonColour);
+    unsigned long _backgroundColour = getBackgroundColour();
     int16_t _textX, _textY;
     uint16_t _textW, _textH;
     // get size of previous text string
@@ -421,8 +420,13 @@ void gfxButton::replaceButtonText(MCUFRIEND_kbv _tft, String _newText, String _a
       _textH = _textH - (txt_y_bottom - btn_y_bottom);
     }
 
-    // fill over previous text value
-    _tft.fillRect(_prevXPos, _prevYPos, _textW, _textH, _buttonColour);
+    // if button type not a fill, use specified background colour to fill over previous text
+    if (buttonType == "drawRect" || buttonType == "drawRoundRect" || buttonType == "drawCircle") {
+      _tft.fillRect(_prevXPos, _prevYPos, _textW, _textH, _backgroundColour);
+    }
+    else {
+      _tft.fillRect(_prevXPos, _prevYPos, _textW, _textH, _buttonColour);
+    }
   }
 }
 
@@ -437,7 +441,7 @@ void gfxButton::setPreviousText(String _text) {
 }
 
 
-int gfxButton::getButtonColour() {
+unsigned long gfxButton::getButtonColour() {
   if (_buttonColour == 0) {
     _buttonColour = defaultColour;
   }
@@ -447,6 +451,23 @@ int gfxButton::getButtonColour() {
 
 void gfxButton::setButtonColour(unsigned long _colour) {
   _buttonColour = _colour;
+}
+
+/******************************************************
+/           Declare Background Colour
+/ Declare background colour variable as it is global.
+/ Used to fill over text when the button type is an
+/ outline of a shape and not a solid shape.
+******************************************************/
+unsigned long gfxButton::g_backgroundColour = 0x0000;
+
+unsigned long gfxButton::getBackgroundColour() {
+  return g_backgroundColour;
+}
+
+
+void gfxButton::setBackgroundColour(unsigned long _colour) {
+  g_backgroundColour = _colour;
 }
 
 
@@ -565,42 +586,26 @@ void gfxTouch::setTouchBoundary(int _x, int _y, int _w, int _h, int _r, int _per
 / trigger.
 ******************************************************/
 void gfxTouch::checkButton(String currentScreen, int touch_x, int touch_y) {
-  unsigned long currentTime = millis();
-
-  if (touchType == "momentary") {
-    if (screen == currentScreen && (currentTime - lastTouched >= g_momentary_delay)) {
-      if ((touch_x >= xMin && touch_x <= xMax) && (touch_y >= yMin && touch_y <= yMax)) {
-        lastTouched = currentTime;
+  if ((touch_x >= xMin && touch_x <= xMax) && (touch_y >= yMin && touch_y <= yMax)) {
+    if (touchType == "momentary") {
+      if (screen == currentScreen && (millis() - lastTouched >= g_momentaryDelay)) {
+        lastTouched = millis();
         // set button state
         setState(true); // momentary buttons are always active when pressed
         // run function tied to button
         runButtonFunction();
       }
     }
-  }
-  else if (touchType == "toggle" && _coolOff == false) {
-    if (screen == currentScreen && (currentTime - lastTouched >= g_toggle_delay)) {
-      if ((touch_x >= xMin && touch_x <= xMax) && (touch_y >= yMin && touch_y <= yMax)) {
-        lastTouched = currentTime;
+    else if (touchType == "toggle") {
+      if (screen == currentScreen && (millis() - lastTouched >= g_toggleDelay)) {
+        lastTouched = millis();
         // set button state
         setState(!getState());
-        // don't allow toggle again until touch pressure is zeroed
-        _coolOff = true;
         // run function tied to button
         runButtonFunction();
       }
     }
   }
-}
-
-
-/******************************************************
-/            Cool Off Period for Toggles
-/ Toggle buttons require a pressure reading of 0 before
-/ the user can toggle that button again.
-******************************************************/
-void gfxTouch::toggleCoolOff() {
-  _coolOff = false;
 }
 
 
@@ -637,16 +642,16 @@ void gfxTouch::setState(bool btnActive) {
 / buttons. These values are shared across instances and
 / will be used by all buttons of that type.
 ******************************************************/
-unsigned long gfxTouch::g_toggle_delay = 0;
-unsigned long gfxTouch::g_momentary_delay = 0;
+unsigned long gfxTouch::g_toggleDelay = 0;
+unsigned long gfxTouch::g_momentaryDelay = 0;
 
 
 /******************************************************
 /              Set Debouncing Delay Values
 / Set debouncing delay for toggle buttons.
 ******************************************************/
-void gfxTouch::setToggleDebounce(unsigned long toggle_delay) {
-  g_toggle_delay = toggle_delay;
+void gfxTouch::setToggleDebounce(unsigned long toggleDelay) {
+  g_toggleDelay = toggleDelay;
 }
 
 
@@ -654,6 +659,6 @@ void gfxTouch::setToggleDebounce(unsigned long toggle_delay) {
 /              Set Debouncing Delay Values
 / Set debouncing delay for momentary buttons.
 ******************************************************/
-void gfxTouch::setMomentaryDebounce(unsigned long momentary_delay) {
-  g_momentary_delay = momentary_delay;
+void gfxTouch::setMomentaryDebounce(unsigned long momentaryDelay) {
+  g_momentaryDelay = momentaryDelay;
 }

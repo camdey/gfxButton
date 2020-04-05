@@ -26,7 +26,9 @@ class gfxButton {
     void setPreviousText(String _text);
     String getPreviousText();
     void setButtonColour(unsigned long _colour);
-    int getButtonColour();
+    unsigned long getButtonColour();
+    void setBackgroundColour(unsigned long _colour);
+    unsigned long getBackgroundColour();
 
     String screen, buttonType;
     const unsigned char* bitmap;
@@ -36,6 +38,7 @@ class gfxButton {
   private:
     String _previousText;
     unsigned long _buttonColour;
+    static unsigned long g_backgroundColour;
 };
 
 class gfxTouch {
@@ -49,9 +52,8 @@ class gfxTouch {
     void runButtonFunction();
     bool getState();
     void setState(bool btnActive);
-    void setToggleDebounce(unsigned long toggle_delay);
-    void setMomentaryDebounce(unsigned long momentary_delay);
-    void toggleCoolOff();
+    void setToggleDebounce(unsigned long toggleDelay);
+    void setMomentaryDebounce(unsigned long momentaryDelay);
 
     int percent;
     int xMin, xMax, yMin, yMax;
@@ -62,9 +64,9 @@ class gfxTouch {
     TSPoint _point;
     int _xMin, _xMax, _yMin, _yMax;
     int touch_x, touch_y;
-    bool _btnActive, _coolOff;
-    unsigned long lastTouched, toggle_delay, momentary_delay;
-    static unsigned long g_toggle_delay, g_momentary_delay;
+    bool _btnActive;
+    unsigned long lastTouched, toggleDelay, momentaryDelay;
+    static unsigned long g_toggleDelay, g_momentaryDelay;
 };
 
 #endif
