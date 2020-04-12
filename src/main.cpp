@@ -2,7 +2,7 @@
 #include "MCUFRIEND_kbv.h"
 #include "TouchScreen.h"
 #include "Arimo_Regular_24.h"
-#include "Aperture_Icon.h"
+#include "Aperture.h"
 
 #define LCD_CS A3 // Chip Select goes to Analog 3
 #define LCD_CD A2 // Command/Data goes to Analog 2
@@ -167,7 +167,7 @@ void buttonCheck(String currentScreen) {
   int touch_y = map(point.x, TS_MINX, TS_MAXX, 0, tft.height());
   int touch_z = point.z;
 
-  if (touch_z >= 100 && touch_z <= 1000) {
+  if (touch_z >= 50 && touch_z <= 1000) {
 
     Serial.print("point.y: "); Serial.print(point.y);
     Serial.print("   touch.x: ");Serial.println(touch_x);
