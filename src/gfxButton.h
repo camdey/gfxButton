@@ -62,11 +62,14 @@ class gfxTouch {
     void setState(bool btnActive);
     void setToggleDebounce(unsigned long toggleDelay);
     void setMomentaryDebounce(unsigned long momentaryDelay);
+    void setToggleFlag(bool _active);
+    bool getToggleFlag();
 
     int percent;
     int xMin, xMax, yMin, yMax;
     String screen, name, touchType;
     void (*btnFunc)(bool state);
+    static bool g_toggleActive;
 
   private:
     TSPoint _point;

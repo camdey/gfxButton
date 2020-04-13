@@ -132,6 +132,7 @@ void gfxButton::drawButton(MCUFRIEND_kbv _tft) {
 
   // store button colour, used for overwriting text
   setButtonColour(defaultColour);
+
   if (_hasBorder == true) {
     for (int i = 0; i < _borderWidth; i++) {
       int _x = x + i;
@@ -750,11 +751,14 @@ void gfxTouch::checkButton(String currentScreen, int touch_x, int touch_y) {
           runButtonFunction();
         }
       }
-      else if (touchType == "toggle") {
+      else if (touchType == "toggle" && getToggleFlag() == false) {
         if (millis() - lastTouched >= g_toggleDelay) {
           lastTouched = millis();
           // set button state
           setState(!getState());
+          // set toggle flag state
+          // will be reset on client side
+          setToggleFlag(true);
           // run function tied to button
           runButtonFunction();
         }
@@ -816,4 +820,25 @@ void gfxTouch::setToggleDebounce(unsigned long toggleDelay) {
 ******************************************************/
 void gfxTouch::setMomentaryDebounce(unsigned long momentaryDelay) {
   g_momentaryDelay = momentaryDelay;
+}
+
+// delcare and initialise global variable for toggle state
+bool gfxTouch::g_toggleActive = false;
+
+/******************************************************
+/              Set Toggle Flag
+/ Set debouncing delay for toggle buttons.
+******************************************************/
+void gfxTouch::setToggleFlag(bool _active) {
+  g_toggleActive = _active;
+}
+
+
+/******************************************************
+/              Get Toggle Flag
+/ Get state of toggle flag. Set when a toggle button
+/ is active and needs to be reset by 0 touch reading.
+******************************************************/
+bool gfxTouch::getToggleFlag() {
+  return g_toggleActive;
 }
