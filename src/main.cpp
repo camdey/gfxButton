@@ -2,7 +2,7 @@
 #include "MCUFRIEND_kbv.h"
 #include "TouchScreen.h"
 #include "Arimo_Regular_24.h"
-#include "Aperture.h"
+#include "Aperture_Icon.h"
 
 #define LCD_CS A3 // Chip Select goes to Analog 3
 #define LCD_CD A2 // Command/Data goes to Analog 2
