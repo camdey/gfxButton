@@ -6,6 +6,7 @@
 #include "SPI.h"
 #include "MCUFRIEND_kbv.h"
 #include "TouchScreen.h"
+#include "Wire.h"
 
 class gfxButton {
   public:
