@@ -4,6 +4,12 @@
 
 using namespace test_screen;
 String currentScreen = "Test"; // set current screen shown to user
+int xVal = 0, yVal = 0;
+void readXStick();
+void readYStick();
+int getDirection(int val);
+int xDirection = 0;
+int yDirection = 0;
 
 void initButtons(unsigned long toggleDebounce, unsigned long momentaryDebounce) {
   gfxB.setBackgroundColour(BLACK);
@@ -41,8 +47,10 @@ void checkButtons(String screen) {
   
   if (touch_z >= 50 && touch_z <= 1000) {
     if ((touch_x > 0 && touch_x <= tft.width()) && (touch_y > 0 && touch_y <= tft.height())) {
+      // Serial.print("touch_x: "); Serial.print(touch_x);
+      // Serial.print(" | touch_y: "); Serial.println(touch_y);
       if (screen == "Test") {
-        checkTestButtons(touch_x, touch_y);
+        test_screen::checkTestButtons(touch_x, touch_y);
       }
     }
   }
@@ -53,6 +61,46 @@ void checkButtons(String screen) {
   }
 }
 
+
+void checkNavigation(String screen) {
+  readXStick();
+  readYStick();
+  Serial.print("xDir: "); Serial.print(xDirection);
+  Serial.print(" | yDir: "); Serial.println(yDirection);
+  if (screen == "Test") {
+    test_screen::testScreenNav();
+  }
+}
+
+
+void readXStick() {
+  xVal = analogRead(joystickX);
+  Serial.print("X: "); Serial.print(xVal);
+
+  xDirection = getDirection(xVal);
+}
+
+void readYStick() {
+  yVal = analogRead(joystickY);
+  Serial.print(" | Y: "); Serial.println(yVal);
+
+  yDirection = getDirection(yVal);
+}
+
+
+int getDirection(int val) {
+  // x left or y up
+  if (val < 50) {
+    return -1;
+  }
+  // x right or y down
+  else if (val > 900) {
+    return 1;
+  }
+  else {
+    return 0;
+  }
+}
 
 // Set the current screen displayed to the user
 void setCurrentScreen(String screen) {

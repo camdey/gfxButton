@@ -24,6 +24,7 @@ gfxButton::gfxButton(String _drawType, int _x, int _y, int _w, int _h, int _r, u
   r = _r;
   defaultColour = _defaultColour;
   screen = _screen;
+  isBitmapButton = false;
 }
 
 
@@ -42,6 +43,7 @@ gfxButton::gfxButton(int _x, int _y, int _w, int _h, String _screen) {
   r = 0;
   defaultColour = 0;
   screen = _screen;
+  isBitmapButton = false;
 }
 
 
@@ -61,6 +63,7 @@ gfxButton::gfxButton(const unsigned char* _bitmap, int _x, int _y, int _w, int _
   r = 0;
   defaultColour = _defaultColour;
   screen = _screen;
+  isBitmapButton = true;
 }
 
 
@@ -134,23 +137,7 @@ void gfxButton::drawButton(MCUFRIEND_kbv _tft) {
   setButtonColour(defaultColour);
 
   if (_hasBorder == true) {
-    for (int i = 0; i < _borderWidth; i++) {
-      int _x = x + i;
-      int _y = y + i;
-      int _w = w - i*2;
-      int _h = h - i*2;
-      int _r = r - i;
-
-      if (drawType == "fillRect") {
-        _tft.drawRect(_x, _y, _w, _h, _borderColour);
-      }
-      else if (drawType == "fillRoundRect") {
-        _tft.drawRoundRect(_x, _y, _w, _h, _r, _borderColour);
-      }
-      else if (drawType == "fillCircle") {
-        _tft.drawCircle(x, y, _r, _borderColour);
-      }
-    }
+    drawBorder(_tft, _borderWidth, _borderColour);
   }
 }
 
@@ -195,23 +182,7 @@ void gfxButton::drawButton(MCUFRIEND_kbv _tft, unsigned long _colour) {
   setButtonColour(_colour);
 
   if (_hasBorder == true) {
-    for (int i = 0; i < _borderWidth; i++) {
-      int _x = x + i;
-      int _y = y + i;
-      int _w = w - i*2;
-      int _h = h - i*2;
-      int _r = r - i;
-
-      if (drawType == "fillRect") {
-        _tft.drawRect(_x, _y, _w, _h, _borderColour);
-      }
-      else if (drawType == "fillRoundRect") {
-        _tft.drawRoundRect(_x, _y, _w, _h, _r, _borderColour);
-      }
-      else if (drawType == "fillCircle") {
-        _tft.drawCircle(x, y, _r, _borderColour);
-      }
-    }
+    drawBorder(_tft, _borderWidth, _borderColour);
   }
 }
 
@@ -239,6 +210,49 @@ void gfxButton::addBorder(int _width, unsigned long _colour) {
     _borderWidth = _width;
     _borderColour = _colour;
   }
+}
+
+
+void gfxButton::drawBorder(MCUFRIEND_kbv _tft, int _width, unsigned long _colour) {
+  if (!isBitmapButton) {
+    for (int i = 0; i < _width; i++) {
+      int _x = x + i;
+      int _y = y + i;
+      int _w = w - i*2;
+      int _h = h - i*2;
+      int _r = r - i;
+
+      if (drawType == "fillRect") {
+        _tft.drawRect(_x, _y, _w, _h, _colour);
+      }
+      else if (drawType == "fillRoundRect") {
+        _tft.drawRoundRect(_x, _y, _w, _h, _r, _colour);
+      }
+      else if (drawType == "fillCircle") {
+        _tft.drawCircle(x, y, _r, _colour);
+      }
+    }
+  }
+  else if (isBitmapButton) {
+    int _borderX = x - 5;
+    int _borderY = y - 5;
+    int _borderW = w + 5*2;
+    int _borderH = h + 5*2;
+     _tft.drawRect(_borderX, _borderY, _borderW, _borderH, _colour);
+  }
+}
+
+
+void gfxButton::drawBorder(MCUFRIEND_kbv _tft, int _width) {
+  // if no colour specified use background colour
+  unsigned long _colour = getBackgroundColour();
+  // but if button has a border use default values
+  if (_hasBorder) {
+    _colour = _borderColour;
+    _width = _borderWidth;
+  }
+  Serial.print("has border: ");Serial.println(_hasBorder);
+  drawBorder(_tft, _width, _colour);
 }
 
 
@@ -549,7 +563,7 @@ void gfxButton::replaceButtonText(MCUFRIEND_kbv _tft, String _newText, String _a
     // get size of previous text string
     _tft.getTextBounds(_prevText, 0, 0, &_textX, &_textY, &_textW, &_textH);
     // calculate previous text x,y co-ordinates
-    int _prevXPos, _prevYPos;
+    int _prevXPos = 0, _prevYPos = 0;
     if (_aligned == "centre") {
       _prevXPos = _btnX + (abs(_btnW - _textW) / 2) + _textX;
       _prevYPos = _btnY - (abs(_btnH - _textH) / 2) + _textY;
@@ -563,10 +577,10 @@ void gfxButton::replaceButtonText(MCUFRIEND_kbv _tft, String _newText, String _a
       _prevYPos = _btnY - (abs(_btnH - _textH) / 2) + _textY;
     }
 
-    int btn_x_right = (_btnX + _btnW);
-    int txt_x_right = (_prevXPos + _textW);
-    int btn_y_bottom = (_btnY + _btnH);
-    int txt_y_bottom = (_prevYPos + _textH);
+    int btn_x_right = _btnX + _btnW;
+    int txt_x_right = _prevXPos + _textW;
+    int btn_y_bottom = _btnY + _btnH;
+    int txt_y_bottom = _prevYPos + _textH;
     // if box fill larger than btn dimensions, fix
     if (txt_x_right > btn_x_right) {
       _textW = _textW - (txt_x_right - btn_x_right);
@@ -737,9 +751,12 @@ void gfxTouch::setTouchBoundary(int _x, int _y, int _w, int _h, int _r, int _per
 / trigger.
 ******************************************************/
 void gfxTouch::checkButton(String currentScreen, int touch_x, int touch_y) {
-  // if not screen value provided, use currentScreen to bypass check
+  // if no screen value provided, use currentScreen to bypass check
   screen = (screen == "") ? currentScreen : screen;
-
+  Serial.print("xMin: "); Serial.print(xMin);
+  Serial.print(" | xMax: "); Serial.print(xMax);
+  Serial.print(" | yMin: "); Serial.print(yMin);
+  Serial.print(" | yMax: "); Serial.println(yMax);
   if (screen == currentScreen) {
     if ((touch_x >= xMin && touch_x <= xMax) && (touch_y >= yMin && touch_y <= yMax)) {
       if (touchType == "momentary") {

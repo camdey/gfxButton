@@ -14,13 +14,15 @@ class gfxButton {
     gfxButton(int _x, int _y, int _w, int _h, String _screen);
     gfxButton(String drawType, int _x, int _y, int _w, int _h, int _r, unsigned long _defaultColour, String _screen);
     gfxButton(const unsigned char* _bitmap, int _x, int _y, int _w, int _h, unsigned long _defaultColour, String _screen);
-    gfxButton initBlankButton(int x, int y, int w, int h, String _screen = "");
-    gfxButton initButton(String drawType, int x, int y, int w, int h, int r, unsigned long _defaultColour, String _screen = "");
-    gfxButton initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long _defaultColour, String _screen = "");
+    gfxButton initBlankButton(int _x, int _y, int _w, int _h, String _screen = "");
+    gfxButton initButton(String _drawType, int _x, int _y, int _w, int _h, int _r, unsigned long _defaultColour, String _screen = "");
+    gfxButton initBitmapButton(const unsigned char* _bitmap, int _x, int _y, int _w, int _h, unsigned long _defaultColour, String _screen = "");
     void drawButton(MCUFRIEND_kbv _tft);
     void drawButton(MCUFRIEND_kbv _tft, unsigned long _colour);
     void drawNewBitmap(MCUFRIEND_kbv _tft, const unsigned char* _bitmap, unsigned long _colour);
     void addBorder(int _width, unsigned long _colour);
+    void drawBorder(MCUFRIEND_kbv _tft, int _width);
+    void drawBorder(MCUFRIEND_kbv _tft, int _width, unsigned long _colour);
     void writeTextCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
     void writeTextTopCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
     void writeTextBottomCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
@@ -41,6 +43,7 @@ class gfxButton {
     const unsigned char* bitmap;
     int x, y, w, h, r;
     unsigned long colour, defaultColour;
+    bool isBitmapButton;
 
   private:
     String _previousText;

@@ -35,10 +35,10 @@
 #define CUSTOM_YELLOW                   0xFF46
 
 // grand central M4 + 3.5" TFT
-#define TS_MINX 			    846
-#define TS_MAXX 				148
-#define TS_MINY 				937
-#define TS_MAXY 				140
+#define TS_MINX 					760
+#define TS_MAXX 					315
+#define TS_MINY 					852
+#define TS_MAXY 					220
 
 // grand central M4 + 2.8" TFT
 // #define TS_MINX 					320
@@ -64,5 +64,10 @@ extern gfxButton       gfxB;
 extern gfxTouch        gfxT;
 extern MCUFRIEND_kbv   tft;
 extern TouchScreen	    ts;
+
+extern int xDirection;
+extern int yDirection;
+#define joystickX A14
+#define joystickY A15
 
 #endif

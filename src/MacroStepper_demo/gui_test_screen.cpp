@@ -7,6 +7,7 @@ namespace test_screen {
   #define num_tchs 6
   gfxButton *btn_array[num_btns];
   gfxTouch  *tch_array[num_tchs];
+  // gfxButton *nav_array[3][3];
 
   String stepNr;
   String railPos;
@@ -17,6 +18,8 @@ namespace test_screen {
   int stepsPerMovement = 0;
   float distancePerMovement;
   long currentPosition = 0;
+  int rowNr = 0; // keep track of row
+  int colNr = 0; // keep track of column
 
 
   gfxButton btn_StepDistance =   gfxB.initButton(       "fillRoundRect",     0,   20,  160,   80,  15,  CUSTOM_BLUE  );
@@ -31,12 +34,23 @@ namespace test_screen {
   gfxButton btn_Back         =   gfxB.initBitmapButton( backArrow,         220,  220,   80,   80,       WHITE        );
   gfxButton btn_ArrowUp      =   gfxB.initBitmapButton( arrowUp,           350,   20,  120,  120,       CUSTOM_GREEN );
   gfxButton btn_ArrowDown    =   gfxB.initBitmapButton( arrowDown,         350,  180,  120,  120,       CUSTOM_RED   );
+
   gfxTouch  tch_StepDistance =   gfxT.addToggle(    btn_DistanceVal,  func_StepDistance, 0 );
   gfxTouch  tch_Flash        =   gfxT.addToggle(    btn_Flash,        func_Flash,        0 );
   gfxTouch  tch_Reset        =   gfxT.addMomentary( btn_Reset,        func_Reset,        0 );
   gfxTouch  tch_Back         =   gfxT.addMomentary( btn_Back,         func_Back,         0 );
   gfxTouch  tch_ArrowUp      =   gfxT.addMomentary( btn_ArrowUp,      func_ArrowUp,      0 );
   gfxTouch  tch_ArrowDown    =   gfxT.addMomentary( btn_ArrowDown,    func_ArrowDown,    0 );
+
+  #define totalRows 3
+  #define totalCols 3
+
+  gfxButton *nav_array[totalRows][totalCols] = {
+    // three rows, three columns
+    {&btn_DistanceVal,  &btn_Flash, &btn_ArrowUp  },    // top row
+    {&btn_StepNrVal,    &btn_Reset, 0             },    // middle row
+    {&btn_RailPosVal,   &btn_Back,  &btn_ArrowDown}     // bottom row
+  };
 
 
   void initTestButtons() {
@@ -87,6 +101,11 @@ namespace test_screen {
     btn_StepNrVal.writeTextBottomCentre(tft, Arimo_Bold_30, stepNr,    WHITE);
     btn_RailPos.writeTextTopCentre(tft, Arimo_Regular_30, String("Rail Pos."),   WHITE);
     btn_RailPosVal.writeTextBottomCentre(tft, Arimo_Bold_30, railPos,   WHITE);
+
+    // always start from first button when loading page
+    rowNr = 0;
+    colNr = 0;
+    nav_array[rowNr][colNr]->drawBorder(tft, 3, CUSTOM_YELLOW);
   }
 
 
@@ -113,6 +132,7 @@ namespace test_screen {
       btn_StepDistance.writeTextTopCentre(tft, Arimo_Regular_30, String("Step Size"), WHITE);
       btn_DistanceVal.writeTextBottomCentre(tft, Arimo_Bold_30, String(distancePerMovement, 4), WHITE);
     }
+    Serial.println("step dist btn");
   }
 
 
@@ -126,6 +146,7 @@ namespace test_screen {
       // use drawNewButton so previous bitmap is filled over
       btn_Flash.drawNewBitmap(tft, flashOff, CUSTOM_RED);
     }
+    Serial.println("flash btn");
   }
 
 
@@ -134,14 +155,21 @@ namespace test_screen {
       movementCount = 0; // reset
       stepNr = String(movementCount); // get latest value
       btn_StepNrVal.writeTextBottomCentre(tft, Arimo_Bold_30, stepNr, WHITE);
+      Serial.println("reset btn");
+      // nav_array[1][0]->drawBorder(tft, 3, WHITE);
+      // nav_array[1][1]->drawBorder(tft, 3, gfxB.getBackgroundColour());
     }
   }
 
 
   void func_Back(bool btnActive) {
     if (btnActive && !areArrowsEnabled) {
-      populateScreen("Home");
+      // populateScreen("Test");
+      // nav_array[1][1]->drawButton(tft, CUSTOM_YELLOW);
+      // nav_array[1][0]->drawBorder(tft, 3, CUSTOM_YELLOW);
+      // nav_array[1][1]->drawBorder(tft, 3, CUSTOM_RED);
     }
+    Serial.println("back btn");
   }
 
 
@@ -164,6 +192,7 @@ namespace test_screen {
         updateMovementCount();
       }
     }
+    Serial.println("arrow up btn");
   }
 
 
@@ -186,6 +215,7 @@ namespace test_screen {
         updateMovementCount();
       }
     }
+    Serial.println("arrow down btn");
   }
 
 
@@ -203,6 +233,54 @@ namespace test_screen {
     movementCount++;
     stepNr = String(movementCount);
     btn_StepNrVal.writeTextBottomCentre(tft, Arimo_Bold_30, stepNr, WHITE);
+  }
+
+
+  void testScreenNav() {
+    if (yDirection != 0 || xDirection != 0) {
+      int newRowNr = 0; int newColNr = 0;
+
+      newRowNr = setIndex("row", rowNr, yDirection);
+      newColNr = setIndex("col", colNr, xDirection);
+
+      if (newRowNr == 1 && newColNr == 2) {
+        newRowNr = 2;
+      }
+
+      // change current button's border back to default
+      Serial.print("rowBefore: "); Serial.print(rowNr);
+      Serial.print(" | colBefore: "); Serial.println(colNr);
+
+      nav_array[rowNr][colNr]->drawBorder(tft, 3);
+
+      Serial.print("rowAfter: "); Serial.print(newRowNr);
+      Serial.print(" | colAfter: "); Serial.println(newColNr);
+
+      nav_array[newRowNr][newColNr]->drawBorder(tft, 3, CUSTOM_YELLOW);
+      rowNr = newRowNr;
+      colNr = newColNr;
+    }
+  }
+
+
+  int setIndex(String dimension, int index, int direction) {
+    int maxVal = 0;
+    if (dimension == "row") {
+      maxVal = totalRows-1;
+    }
+    else if (dimension == "col") {
+      maxVal = totalCols-1;
+    }
+
+    if (index + direction < 0) {
+      return maxVal;
+    }
+    else if (index + direction > maxVal) {
+      return 0;
+    }
+    else {
+      return (index + direction);
+    }
   }
 
 }

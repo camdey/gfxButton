@@ -12,7 +12,8 @@ gfxTouch        gfxT;
 MCUFRIEND_kbv   tft;
 TouchScreen	    ts = TouchScreen(XP, YP, XM, YM, 200);
 
-unsigned long prevButtonCheck = 0; 
+unsigned long prevButtonCheck = 0;
+
 
 void setup(void) {
   Serial.begin(250000);
@@ -30,9 +31,9 @@ void setup(void) {
 
 void loop() {
   // take touch reading
-  if (millis() - prevButtonCheck >= 50) {
+  if (millis() - prevButtonCheck >= 200) {
     checkButtons(getCurrentScreen());
+    checkNavigation(getCurrentScreen());
     prevButtonCheck = millis();
   }
 }
-
