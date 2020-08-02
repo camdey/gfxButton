@@ -3,6 +3,7 @@
 #include "extern_vars.h"
 
 using namespace test_screen;
+
 String currentScreen = "Test"; // set current screen shown to user
 int xVal = 0, yVal = 0;
 void readXStick();
@@ -13,8 +14,8 @@ int yDirection = 0;
 
 void initButtons(unsigned long toggleDebounce, unsigned long momentaryDebounce) {
   gfxB.setBackgroundColour(BLACK);
-  gfxT.setToggleDebounce(toggleDebounce);
-  gfxT.setMomentaryDebounce(momentaryDebounce);
+  gfxT.setToggleDelay(toggleDebounce);
+  gfxT.setMomentaryDelay(momentaryDebounce);
 
   initTestButtons();
 }
@@ -54,10 +55,10 @@ void checkButtons(String screen) {
       }
     }
   }
-  else if (touch_z == 0 && gfxT.getToggleFlag()) {
+  else if (touch_z == 0 && gfxT.isToggleActive()) {
     // if toggle active, reset flag to false when
     // no touch is recorded
-    gfxT.setToggleFlag(false);
+    gfxT.setToggleActive(false);
   }
 }
 

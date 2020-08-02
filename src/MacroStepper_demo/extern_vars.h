@@ -69,5 +69,6 @@ extern int xDirection;
 extern int yDirection;
 #define joystickX A14
 #define joystickY A15
+#define joystickZ 31
 
 #endif

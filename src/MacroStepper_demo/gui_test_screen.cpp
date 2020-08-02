@@ -22,12 +22,12 @@ namespace test_screen {
   int colNr = 0; // keep track of column
 
 
-  gfxButton btn_StepDistance =   gfxB.initButton(       "fillRoundRect",     0,   20,  160,   80,  15,  CUSTOM_BLUE  );
-  gfxButton btn_DistanceVal  =   gfxB.initButton(       "fillRoundRect",     0,   20,  160,   80,  15,  CUSTOM_BLUE  );
-  gfxButton btn_StepNr       =   gfxB.initButton(       "fillRoundRect",     0,  120,  160,   80,  15,  CUSTOM_BLUE  );
-  gfxButton btn_StepNrVal    =   gfxB.initButton(       "fillRoundRect",     0,  120,  160,   80,  15,  CUSTOM_BLUE  );
-  gfxButton btn_RailPos      =   gfxB.initButton(       "fillRoundRect",     0,  220,  160,   80,  15,  CUSTOM_BLUE  );
-  gfxButton btn_RailPosVal   =   gfxB.initButton(       "fillRoundRect",     0,  220,  160,   80,  15,  CUSTOM_BLUE  );
+  gfxButton btn_StepDistance =   gfxB.initButton(       "fillRoundRect",     0,   20,  160,   80,  15,  DARKGRAY  );
+  gfxButton btn_DistanceVal  =   gfxB.initButton(       "fillRoundRect",     0,   20,  160,   80,  15,  DARKGRAY  );
+  gfxButton btn_StepNr       =   gfxB.initButton(       "fillRoundRect",     0,  120,  160,   80,  15,  DARKGRAY  );
+  gfxButton btn_StepNrVal    =   gfxB.initButton(       "fillRoundRect",     0,  120,  160,   80,  15,  DARKGRAY  );
+  gfxButton btn_RailPos      =   gfxB.initButton(       "fillRoundRect",     0,  220,  160,   80,  15,  DARKGRAY  );
+  gfxButton btn_RailPosVal   =   gfxB.initButton(       "fillRoundRect",     0,  220,  160,   80,  15,  DARKGRAY  );
   // don't add to array as bitmap depends on state
   gfxButton btn_Flash        =   gfxB.initBitmapButton( flashOff,          220,   20,   80,   80,       CUSTOM_RED   );
   gfxButton btn_Reset        =   gfxB.initBitmapButton( cancel,            220,  120,   80,   80,       WHITE        );
@@ -48,7 +48,7 @@ namespace test_screen {
   gfxButton *nav_array[totalRows][totalCols] = {
     // three rows, three columns
     {&btn_DistanceVal,  &btn_Flash, &btn_ArrowUp  },    // top row
-    {&btn_StepNrVal,    &btn_Reset, 0             },    // middle row
+    {&btn_StepNrVal,    &btn_Reset,               },    // middle row
     {&btn_RailPosVal,   &btn_Back,  &btn_ArrowDown}     // bottom row
   };
 
@@ -116,8 +116,8 @@ namespace test_screen {
   }
 
 
-  void func_StepDistance(bool btnActive) {
-    if (btnActive) {
+  void func_StepDistance(bool active) {
+    if (active) {
       areArrowsEnabled = true;
       canEditMovementDistance = true;
 
@@ -136,7 +136,7 @@ namespace test_screen {
   }
 
 
-  void func_Flash(bool btnActive) {
+  void func_Flash(bool active) {
     if (!isShutterEnabled) {
       isShutterEnabled = true;
       btn_Flash.drawNewBitmap(tft, flashOn, CUSTOM_GREEN);
@@ -150,31 +150,26 @@ namespace test_screen {
   }
 
 
-  void func_Reset(bool btnActive) {
-    if (btnActive) {
+  void func_Reset(bool active) {
+    if (active) {
       movementCount = 0; // reset
       stepNr = String(movementCount); // get latest value
       btn_StepNrVal.writeTextBottomCentre(tft, Arimo_Bold_30, stepNr, WHITE);
       Serial.println("reset btn");
-      // nav_array[1][0]->drawBorder(tft, 3, WHITE);
-      // nav_array[1][1]->drawBorder(tft, 3, gfxB.getBackgroundColour());
     }
   }
 
 
-  void func_Back(bool btnActive) {
-    if (btnActive && !areArrowsEnabled) {
+  void func_Back(bool active) {
+    if (active && !areArrowsEnabled) {
       // populateScreen("Test");
-      // nav_array[1][1]->drawButton(tft, CUSTOM_YELLOW);
-      // nav_array[1][0]->drawBorder(tft, 3, CUSTOM_YELLOW);
-      // nav_array[1][1]->drawBorder(tft, 3, CUSTOM_RED);
     }
     Serial.println("back btn");
   }
 
 
-  void func_ArrowUp(bool btnActive) {
-    if (btnActive) {
+  void func_ArrowUp(bool active) {
+    if (active) {
       // if setting step size
       if (canEditMovementDistance && areArrowsEnabled) {
         stepsPerMovement++;
@@ -196,8 +191,8 @@ namespace test_screen {
   }
 
 
-  void func_ArrowDown(bool btnActive) {
-    if (btnActive) {
+  void func_ArrowDown(bool active) {
+    if (active) {
       // if setting step size
       if (canEditMovementDistance && areArrowsEnabled) {
         stepsPerMovement--;
@@ -239,22 +234,23 @@ namespace test_screen {
   void testScreenNav() {
     if (yDirection != 0 || xDirection != 0) {
       int newRowNr = 0; int newColNr = 0;
-
+      
       newRowNr = setIndex("row", rowNr, yDirection);
       newColNr = setIndex("col", colNr, xDirection);
+
+      newRowNr = skipButtonGap(rowNr, colNr, newRowNr, newColNr);
 
       if (newRowNr == 1 && newColNr == 2) {
         newRowNr = 2;
       }
+      // Serial.print("rowBefore: "); Serial.print(rowNr);
+      // Serial.print(" | colBefore: "); Serial.println(colNr);
 
       // change current button's border back to default
-      Serial.print("rowBefore: "); Serial.print(rowNr);
-      Serial.print(" | colBefore: "); Serial.println(colNr);
-
       nav_array[rowNr][colNr]->drawBorder(tft, 3);
 
-      Serial.print("rowAfter: "); Serial.print(newRowNr);
-      Serial.print(" | colAfter: "); Serial.println(newColNr);
+      // Serial.print("rowAfter: "); Serial.print(newRowNr);
+      // Serial.print(" | colAfter: "); Serial.println(newColNr);
 
       nav_array[newRowNr][newColNr]->drawBorder(tft, 3, CUSTOM_YELLOW);
       rowNr = newRowNr;
@@ -282,5 +278,18 @@ namespace test_screen {
       return (index + direction);
     }
   }
+
+
+int skipButtonGap(int row, int col, int newRow, int newCol) {
+  int diff = (newRow + newCol) - (row + col);
+  // if array position empty
+  if (nav_array[newRow][newCol] == nullptr) {
+    newRow += diff;
+    if (newRow > totalRows-1) {
+      newRow = totalRows-1;
+    }
+  }
+  return newRow;
+}
 
 }

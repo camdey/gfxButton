@@ -11,77 +11,83 @@
 class gfxButton {
   public:
     gfxButton();
-    gfxButton(int _x, int _y, int _w, int _h, String _screen);
-    gfxButton(String drawType, int _x, int _y, int _w, int _h, int _r, unsigned long _defaultColour, String _screen);
-    gfxButton(const unsigned char* _bitmap, int _x, int _y, int _w, int _h, unsigned long _defaultColour, String _screen);
-    gfxButton initBlankButton(int _x, int _y, int _w, int _h, String _screen = "");
-    gfxButton initButton(String _drawType, int _x, int _y, int _w, int _h, int _r, unsigned long _defaultColour, String _screen = "");
-    gfxButton initBitmapButton(const unsigned char* _bitmap, int _x, int _y, int _w, int _h, unsigned long _defaultColour, String _screen = "");
-    void drawButton(MCUFRIEND_kbv _tft);
-    void drawButton(MCUFRIEND_kbv _tft, unsigned long _colour);
-    void drawNewBitmap(MCUFRIEND_kbv _tft, const unsigned char* _bitmap, unsigned long _colour);
-    void addBorder(int _width, unsigned long _colour);
-    void drawBorder(MCUFRIEND_kbv _tft, int _width);
-    void drawBorder(MCUFRIEND_kbv _tft, int _width, unsigned long _colour);
-    void writeTextCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
-    void writeTextTopCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
-    void writeTextBottomCentre(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
-    void writeTextTopLeft(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
-    void writeTextBottomLeft(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
-    void writeTextLeft(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
-    void writeTextRight(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
-    void writeTextCircle(MCUFRIEND_kbv _tft, GFXfont _font, String _btnText, unsigned long _colour);
-    void replaceButtonText(MCUFRIEND_kbv _tft, String _newText, String _aligned, int _btnX, int _btnY, int _btnW = 0, int _btnH = 0);
-    void setBackgroundColour(unsigned long _colour);
-    void setButtonColour(unsigned long _colour);
-    void setPreviousText(String _text);
+    gfxButton(int x, int y, int w, int h, String screen);
+    gfxButton(String m_drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, String screen);
+    gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, String screen);
+    gfxButton initBlankButton(int x, int y, int w, int h, String screen = "");
+    gfxButton initButton(String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, String screen = "");
+    gfxButton initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, String screen = "");
+    void addBorder(int width, unsigned long colour);
+    void drawBorder(MCUFRIEND_kbv tft, int width);
+    void drawBorder(MCUFRIEND_kbv tft, int width, unsigned long colour);
+    void drawButton(MCUFRIEND_kbv tft);
+    void drawButton(MCUFRIEND_kbv tft, unsigned long colour);
+    void drawNewBitmap(MCUFRIEND_kbv tft, const unsigned char* bitmap, unsigned long colour);
+    void writeTextCentre(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour);
+    void writeTextTopCentre(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour);
+    void writeTextBottomCentre(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour);
+    void writeTextTopLeft(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour);
+    void writeTextBottomLeft(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour);
+    void writeTextLeft(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour);
+    void writeTextRight(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour);
+    void writeTextCircle(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour);
+    void replaceButtonText(MCUFRIEND_kbv tft, String newText, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
+    void setBackgroundColour(unsigned long colour);
     unsigned long getBackgroundColour();
+    void setButtonColour(unsigned long colour);
     unsigned long getButtonColour();
+    void setPreviousText(String _text);
     String getPreviousText();
 
-    String screen, drawType;
-    const unsigned char* bitmap;
-    int x, y, w, h, r;
-    unsigned long colour, defaultColour;
-    bool isBitmapButton;
+    String m_screen, m_drawType;
+    const unsigned char* m_bitmap;
+    int m_x, m_y, m_w, m_h, m_r;
+    int m_borderWidth;
+    unsigned long m_defaultColour;
+    bool m_isBitmapButton, m_hasBorder;
 
   private:
-    String _previousText;
-    unsigned long _buttonColour, _borderColour;
+    String m_previousText;
+    unsigned long m_buttonColour, m_borderColour;
     static unsigned long g_backgroundColour;
-    bool _hasBorder;
-    int _borderWidth;
 };
+
 
 class gfxTouch {
   public:
+    struct boundaryValues {
+      int xMin;
+      int xMax;
+      int yMin;
+      int yMax;
+    };
+
     gfxTouch();
-    gfxTouch(String _screen, int _xMin, int _xMax, int _yMin, int _yMax, String _touchType, void (*btnFunction)(bool state));
+    gfxTouch(String screen, int xMin, int xMax, int yMin, int yMax, String touchType, void (*btnFunction)(bool state));
     gfxTouch addToggle(gfxButton &button, void (*btnFunction)(bool state), int percent);
     gfxTouch addMomentary(gfxButton &button, void (*btnFunction)(bool state), int percent);
-    void setTouchBoundary(int _x, int _y, int _w, int _h, int _r, int _percent);
+    void setTouchBoundary(int x, int y, int w, int h, int r, int percent);
     void checkButton(String currentScreen, int touch_x, int touch_y);
     void runButtonFunction();
-    bool getState();
-    void setState(bool btnActive);
-    void setToggleDebounce(unsigned long toggleDelay);
-    void setMomentaryDebounce(unsigned long momentaryDelay);
-    void setToggleFlag(bool _active);
-    bool getToggleFlag();
+    void setButtonActive(bool active);
+    bool isButtonActive();
+    void setScreenSize(int width, int height);
+    void setToggleDelay(unsigned long delay);
+    void setMomentaryDelay(unsigned long delay);
+    void setToggleActive(bool active);
+    bool isToggleActive();
 
-    int percent;
-    int xMin, xMax, yMin, yMax;
-    String screen, name, touchType;
-    void (*btnFunc)(bool state);
+    struct boundaryValues vals;
+    int m_xMin, m_xMax, m_yMin, m_yMax;
+    String m_screen, m_touchType;
+    void (*m_btnFunc)(bool state);
     static bool g_toggleActive;
 
   private:
-    TSPoint _point;
-    int _xMin, _xMax, _yMin, _yMax;
-    int touch_x, touch_y;
-    bool _btnActive;
-    unsigned long lastTouched, toggleDelay, momentaryDelay;
+    bool m_active;
+    unsigned long m_lastTouched;
     static unsigned long g_toggleDelay, g_momentaryDelay;
+    static int g_screenWidth, g_screenHeight;
 };
 
 #endif

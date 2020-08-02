@@ -23,7 +23,8 @@ void setup(void) {
   tft.fillScreen(0x0000);
   tft.setRotation(1);
 
-
+  pinMode(joystickZ, INPUT_PULLUP);
+  gfxT.setScreenSize(480, 320);
   initButtons(200, 75);
   populateScreen("Test");
 }
