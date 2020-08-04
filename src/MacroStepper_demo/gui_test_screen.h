@@ -15,7 +15,8 @@ namespace test_screen {
   void func_ArrowDown(bool active);
   void printPosition();
   void updateMovementCount();
-  void testScreenNav();
+  void checkTestNav();
+  void checkTestNavInput();
   int setIndex(String dimension, int index, int direction);
   int skipButtonGap(int row, int col, int newRow, int newCol);
 }

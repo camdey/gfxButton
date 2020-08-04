@@ -6,11 +6,13 @@ using namespace test_screen;
 
 String currentScreen = "Test"; // set current screen shown to user
 int xVal = 0, yVal = 0;
+bool zState = false;
 void readXStick();
 void readYStick();
 int getDirection(int val);
 int xDirection = 0;
 int yDirection = 0;
+unsigned long lastNavUpdate = 0;
 
 void initButtons(unsigned long toggleDebounce, unsigned long momentaryDebounce) {
   gfxB.setBackgroundColour(BLACK);
@@ -31,7 +33,7 @@ void populateScreen(String screen) {
 }
 
 
-void checkButtons(String screen) {
+void checkTouch(String screen) {
   TSPoint point = ts.getPoint();
 
   // reset pinModes for tft (otherwise can't draw!)
@@ -55,9 +57,8 @@ void checkButtons(String screen) {
       }
     }
   }
-  else if (touch_z == 0 && gfxT.isToggleActive()) {
+  else if (touch_z == 0 && !zState && gfxT.isToggleActive()) {
     // if toggle active, reset flag to false when
-    // no touch is recorded
     gfxT.setToggleActive(false);
   }
 }
@@ -68,8 +69,20 @@ void checkNavigation(String screen) {
   readYStick();
   Serial.print("xDir: "); Serial.print(xDirection);
   Serial.print(" | yDir: "); Serial.println(yDirection);
+  if (screen == "Test" && millis() - lastNavUpdate >= navDelay) {
+    test_screen::checkTestNav();
+  }
+}
+
+
+void checkNavigationInput(String screen) {
+  readZStick();
   if (screen == "Test") {
-    test_screen::testScreenNav();
+    test_screen::checkTestNavInput();
+  }
+  if (!zState && gfxT.isToggleActive()) {
+    // if toggle active, reset flag to false when
+    gfxT.setToggleActive(false);
   }
 }
 
@@ -83,9 +96,14 @@ void readXStick() {
 
 void readYStick() {
   yVal = analogRead(joystickY);
-  Serial.print(" | Y: "); Serial.println(yVal);
+  Serial.print(" | Y: "); Serial.print(yVal);
 
   yDirection = getDirection(yVal);
+}
+
+void readZStick() {
+  zState = !digitalRead(joystickZ); // high is off/idle
+  Serial.print(" | Z: "); Serial.println(zState);
 }
 
 

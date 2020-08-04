@@ -13,6 +13,7 @@ MCUFRIEND_kbv   tft;
 TouchScreen	    ts = TouchScreen(XP, YP, XM, YM, 200);
 
 unsigned long prevButtonCheck = 0;
+unsigned long prevJoystickCheck = 0;
 
 
 void setup(void) {
@@ -29,12 +30,19 @@ void setup(void) {
   populateScreen("Test");
 }
 
+// todo delay between joystick inputs?
+// todo delay between navigation movements
+
 
 void loop() {
   // take touch reading
-  if (millis() - prevButtonCheck >= 200) {
-    checkButtons(getCurrentScreen());
+  if (millis() - prevButtonCheck >= 100) {
+    checkTouch(getCurrentScreen());
     checkNavigation(getCurrentScreen());
     prevButtonCheck = millis();
+  }
+  if (millis() - prevJoystickCheck >= 50) {
+    checkNavigationInput(getCurrentScreen());
+    prevJoystickCheck = millis();
   }
 }

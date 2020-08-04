@@ -67,6 +67,9 @@ extern TouchScreen	    ts;
 
 extern int xDirection;
 extern int yDirection;
+extern bool zState;
+extern unsigned long lastNavUpdate;
+#define navDelay 200
 #define joystickX A14
 #define joystickY A15
 #define joystickZ 31

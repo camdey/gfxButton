@@ -657,7 +657,7 @@ gfxTouch::gfxTouch(String screen, int xMin, int xMax, int yMin, int yMax, String
   m_yMin = yMin;
   m_yMax = yMax;
   m_touchType = touchType;
-  m_lastTouched = 0UL;
+  m_lastStateChange = 0UL;
   m_btnFunc = *btnFunction;
 }
 
@@ -694,10 +694,9 @@ gfxTouch gfxTouch::addMomentary(gfxButton &button, void (*btnFunction)(bool stat
   String touchType = "momentary";
 
   // set m_xMin, m_xMax, m_yMin, m_yMax
-  // setTouchBoundary(button.m_x, button.m_y, button.m_w, button.m_h, button.m_r, percent);
+  setTouchBoundary(button.m_x, button.m_y, button.m_w, button.m_h, button.m_r, percent);
   // initialise button as off
   setButtonActive(false);
-  setTouchBoundary(button.m_x, button.m_y, button.m_w, button.m_h, button.m_r, percent);
   
   return gfxTouch(screen, vals.xMin, vals.xMax, vals.yMin, vals.yMax, touchType, *btnFunction);
 }
@@ -732,7 +731,7 @@ void gfxTouch::setTouchBoundary(int x, int y, int w, int h, int r, int percent) 
     m_xMax = m_xMin + _pad_w;
     m_yMax = m_yMin + _pad_h;
   }
-  // struct boundaryValues vals;
+  // struct touchBoundary vals;
   // limit possible boundary values by screen size
   vals.xMin = m_xMin >= 0 ? m_xMin : 0;
   vals.yMin = m_yMin >= 0 ? m_yMin : 0;
@@ -752,15 +751,15 @@ void gfxTouch::setTouchBoundary(int x, int y, int w, int h, int r, int percent) 
 / boundary. Toggle  requires cooloff time before next
 / trigger.
 ******************************************************/
-void gfxTouch::checkButton(String currentScreen, int touch_x, int touch_y) {
+void gfxTouch::checkTouchInput(String currentScreen, int touch_x, int touch_y) {
   // if no screen value provided, use currentScreen to bypass check
   m_screen = (m_screen == "") ? currentScreen : m_screen;
 
   if (m_screen == currentScreen) {
     if ((touch_x >= m_xMin && touch_x <= m_xMax) && (touch_y >= m_yMin && touch_y <= m_yMax)) {
       if (m_touchType == "momentary") {
-        if (millis() - m_lastTouched >= g_momentaryDelay) {
-          m_lastTouched = millis();
+        if (millis() - m_lastStateChange >= g_momentaryDelay) {
+          m_lastStateChange = millis();
           // set button state
           setButtonActive(true); // momentary buttons are always active when pressed
           // run function tied to button
@@ -768,16 +767,46 @@ void gfxTouch::checkButton(String currentScreen, int touch_x, int touch_y) {
         }
       }
       else if (m_touchType == "toggle" && isToggleActive() == false) {
-        if (millis() - m_lastTouched >= g_toggleDelay) {
-          m_lastTouched = millis();
+        if (millis() - m_lastStateChange >= g_toggleDelay) {
+          m_lastStateChange = millis();
           // set button state
           setButtonActive(!isButtonActive());
           // set toggle flag state
-          // will be reset on client side
+          // reset on client side when no touch detected
           setToggleActive(true);
           // run function tied to button
           runButtonFunction();
         }
+      }
+    }
+  }
+}
+
+
+void gfxTouch::checkDigitalInput(String currentScreen, bool isActive) {
+  // if no screen value provided, use currentScreen to bypass check
+  m_screen = (m_screen == "") ? currentScreen : m_screen;
+
+  if (m_screen == currentScreen && isActive) {
+    if (m_touchType == "momentary") {
+      if (millis() - m_lastStateChange >= g_momentaryDelay) {
+        m_lastStateChange = millis();
+        // set button state
+        setButtonActive(true); // momentary buttons are always active when pressed
+        // run function tied to button
+        runButtonFunction();
+      }
+    }
+    else if (m_touchType == "toggle" && isToggleActive() == false) {
+      if (millis() - m_lastStateChange >= g_toggleDelay) {
+        m_lastStateChange = millis();
+        // set button state
+        setButtonActive(!isButtonActive());
+        // set toggle flag state
+        // reset on client side when no touch detected
+        setToggleActive(true);
+        // run function tied to button
+        runButtonFunction();
       }
     }
   }
@@ -799,7 +828,7 @@ void gfxTouch::runButtonFunction() {
 / Get the latest state of the button, false if inactive.
 ******************************************************/
 bool gfxTouch::isButtonActive() {
-  return m_active;
+  return m_buttonActive;
 }
 
 
@@ -808,7 +837,7 @@ bool gfxTouch::isButtonActive() {
 / Set the latest state of the button, false if inactive.
 ******************************************************/
 void gfxTouch::setButtonActive(bool active) {
-  m_active = active;
+  m_buttonActive = active;
 }
 
 /******************************************************

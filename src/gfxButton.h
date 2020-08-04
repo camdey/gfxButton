@@ -55,7 +55,7 @@ class gfxButton {
 
 class gfxTouch {
   public:
-    struct boundaryValues {
+    struct touchBoundary {
       int xMin;
       int xMax;
       int yMin;
@@ -67,7 +67,8 @@ class gfxTouch {
     gfxTouch addToggle(gfxButton &button, void (*btnFunction)(bool state), int percent);
     gfxTouch addMomentary(gfxButton &button, void (*btnFunction)(bool state), int percent);
     void setTouchBoundary(int x, int y, int w, int h, int r, int percent);
-    void checkButton(String currentScreen, int touch_x, int touch_y);
+    void checkTouchInput(String currentScreen, int touch_x, int touch_y);
+    void checkDigitalInput(String currentScreen, bool isActive);
     void runButtonFunction();
     void setButtonActive(bool active);
     bool isButtonActive();
@@ -77,15 +78,15 @@ class gfxTouch {
     void setToggleActive(bool active);
     bool isToggleActive();
 
-    struct boundaryValues vals;
+    struct touchBoundary vals;
     int m_xMin, m_xMax, m_yMin, m_yMax;
     String m_screen, m_touchType;
     void (*m_btnFunc)(bool state);
     static bool g_toggleActive;
 
   private:
-    bool m_active;
-    unsigned long m_lastTouched;
+    bool m_buttonActive;
+    unsigned long m_lastStateChange;
     static unsigned long g_toggleDelay, g_momentaryDelay;
     static int g_screenWidth, g_screenHeight;
 };

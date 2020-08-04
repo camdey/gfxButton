@@ -45,11 +45,23 @@ namespace test_screen {
   #define totalRows 3
   #define totalCols 3
 
+  // gfxButton *nav_array[totalRows][totalCols] = {
+  //   // three rows, three columns
+  //   {&btn_DistanceVal,  &btn_Flash, &btn_ArrowUp  },    // top row
+  //   {&btn_StepNrVal,    &btn_Reset,               },    // middle row
+  //   {&btn_RailPosVal,   &btn_Back,  &btn_ArrowDown}     // bottom row
+  // };
+
   gfxButton *nav_array[totalRows][totalCols] = {
     // three rows, three columns
     {&btn_DistanceVal,  &btn_Flash, &btn_ArrowUp  },    // top row
-    {&btn_StepNrVal,    &btn_Reset,               },    // middle row
-    {&btn_RailPosVal,   &btn_Back,  &btn_ArrowDown}     // bottom row
+    {nullptr,           &btn_Reset, nullptr       },    // middle row
+    {nullptr,           &btn_Back,  &btn_ArrowDown}     // bottom row
+  };
+  int nav_array_pos[3][3] = {
+    {0, 1, 2},    // top row
+    {-1, 3, -1},  // middle row
+    {-1, 4, 5}    // bottom row
   };
 
 
@@ -67,9 +79,9 @@ namespace test_screen {
 
     tch_array[0] = &tch_StepDistance;
     tch_array[1] = &tch_Flash;
-    tch_array[2] = &tch_Reset;
-    tch_array[3] = &tch_Back;
-    tch_array[4] = &tch_ArrowUp;
+    tch_array[2] = &tch_ArrowUp;
+    tch_array[3] = &tch_Reset;
+    tch_array[4] = &tch_Back;
     tch_array[5] = &tch_ArrowDown;
 
     btn_array[1]->addBorder(3, WHITE);
@@ -106,12 +118,16 @@ namespace test_screen {
     rowNr = 0;
     colNr = 0;
     nav_array[rowNr][colNr]->drawBorder(tft, 3, CUSTOM_YELLOW);
+
+    // tch_array[2].m_button->drawButton(tft, CUSTOM_BLUE);
+    // tch_array[2]->m_button.drawButton(tft, CUSTOM_BLUE);
+    // btn_Reset.drawButton(tft, CUSTOM_BLUE);
   }
 
 
   void checkTestButtons(int touch_x, int touch_y) {
     for (int i=0; i < num_tchs; i++) {
-      tch_array[i]->checkButton("Test", touch_x, touch_y);
+      tch_array[i]->checkTouchInput("Test", touch_x, touch_y);
     }
   }
 
@@ -231,31 +247,39 @@ namespace test_screen {
   }
 
 
-  void testScreenNav() {
+  void checkTestNav() {
     if (yDirection != 0 || xDirection != 0) {
       int newRowNr = 0; int newColNr = 0;
       
       newRowNr = setIndex("row", rowNr, yDirection);
       newColNr = setIndex("col", colNr, xDirection);
 
-      newRowNr = skipButtonGap(rowNr, colNr, newRowNr, newColNr);
+      // newRowNr = skipButtonGap(rowNr, colNr, newRowNr, newColNr);
 
-      if (newRowNr == 1 && newColNr == 2) {
-        newRowNr = 2;
+      // if (newRowNr == 1 && newColNr == 2) {
+      //   newRowNr = 2;
+      // }
+      if (nav_array[newRowNr][newColNr] == nullptr) {
+        newRowNr = rowNr;
+        newColNr = colNr;
       }
-      // Serial.print("rowBefore: "); Serial.print(rowNr);
-      // Serial.print(" | colBefore: "); Serial.println(colNr);
 
-      // change current button's border back to default
-      nav_array[rowNr][colNr]->drawBorder(tft, 3);
+      if (newRowNr != rowNr || newColNr != colNr) {
+        // change current button's border back to default
+        nav_array[rowNr][colNr]->drawBorder(tft, 3);
 
-      // Serial.print("rowAfter: "); Serial.print(newRowNr);
-      // Serial.print(" | colAfter: "); Serial.println(newColNr);
+        nav_array[newRowNr][newColNr]->drawBorder(tft, 3, CUSTOM_YELLOW);
+        rowNr = newRowNr;
+        colNr = newColNr;
 
-      nav_array[newRowNr][newColNr]->drawBorder(tft, 3, CUSTOM_YELLOW);
-      rowNr = newRowNr;
-      colNr = newColNr;
+        lastNavUpdate = millis();
+      }
     }
+  }
+
+
+  void checkTestNavInput() {
+    tch_array[nav_array_pos[rowNr][colNr]]->checkDigitalInput("Test", zState);
   }
 
 
@@ -280,16 +304,16 @@ namespace test_screen {
   }
 
 
-int skipButtonGap(int row, int col, int newRow, int newCol) {
-  int diff = (newRow + newCol) - (row + col);
-  // if array position empty
-  if (nav_array[newRow][newCol] == nullptr) {
-    newRow += diff;
-    if (newRow > totalRows-1) {
-      newRow = totalRows-1;
+  int skipButtonGap(int row, int col, int newRow, int newCol) {
+    int diff = (newRow + newCol) - (row + col);
+    // if array position empty
+    if (nav_array[newRow][newCol] == nullptr) {
+      newRow += diff;
+      if (newRow > totalRows-1) {
+        newRow = totalRows-1;
+      }
     }
+    return newRow;
   }
-  return newRow;
-}
 
 }
