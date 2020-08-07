@@ -15,7 +15,7 @@
 gfxButton::gfxButton() {};
 
 
-gfxButton::gfxButton(String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, String screen) {
+gfxButton::gfxButton(String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile, String screen) {
   m_drawType = drawType;
   m_x = x;
   m_y = y;
@@ -25,6 +25,7 @@ gfxButton::gfxButton(String drawType, int x, int y, int w, int h, int r, unsigne
   m_defaultColour = defaultColour;
   m_screen = screen;
   m_isBitmapButton = false;
+  m_isTactile = isTactile;
 }
 
 
@@ -34,7 +35,7 @@ gfxButton::gfxButton(String drawType, int x, int y, int w, int h, int r, unsigne
 / you to add touch functionality for using the shape
 / as a touch screen button.
 ******************************************************/
-gfxButton::gfxButton(int x, int y, int w, int h, String screen) {
+gfxButton::gfxButton(int x, int y, int w, int h, bool isTactile, String screen) {
   m_drawType = "blank";
   m_x = x;
   m_y = y;
@@ -44,6 +45,7 @@ gfxButton::gfxButton(int x, int y, int w, int h, String screen) {
   m_defaultColour = 0;
   m_screen = screen;
   m_isBitmapButton = false;
+  m_isTactile = isTactile;
 }
 
 
@@ -53,7 +55,7 @@ gfxButton::gfxButton(int x, int y, int w, int h, String screen) {
 / you to add touch functionality for using the bitmap
 / as a touch screen button.
 ******************************************************/
-gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, String screen) {
+gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile, String screen) {
   m_bitmap = bitmap;
   m_drawType = "bitmap";
   m_x = x;
@@ -64,6 +66,7 @@ gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, un
   m_defaultColour = defaultColour;
   m_screen = screen;
   m_isBitmapButton = true;
+  m_isTactile = isTactile;
 }
 
 
@@ -72,18 +75,18 @@ gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, un
 / Initiates a button instance for GFX shapes, returns input
 / values to instance constructor.
 ******************************************************/
-gfxButton gfxButton::initButton(String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, String screen) {
-  return gfxButton(drawType, x, y, w, h, r, defaultColour, screen);
+gfxButton gfxButton::initButton(String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile, String screen) {
+  return gfxButton(drawType, x, y, w, h, r, defaultColour, isTactile, screen);
 }
 
 
 /******************************************************
 /                Init a blank Button
-/ Initiates a button instance for GFX shapes, returns input
-/ values to instance constructor.
+/ Used for a button with no background or shape
+/ Suitable for printing and centering text
 ******************************************************/
-gfxButton gfxButton::initBlankButton(int x, int y, int w, int h, String screen) {
-  return gfxButton(x, y, w, h, screen);
+gfxButton gfxButton::initBlankButton(int x, int y, int w, int h, bool isTactile, String screen) {
+  return gfxButton(x, y, w, h, isTactile, screen);
 }
 
 
@@ -92,9 +95,10 @@ gfxButton gfxButton::initBlankButton(int x, int y, int w, int h, String screen) 
 / Initiates a button instance for bitmaps, returns input
 / values to instance constructor.
 ******************************************************/
-gfxButton gfxButton::initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, String screen) {
-  return gfxButton(bitmap, x, y, w, h, defaultColour, screen);
+gfxButton gfxButton::initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile, String screen) {
+  return gfxButton(bitmap, x, y, w, h, defaultColour, isTactile, screen);
 }
+
 
 
 /******************************************************
@@ -641,6 +645,12 @@ void gfxButton::setBackgroundColour(unsigned long colour) {
 }
 
 
+// check if button is tactile, i.e. can be pressed/change state
+bool gfxButton::isTactile() {
+  return m_isTactile;
+}
+
+
 /******************************************************
 /         Constructor for gfxTouch instance
 / Takes gfxButton instance as argument and calculates
@@ -812,6 +822,19 @@ void gfxTouch::checkDigitalInput(String currentScreen, bool isActive) {
   }
 }
 
+
+void initNavigationLayout(gfxButton **array, int rows, int cols) {
+  int layout[rows][cols];
+  for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        layout[i][j] = i+j;
+        Serial.println(layout[i][j]);
+        if (!array[i][j].isTactile()) {
+          Serial.println("not a real button");
+        }
+      }
+  }
+}
 
 /******************************************************
 /            Run function tied to Button

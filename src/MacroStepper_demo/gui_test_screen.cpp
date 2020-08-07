@@ -22,18 +22,18 @@ namespace test_screen {
   int colNr = 0; // keep track of column
 
 
-  gfxButton btn_StepDistance =   gfxB.initButton(       "fillRoundRect",     0,   20,  160,   80,  15,  DARKGRAY  );
-  gfxButton btn_DistanceVal  =   gfxB.initButton(       "fillRoundRect",     0,   20,  160,   80,  15,  DARKGRAY  );
-  gfxButton btn_StepNr       =   gfxB.initButton(       "fillRoundRect",     0,  120,  160,   80,  15,  DARKGRAY  );
-  gfxButton btn_StepNrVal    =   gfxB.initButton(       "fillRoundRect",     0,  120,  160,   80,  15,  DARKGRAY  );
-  gfxButton btn_RailPos      =   gfxB.initButton(       "fillRoundRect",     0,  220,  160,   80,  15,  DARKGRAY  );
-  gfxButton btn_RailPosVal   =   gfxB.initButton(       "fillRoundRect",     0,  220,  160,   80,  15,  DARKGRAY  );
+  gfxButton btn_StepDistance =   gfxB.initButton(       "fillRoundRect",     0,   20,  160,   80,  15,  DARKGRAY, true  );
+  gfxButton btn_DistanceVal  =   gfxB.initButton(       "fillRoundRect",     0,   20,  160,   80,  15,  DARKGRAY, true  );
+  gfxButton btn_StepNr       =   gfxB.initButton(       "fillRoundRect",     0,  120,  160,   80,  15,  DARKGRAY, false );
+  gfxButton btn_StepNrVal    =   gfxB.initButton(       "fillRoundRect",     0,  120,  160,   80,  15,  DARKGRAY, false );
+  gfxButton btn_RailPos      =   gfxB.initButton(       "fillRoundRect",     0,  220,  160,   80,  15,  DARKGRAY, false );
+  gfxButton btn_RailPosVal   =   gfxB.initButton(       "fillRoundRect",     0,  220,  160,   80,  15,  DARKGRAY, false );
   // don't add to array as bitmap depends on state
-  gfxButton btn_Flash        =   gfxB.initBitmapButton( flashOff,          220,   20,   80,   80,       CUSTOM_RED   );
-  gfxButton btn_Reset        =   gfxB.initBitmapButton( cancel,            220,  120,   80,   80,       WHITE        );
-  gfxButton btn_Back         =   gfxB.initBitmapButton( backArrow,         220,  220,   80,   80,       WHITE        );
-  gfxButton btn_ArrowUp      =   gfxB.initBitmapButton( arrowUp,           350,   20,  120,  120,       CUSTOM_GREEN );
-  gfxButton btn_ArrowDown    =   gfxB.initBitmapButton( arrowDown,         350,  180,  120,  120,       CUSTOM_RED   );
+  gfxButton btn_Flash        =   gfxB.initBitmapButton( flashOff,          220,   20,   80,   80,       CUSTOM_RED,   true  );
+  gfxButton btn_Reset        =   gfxB.initBitmapButton( cancel,            220,  120,   80,   80,       WHITE,        true  );
+  gfxButton btn_Back         =   gfxB.initBitmapButton( backArrow,         220,  220,   80,   80,       WHITE,        true  );
+  gfxButton btn_ArrowUp      =   gfxB.initBitmapButton( arrowUp,           350,   20,  120,  120,       CUSTOM_GREEN, true  );
+  gfxButton btn_ArrowDown    =   gfxB.initBitmapButton( arrowDown,         350,  180,  120,  120,       CUSTOM_RED,   true  );
 
   gfxTouch  tch_StepDistance =   gfxT.addToggle(    btn_DistanceVal,  func_StepDistance, 0 );
   gfxTouch  tch_Flash        =   gfxT.addToggle(    btn_Flash,        func_Flash,        0 );
@@ -55,8 +55,8 @@ namespace test_screen {
   gfxButton *nav_array[totalRows][totalCols] = {
     // three rows, three columns
     {&btn_DistanceVal,  &btn_Flash, &btn_ArrowUp  },    // top row
-    {nullptr,           &btn_Reset, nullptr       },    // middle row
-    {nullptr,           &btn_Back,  &btn_ArrowDown}     // bottom row
+    {&btn_StepNrVal,    &btn_Reset, &btn_StepNrVal},    // middle row
+    {&btn_RailPosVal,   &btn_Back,  &btn_ArrowDown}     // bottom row
   };
   int nav_array_pos[3][3] = {
     {0, 1, 2},    // top row
@@ -175,12 +175,14 @@ namespace test_screen {
     }
   }
 
+  gfxButton arrayTest[1][2] = {btn_DistanceVal, btn_DistanceVal};
 
   void func_Back(bool active) {
     if (active && !areArrowsEnabled) {
       // populateScreen("Test");
     }
     Serial.println("back btn");
+    gfxT.initNavigationLayout((gfxButton**)&arrayTest, 3, 3);
   }
 
 
@@ -259,7 +261,9 @@ namespace test_screen {
       // if (newRowNr == 1 && newColNr == 2) {
       //   newRowNr = 2;
       // }
-      if (nav_array[newRowNr][newColNr] == nullptr) {
+
+      // if not tactile button, skip
+      if (!nav_array[newRowNr][newColNr]->isTactile()) {
         newRowNr = rowNr;
         newColNr = colNr;
       }
@@ -307,7 +311,7 @@ namespace test_screen {
   int skipButtonGap(int row, int col, int newRow, int newCol) {
     int diff = (newRow + newCol) - (row + col);
     // if array position empty
-    if (nav_array[newRow][newCol] == nullptr) {
+    if (nav_array[newRow][newCol]->isTactile()) {
       newRow += diff;
       if (newRow > totalRows-1) {
         newRow = totalRows-1;
