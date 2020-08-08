@@ -16,8 +16,8 @@ unsigned long lastNavUpdate = 0;
 
 void initButtons(unsigned long toggleDebounce, unsigned long momentaryDebounce) {
   gfxB.setBackgroundColour(BLACK);
-  gfxT.setToggleDelay(toggleDebounce);
-  gfxT.setMomentaryDelay(momentaryDebounce);
+  gfxB.setToggleDelay(toggleDebounce);
+  gfxB.setMomentaryDelay(momentaryDebounce);
 
   initTestButtons();
 }
@@ -57,9 +57,9 @@ void checkTouch(String screen) {
       }
     }
   }
-  else if (touch_z == 0 && !zState && gfxT.isToggleActive()) {
+  else if (touch_z == 0 && !zState && gfxB.isToggleActive()) {
     // if toggle active, reset flag to false when
-    gfxT.setToggleActive(false);
+    gfxB.setToggleActive(false);
   }
 }
 
@@ -67,8 +67,7 @@ void checkTouch(String screen) {
 void checkNavigation(String screen) {
   readXStick();
   readYStick();
-  Serial.print("xDir: "); Serial.print(xDirection);
-  Serial.print(" | yDir: "); Serial.println(yDirection);
+
   if (screen == "Test" && millis() - lastNavUpdate >= navDelay) {
     test_screen::checkTestNav();
   }
@@ -80,30 +79,25 @@ void checkNavigationInput(String screen) {
   if (screen == "Test") {
     test_screen::checkTestNavInput();
   }
-  if (!zState && gfxT.isToggleActive()) {
+  if (!zState && gfxB.isToggleActive()) {
     // if toggle active, reset flag to false when
-    gfxT.setToggleActive(false);
+    gfxB.setToggleActive(false);
   }
 }
 
 
 void readXStick() {
   xVal = analogRead(joystickX);
-  Serial.print("X: "); Serial.print(xVal);
-
   xDirection = getDirection(xVal);
 }
 
 void readYStick() {
   yVal = analogRead(joystickY);
-  Serial.print(" | Y: "); Serial.print(yVal);
-
   yDirection = getDirection(yVal);
 }
 
 void readZStick() {
   zState = !digitalRead(joystickZ); // high is off/idle
-  Serial.print(" | Z: "); Serial.println(zState);
 }
 
 

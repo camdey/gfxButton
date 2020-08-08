@@ -15,7 +15,8 @@
 gfxButton::gfxButton() {};
 
 
-gfxButton::gfxButton(String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile, String screen) {
+gfxButton::gfxButton(String label, String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile, String screen) {
+  m_label = label;
   m_drawType = drawType;
   m_x = x;
   m_y = y;
@@ -75,8 +76,8 @@ gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, un
 / Initiates a button instance for GFX shapes, returns input
 / values to instance constructor.
 ******************************************************/
-gfxButton gfxButton::initButton(String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile, String screen) {
-  return gfxButton(drawType, x, y, w, h, r, defaultColour, isTactile, screen);
+gfxButton gfxButton::initButton(String label, String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile, String screen) {
+  return gfxButton(label, drawType, x, y, w, h, r, defaultColour, isTactile, screen);
 }
 
 
@@ -268,7 +269,10 @@ void gfxButton::drawBorder(MCUFRIEND_kbv tft, int width) {
 / centre/left/right aligned point within a button's
 / dimensions to print the text.
 ******************************************************/
-void gfxButton::writeTextCentre(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour) {
+void gfxButton::writeTextCentre(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+  if (btnText == "") {
+    btnText = m_label; // if no text provided, use button label
+  }
   int btnX = m_x;
   int btnY = m_y + m_h; // text is printed from bottom left so add height value to y
   int btnW = m_w;
@@ -295,8 +299,13 @@ void gfxButton::writeTextCentre(MCUFRIEND_kbv tft, GFXfont font, String btnText,
   xPos = btnX + xPad;
   yPos = btnY - yPad;
 
-  replaceButtonText(tft, btnText, "centre", btnX, btnY, btnW, btnH);
-  setPreviousText(btnText);
+  if (btnText == m_label) {
+    replaceButtonLabel(tft, m_label, "centre", btnX, btnY, btnW, btnH);
+  }
+  else {
+    replaceButtonValue(tft, btnText, "centre", btnX, btnY, btnW, btnH);
+    setPreviousText(btnText);
+  }
 
   tft.setTextColor(colour);
   tft.setCursor(xPos, yPos);
@@ -307,7 +316,10 @@ void gfxButton::writeTextCentre(MCUFRIEND_kbv tft, GFXfont font, String btnText,
 /******************************************************
 /          Top centre align text on button
 ******************************************************/
-void gfxButton::writeTextTopCentre(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour) {
+void gfxButton::writeTextTopCentre(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+  if (btnText == "") {
+    btnText = m_label; // if no text provided, use button label
+  }
   int btnX = m_x;
   int btnY = m_y + (m_h / 2);  // text is printed from bottom left so add half height value to y
   int btnW = m_w;
@@ -331,8 +343,13 @@ void gfxButton::writeTextTopCentre(MCUFRIEND_kbv tft, GFXfont font, String btnTe
   xPos = btnX + xPad;
   yPos = btnY - yPad;
 
-  replaceButtonText(tft, btnText, "centre", btnX, btnY, btnW, btnH);
-  setPreviousText(btnText);
+  if (btnText == m_label) {
+    replaceButtonLabel(tft, m_label, "centre", btnX, btnY, btnW, btnH);
+  }
+  else {
+    replaceButtonValue(tft, btnText, "centre", btnX, btnY, btnW, btnH);
+    setPreviousText(btnText);
+  }
 
   tft.setTextColor(colour);
   tft.setCursor(xPos, yPos);
@@ -343,7 +360,10 @@ void gfxButton::writeTextTopCentre(MCUFRIEND_kbv tft, GFXfont font, String btnTe
 /******************************************************
 /          Bottom centre align text on button
 ******************************************************/
-void gfxButton::writeTextBottomCentre(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour) {
+void gfxButton::writeTextBottomCentre(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+  if (btnText == "") {
+    btnText = m_label; // if no text provided, use button label
+  }
   int btnX = m_x;
   int btnY = m_y + m_h;    // text is printed from bottom left so add height value to y
   int btnW = m_w;
@@ -367,8 +387,13 @@ void gfxButton::writeTextBottomCentre(MCUFRIEND_kbv tft, GFXfont font, String bt
   xPos = btnX + xPad;
   yPos = btnY - yPad;
 
-  replaceButtonText(tft, btnText, "centre", btnX, btnY, btnW, btnH);
-  setPreviousText(btnText);
+  if (btnText == m_label) {
+    replaceButtonLabel(tft, m_label, "centre", btnX, btnY, btnW, btnH);
+  }
+  else {
+    replaceButtonValue(tft, btnText, "centre", btnX, btnY, btnW, btnH);
+    setPreviousText(btnText);
+  }
 
   tft.setTextColor(colour);
   tft.setCursor(xPos, yPos);
@@ -379,7 +404,10 @@ void gfxButton::writeTextBottomCentre(MCUFRIEND_kbv tft, GFXfont font, String bt
 /******************************************************
 /          Top left align text on button
 ******************************************************/
-void gfxButton::writeTextTopLeft(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour) {
+void gfxButton::writeTextTopLeft(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+  if (btnText == "") {
+    btnText = m_label; // if no text provided, use button label
+  }
   int btnX = m_x;
   int btnY = m_y + (m_h / 2);  // text is printed from bottom left so add half height value to y
   int btnW = m_w;
@@ -402,8 +430,13 @@ void gfxButton::writeTextTopLeft(MCUFRIEND_kbv tft, GFXfont font, String btnText
   xPos = btnX + ceil(btnW * 0.05);
   yPos = btnY - yPad;
 
-  replaceButtonText(tft, btnText, "left", btnX, btnY, btnW, btnH);
-  setPreviousText(btnText);
+  if (btnText == m_label) {
+    replaceButtonLabel(tft, m_label, "left", btnX, btnY, btnW, btnH);
+  }
+  else {
+    replaceButtonValue(tft, btnText, "left", btnX, btnY, btnW, btnH);
+    setPreviousText(btnText);
+  }
 
   tft.setTextColor(colour);
   tft.setCursor(xPos, yPos);
@@ -414,7 +447,10 @@ void gfxButton::writeTextTopLeft(MCUFRIEND_kbv tft, GFXfont font, String btnText
 /******************************************************
 /          Bottom centre align text on button
 ******************************************************/
-void gfxButton::writeTextBottomLeft(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour) {
+void gfxButton::writeTextBottomLeft(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+  if (btnText == "") {
+    btnText = m_label; // if no text provided, use button label
+  }
   int btnX = m_x;
   int btnY = m_y + m_h;    // text is printed from bottom left so add height value to y
   int btnW = m_w;
@@ -437,8 +473,13 @@ void gfxButton::writeTextBottomLeft(MCUFRIEND_kbv tft, GFXfont font, String btnT
   xPos = btnX + ceil(btnW * 0.05);
   yPos = btnY - yPad;
 
-  replaceButtonText(tft, btnText, "left", btnX, btnY, btnW, btnH);
-  setPreviousText(btnText);
+  if (btnText == m_label) {
+    replaceButtonLabel(tft, m_label, "left", btnX, btnY, btnW, btnH);
+  }
+  else {
+    replaceButtonValue(tft, btnText, "left", btnX, btnY, btnW, btnH);
+    setPreviousText(btnText);
+  }
 
   tft.setTextColor(colour);
   tft.setCursor(xPos, yPos);
@@ -449,7 +490,10 @@ void gfxButton::writeTextBottomLeft(MCUFRIEND_kbv tft, GFXfont font, String btnT
 /******************************************************
 /           Left align text on button
 ******************************************************/
-void gfxButton::writeTextLeft(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour) {
+void gfxButton::writeTextLeft(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+  if (btnText == "") {
+    btnText = m_label; // if no text provided, use button label
+  }
   int btnX = m_x;
   int btnY = m_y + m_h; // text is printed from bottom left so add height value to y
   int btnW = m_w;
@@ -472,8 +516,13 @@ void gfxButton::writeTextLeft(MCUFRIEND_kbv tft, GFXfont font, String btnText, u
   xPos = btnX + ceil(btnW * 0.05);
   yPos = btnY - yPad;
 
-  replaceButtonText(tft, btnText, "left", btnX, btnY, btnW, btnH);
-  setPreviousText(btnText);
+  if (btnText == m_label) {
+    replaceButtonLabel(tft, m_label, "left", btnX, btnY, btnW, btnH);
+  }
+  else {
+    replaceButtonValue(tft, btnText, "left", btnX, btnY, btnW, btnH);
+    setPreviousText(btnText);
+  }
 
   tft.setTextColor(colour);
   tft.setCursor(xPos, yPos);
@@ -484,7 +533,10 @@ void gfxButton::writeTextLeft(MCUFRIEND_kbv tft, GFXfont font, String btnText, u
 /******************************************************
 /           Right align text on button
 ******************************************************/
-void gfxButton::writeTextRight(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour) {
+void gfxButton::writeTextRight(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+  if (btnText == "") {
+    btnText = m_label; // if no text provided, use button label
+  }
   int btnX = m_x;
   int btnY = m_y + m_h; // text is printed from bottom left so add height value to y
   int btnW = m_w;
@@ -507,8 +559,13 @@ void gfxButton::writeTextRight(MCUFRIEND_kbv tft, GFXfont font, String btnText, 
   xPos = (btnX + btnW) - (textW + ceil(btnW * 0.05));
   yPos = btnY - yPad;
 
-  replaceButtonText(tft, btnText, "right", btnX, btnY, btnW, btnH);
-  setPreviousText(btnText);
+  if (btnText == m_label) {
+    replaceButtonLabel(tft, m_label, "right", btnX, btnY, btnW, btnH);
+  }
+  else {
+    replaceButtonValue(tft, btnText, "right", btnX, btnY, btnW, btnH);
+    setPreviousText(btnText);
+  }
 
   tft.setTextColor(colour);
   tft.setCursor(xPos, yPos);
@@ -519,7 +576,10 @@ void gfxButton::writeTextRight(MCUFRIEND_kbv tft, GFXfont font, String btnText, 
 /******************************************************
 /         Centre align text on circle button
 ******************************************************/
-void gfxButton::writeTextCircle(MCUFRIEND_kbv tft, GFXfont font, String btnText, unsigned long colour) {
+void gfxButton::writeTextCircle(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+  if (btnText == "") {
+    btnText = m_label; // if no text provided, use button label
+  }
   int btnX = m_x;
   int btnY = m_y + m_h; // text is printed from bottom left so add height value to y
 
@@ -540,51 +600,63 @@ void gfxButton::writeTextCircle(MCUFRIEND_kbv tft, GFXfont font, String btnText,
   xPos = btnX - xPad;
   yPos = btnY + yPad;
 
-  replaceButtonText(tft, btnText, "centre", btnX, btnY);
-  setPreviousText(btnText);
+  if (btnText == m_label) {
+    replaceButtonLabel(tft, m_label, "centre", btnX, btnY);
+  }
+  else {
+    replaceButtonValue(tft, btnText, "centre", btnX, btnY);
+    setPreviousText(btnText);
+  }
 
   tft.setTextColor(colour);
   tft.setCursor(xPos, yPos);
   tft.print(btnText);
 }
 
-// TODO - unsure if supports left/right aligned text buttons
+
+void gfxButton::replaceButtonLabel(MCUFRIEND_kbv tft, String m_label, String aligned, int btnX, int btnY, int btnW, int btnH) {
+  replaceButtonText(tft, m_label, m_label, aligned, btnX, btnY, btnW, btnH);
+}
+
+
+void gfxButton::replaceButtonValue(MCUFRIEND_kbv tft, String value, String aligned, int btnX, int btnY, int btnW, int btnH) {
+  replaceButtonText(tft, value, getPreviousText(), aligned, btnX, btnY, btnW, btnH);
+}
+
+
 /******************************************************
 /               Replace Button Text
 / Replaces the previous text on a button with the
 / colour of the button before new text is written to it
 ******************************************************/
-void gfxButton::replaceButtonText(MCUFRIEND_kbv tft, String newText, String aligned, int btnX, int btnY, int btnW, int btnH) {
-  // get previous text string and colour for this button
-  String _prevText = getPreviousText();
-
+void gfxButton::replaceButtonText(MCUFRIEND_kbv tft, String newText, String prevText, String aligned, int btnX, int btnY, int btnW, int btnH) {
   // only replace if there is text to replace and it's different from current text
-  if (_prevText.length() > 0 && _prevText != newText) {
+  if (prevText.length() > 0 && prevText != newText) {
     unsigned long m_buttonColour = getButtonColour();
-    unsigned long _backgroundColour = getBackgroundColour();
+    unsigned long backgroundColour = getBackgroundColour();
     int16_t textX, textY;
     uint16_t textW, textH;
     // get size of previous text string
-    tft.getTextBounds(_prevText, 0, 0, &textX, &textY, &textW, &textH);
+    tft.getTextBounds(prevText, 0, 0, &textX, &textY, &textW, &textH);
     // calculate previous text x,y co-ordinates
-    int _prevXPos = 0, _prevYPos = 0;
+    int prevXPos = 0, prevYPos = 0;
     if (aligned == "centre") {
-      _prevXPos = btnX + (abs(btnW - textW) / 2) + textX;
-      _prevYPos = btnY - (abs(btnH - textH) / 2) + textY;
+      prevXPos = btnX + (abs(btnW - textW) / 2) + textX;
+      prevYPos = btnY - (abs(btnH - textH) / 2) + textY;
     }
     else if (aligned == "left") {
-      _prevXPos = btnX + ceil(btnW * 0.05) + textX;
-      _prevYPos = btnY - (abs(btnH - textH) / 2) + textY;
+      prevXPos = btnX + ceil(btnW * 0.05) + textX;
+      prevYPos = btnY - (abs(btnH - textH) / 2) + textY;
     }
     else if (aligned == "right") {;
-      _prevXPos = (btnX + btnW) - (textW + ceil(btnW * 0.05)) + textX;
-      _prevYPos = btnY - (abs(btnH - textH) / 2) + textY;
+      prevXPos = (btnX + btnW) - (textW + ceil(btnW * 0.05)) + textX;
+      prevYPos = btnY - (abs(btnH - textH) / 2) + textY;
     }
 
     int btn_x_right = btnX + btnW;
-    int txt_x_right = _prevXPos + textW;
+    int txt_x_right = prevXPos + textW;
     int btn_y_bottom = btnY + btnH;
-    int txt_y_bottom = _prevYPos + textH;
+    int txt_y_bottom = prevYPos + textH;
     // if box fill larger than btn dimensions, fix
     if (txt_x_right > btn_x_right) {
       textW = textW - (txt_x_right - btn_x_right);
@@ -595,10 +667,10 @@ void gfxButton::replaceButtonText(MCUFRIEND_kbv tft, String newText, String alig
 
     // if button type not a fill, use specified background colour to fill over previous text
     if (m_drawType == "blank" || m_drawType == "drawRect" || m_drawType == "drawRoundRect" || m_drawType == "drawCircle") {
-      tft.fillRect(_prevXPos, _prevYPos, textW, textH, _backgroundColour);
+      tft.fillRect(prevXPos, prevYPos, textW, textH, backgroundColour);
     }
     else {
-      tft.fillRect(_prevXPos, _prevYPos, textW, textH, m_buttonColour);
+      tft.fillRect(prevXPos, prevYPos, textW, textH, m_buttonColour);
     }
   }
 }
@@ -651,26 +723,6 @@ bool gfxButton::isTactile() {
 }
 
 
-/******************************************************
-/         Constructor for gfxTouch instance
-/ Takes gfxButton instance as argument and calculates
-/ min/max boundaries for touch registration. Also takes
-/ an pointer to a function that should be caLled when
-/ the button is pressed.
-******************************************************/
-gfxTouch::gfxTouch() {};
-
-gfxTouch::gfxTouch(String screen, int xMin, int xMax, int yMin, int yMax, String touchType, void (*btnFunction)(bool state)) {
-  m_screen = screen;
-  m_xMin = xMin;
-  m_xMax = xMax;
-  m_yMin = yMin;
-  m_yMax = yMax;
-  m_touchType = touchType;
-  m_lastStateChange = 0UL;
-  m_btnFunc = *btnFunction;
-}
-
 
 /******************************************************
 /                Init new Toggle
@@ -679,16 +731,19 @@ gfxTouch::gfxTouch(String screen, int xMin, int xMax, int yMin, int yMax, String
 / triggering that button with toggle functionality
 / and call a function on button state change
 ******************************************************/
-gfxTouch gfxTouch::addToggle(gfxButton &button, void (*btnFunction)(bool state), int percent) {
-  String screen = button.m_screen;
-  String touchType = "toggle";
-
+void gfxButton::addToggle(void (*btnFunction)(bool state), int percent) {
   // set m_xMin, m_xMax, m_yMin, m_yMax
-  setTouchBoundary(button.m_x, button.m_y, button.m_w, button.m_h, button.m_r, percent);
+  setTouchBoundary(m_x, m_y, m_w, m_h, m_r, percent);
   // initialise button as off
   setButtonActive(false);
 
-  return gfxTouch(screen, vals.xMin, vals.xMax, vals.yMin, vals.yMax, touchType, *btnFunction);
+  m_xMin = vals.xMin;
+  m_xMax = vals.xMax;
+  m_yMin = vals.yMin;
+  m_yMax = vals.yMax;
+  m_touchType = "toggle";
+  m_lastStateChange = 0UL;
+  m_btnFunc = *btnFunction;
 }
 
 
@@ -699,16 +754,19 @@ gfxTouch gfxTouch::addToggle(gfxButton &button, void (*btnFunction)(bool state),
 / triggering that button with momentary functionality
 / and call a function on button state change
 ******************************************************/
-gfxTouch gfxTouch::addMomentary(gfxButton &button, void (*btnFunction)(bool state), int percent) {
-  String screen = button.m_screen;
-  String touchType = "momentary";
-
+void gfxButton::addMomentary(void (*btnFunction)(bool state), int percent) {
   // set m_xMin, m_xMax, m_yMin, m_yMax
-  setTouchBoundary(button.m_x, button.m_y, button.m_w, button.m_h, button.m_r, percent);
+  setTouchBoundary(m_x, m_y, m_w, m_h, m_r, percent);
   // initialise button as off
   setButtonActive(false);
-  
-  return gfxTouch(screen, vals.xMin, vals.xMax, vals.yMin, vals.yMax, touchType, *btnFunction);
+
+  m_xMin = vals.xMin;
+  m_xMax = vals.xMax;
+  m_yMin = vals.yMin;
+  m_yMax = vals.yMax;
+  m_touchType = "momentary";
+  m_lastStateChange = 0UL;
+  m_btnFunc = *btnFunction;
 }
 
 
@@ -718,7 +776,7 @@ gfxTouch gfxTouch::addMomentary(gfxButton &button, void (*btnFunction)(bool stat
 / touch needs to register to trigger the button
 / Boundary size can be modified by percent value
 ******************************************************/
-void gfxTouch::setTouchBoundary(int x, int y, int w, int h, int r, int percent) {
+void gfxButton::setTouchBoundary(int x, int y, int w, int h, int r, int percent) {
   // if w and h dimensions are zero and radius > 0, then button is circle
   if (w == 0 && h == 0 && r > 0) {
     // get new padded radius dimension
@@ -761,7 +819,7 @@ void gfxTouch::setTouchBoundary(int x, int y, int w, int h, int r, int percent) 
 / boundary. Toggle  requires cooloff time before next
 / trigger.
 ******************************************************/
-void gfxTouch::checkTouchInput(String currentScreen, int touch_x, int touch_y) {
+void gfxButton::checkTouchInput(String currentScreen, int touch_x, int touch_y) {
   // if no screen value provided, use currentScreen to bypass check
   m_screen = (m_screen == "") ? currentScreen : m_screen;
 
@@ -793,7 +851,7 @@ void gfxTouch::checkTouchInput(String currentScreen, int touch_x, int touch_y) {
 }
 
 
-void gfxTouch::checkDigitalInput(String currentScreen, bool isActive) {
+void gfxButton::checkDigitalInput(String currentScreen, bool isActive) {
   // if no screen value provided, use currentScreen to bypass check
   m_screen = (m_screen == "") ? currentScreen : m_screen;
 
@@ -841,7 +899,7 @@ void initNavigationLayout(gfxButton **array, int rows, int cols) {
 / Run the function assigned to that button when it
 / has been triggered by a touch.
 ******************************************************/
-void gfxTouch::runButtonFunction() {
+void gfxButton::runButtonFunction() {
   m_btnFunc(isButtonActive());
 }
 
@@ -850,7 +908,7 @@ void gfxTouch::runButtonFunction() {
 /               Get Button State
 / Get the latest state of the button, false if inactive.
 ******************************************************/
-bool gfxTouch::isButtonActive() {
+bool gfxButton::isButtonActive() {
   return m_buttonActive;
 }
 
@@ -859,7 +917,7 @@ bool gfxTouch::isButtonActive() {
 /               Set Button State
 / Set the latest state of the button, false if inactive.
 ******************************************************/
-void gfxTouch::setButtonActive(bool active) {
+void gfxButton::setButtonActive(bool active) {
   m_buttonActive = active;
 }
 
@@ -869,15 +927,15 @@ void gfxTouch::setButtonActive(bool active) {
 / buttons. These values are shared across instances and
 / will be used by all buttons of that type.
 ******************************************************/
-unsigned long gfxTouch::g_toggleDelay = 0;
-unsigned long gfxTouch::g_momentaryDelay = 0;
+unsigned long gfxButton::g_toggleDelay = 0;
+unsigned long gfxButton::g_momentaryDelay = 0;
 
 
 /******************************************************
 /              Set Debouncing Delay Values
 / Set debouncing delay for toggle buttons.
 ******************************************************/
-void gfxTouch::setToggleDelay(unsigned long delay) {
+void gfxButton::setToggleDelay(unsigned long delay) {
   g_toggleDelay = delay;
 }
 
@@ -886,18 +944,18 @@ void gfxTouch::setToggleDelay(unsigned long delay) {
 /              Set Debouncing Delay Values
 / Set debouncing delay for momentary buttons.
 ******************************************************/
-void gfxTouch::setMomentaryDelay(unsigned long delay) {
+void gfxButton::setMomentaryDelay(unsigned long delay) {
   g_momentaryDelay = delay;
 }
 
 // delcare and initialise global variable for toggle state
-bool gfxTouch::g_toggleActive = false;
+bool gfxButton::g_toggleActive = false;
 
 /******************************************************
 /              Set Toggle Flag
 / Set debouncing delay for toggle buttons.
 ******************************************************/
-void gfxTouch::setToggleActive(bool active) {
+void gfxButton::setToggleActive(bool active) {
   g_toggleActive = active;
 }
 
@@ -907,17 +965,17 @@ void gfxTouch::setToggleActive(bool active) {
 / Get state of toggle flag. Set when a toggle button
 / is active and needs to be reset by 0 touch reading.
 ******************************************************/
-bool gfxTouch::isToggleActive() {
+bool gfxButton::isToggleActive() {
   return g_toggleActive;
 }
 
 /******************************************************
 /           Declare Screen Dimensions
 ******************************************************/
-int gfxTouch::g_screenWidth = 480;
-int gfxTouch::g_screenHeight = 320;
+int gfxButton::g_screenWidth = 480;
+int gfxButton::g_screenHeight = 320;
 
-void gfxTouch::setScreenSize(int width, int height) {
+void gfxButton::setScreenSize(int width, int height) {
   g_screenWidth = width;
   g_screenHeight = height;
 }

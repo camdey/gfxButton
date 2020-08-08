@@ -61,7 +61,7 @@
 
 
 extern gfxButton       gfxB;
-extern gfxTouch        gfxT;
+// extern gfxTouch        gfxT;
 extern MCUFRIEND_kbv   tft;
 extern TouchScreen	    ts;
 
