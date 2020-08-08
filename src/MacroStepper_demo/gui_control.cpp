@@ -50,8 +50,6 @@ void checkTouch(String screen) {
   
   if (touch_z >= 50 && touch_z <= 1000) {
     if ((touch_x > 0 && touch_x <= tft.width()) && (touch_y > 0 && touch_y <= tft.height())) {
-      // Serial.print("touch_x: "); Serial.print(touch_x);
-      // Serial.print(" | touch_y: "); Serial.println(touch_y);
       if (screen == "Test") {
         test_screen::checkTestButtons(touch_x, touch_y);
       }

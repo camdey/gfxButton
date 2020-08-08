@@ -3,7 +3,7 @@
 #include "extern_vars.h"
 
 namespace test_screen {
-  #define num_btns 8
+  #define num_btns 9
   #define totalRows 3
   #define totalCols 3
   
@@ -20,39 +20,36 @@ namespace test_screen {
   int colNr = 0; // keep track of column
 
 
-  gfxButton btn_StepSize    =   gfxB.initButton("Step Size", "fillRoundRect",     0,   20,  160,   80,  15,  DARKGRAY, true  );
-  gfxButton btn_StepNr      =   gfxB.initButton("Step Nr.",  "fillRoundRect",     0,  120,  160,   80,  15,  DARKGRAY, false );
-  gfxButton btn_RailPos     =   gfxB.initButton("Rail Pos.", "fillRoundRect",     0,  220,  160,   80,  15,  DARKGRAY, false );
-  gfxButton btn_Flash       =   gfxB.initBitmapButton( flashOff,          220,   20,   80,   80,       CUSTOM_RED,   true  );
-  gfxButton btn_Reset       =   gfxB.initBitmapButton( cancel,            220,  120,   80,   80,       WHITE,        true  );
-  gfxButton btn_Back        =   gfxB.initBitmapButton( backArrow,         220,  220,   80,   80,       WHITE,        true  );
-  gfxButton btn_ArrowUp     =   gfxB.initBitmapButton( arrowUp,           350,   20,  120,  120,       CUSTOM_GREEN, true  );
-  gfxButton btn_ArrowDown   =   gfxB.initBitmapButton( arrowDown,         350,  180,  120,  120,       CUSTOM_RED,   true  );
+  gfxButton btn_StepSize    =   gfxB.initButton("Step Size", "fillRoundRect", 0,   20,  160,  80,  15,  DARKGRAY, true  );
+  gfxButton btn_StepNr      =   gfxB.initButton("Step Nr.",  "fillRoundRect", 0,  120,  160,  80,  15,  DARKGRAY, false );
+  gfxButton btn_RailPos     =   gfxB.initButton("Rail Pos.", "fillRoundRect", 0,  220,  160,  80,  15,  DARKGRAY, false );
+  gfxButton btn_Flash       =   gfxB.initBitmapButton(flashOff,   220,  20,   80,   80,   CUSTOM_RED,   true  );
+  gfxButton btn_Reset       =   gfxB.initBitmapButton(cancel,     220,  120,  80,   80,   WHITE,        true  );
+  gfxButton btn_Back        =   gfxB.initBitmapButton(backArrow,  220,  220,  80,   80,   WHITE,        true  );
+  gfxButton btn_ArrowUp     =   gfxB.initBitmapButton(arrowUp,    350,  20,   120,  120,  CUSTOM_GREEN, true  );
+  gfxButton btn_ArrowDown   =   gfxB.initBitmapButton(arrowDown,  350,  180,  120,  120,  CUSTOM_RED,   true  );
+  gfxButton btn_vacant      =   gfxB.initVacantButton();
 
 
   gfxButton *btn_array[num_btns];
   gfxButton *nav_array[totalRows][totalCols] = {
     // three rows, three columns
-    {&btn_StepSize,  &btn_Flash, &btn_ArrowUp  },    // top row
-    {&btn_StepNr,    &btn_Reset, &btn_StepNr},    // middle row
-    {&btn_RailPos,   &btn_Back,  &btn_ArrowDown}     // bottom row
-  };
-  int nav_array_pos[3][3] = {
-    {0, 1, 2},    // top row
-    {-1, 3, -1},  // middle row
-    {-1, 4, 5}    // bottom row
+    {&btn_StepSize,  &btn_Flash, &btn_ArrowUp},   // top row
+    {&btn_StepNr,    &btn_Reset, &btn_vacant},    // middle row
+    {&btn_RailPos,   &btn_Back,  &btn_ArrowDown}  // bottom row
   };
 
 
   void initTestButtons() {
     btn_array[0] = &btn_StepSize;
-    btn_array[1] = &btn_StepNr;
-    btn_array[2] = &btn_RailPos;
-    btn_array[3] = &btn_Flash;
+    btn_array[1] = &btn_Flash;
+    btn_array[2] = &btn_ArrowUp;
+    btn_array[3] = &btn_StepNr;
     btn_array[4] = &btn_Reset;
-    btn_array[5] = &btn_Back;
-    btn_array[6] = &btn_ArrowUp;
-    btn_array[7] = &btn_ArrowDown;
+    btn_array[5] = &btn_vacant;
+    btn_array[6] = &btn_RailPos;
+    btn_array[7] = &btn_Back;
+    btn_array[8] = &btn_ArrowDown;
 
     btn_StepSize.addToggle(func_StepDistance, 0);
     btn_Flash.addToggle(func_Flash, 0);
@@ -61,9 +58,10 @@ namespace test_screen {
     btn_ArrowUp.addMomentary(func_ArrowUp, 0);
     btn_ArrowDown.addMomentary(func_ArrowDown, 0);
 
-    btn_array[0]->addBorder(3, WHITE);
-    btn_array[1]->addBorder(3, WHITE);
-    btn_array[2]->addBorder(3, WHITE);
+    btn_StepSize.addBorder(3, WHITE);
+    btn_StepNr.addBorder(3, WHITE);
+    btn_RailPos.addBorder(3, WHITE);
+
   }
 
 
@@ -101,7 +99,7 @@ namespace test_screen {
   void checkTestButtons(int touch_x, int touch_y) {
     for (int i=0; i < num_btns; i++) {
       if (btn_array[i]->isTactile()) {
-        btn_array[i]->checkTouchInput("Test", touch_x, touch_y);
+        btn_array[i]->contains(touch_x, touch_y);
       }
     }
   }
@@ -156,7 +154,6 @@ namespace test_screen {
       // populateScreen("Test");
     }
     Serial.println("back btn");
-    // gfxB.initNavigationLayout((gfxButton**)&arrayTest, 3, 3);
   }
 
 
@@ -257,7 +254,8 @@ namespace test_screen {
 
 
   void checkTestNavInput() {
-    // btn_array[nav_array_pos[rowNr][colNr]]->checkDigitalInput("Test", zState);
+    int index = (rowNr * totalRows) + colNr;
+    btn_array[index]->actuateButton(zState);
   }
 
 

@@ -11,12 +11,13 @@
 class gfxButton {
   public:
     gfxButton();
-    gfxButton(int x, int y, int w, int h, bool isTactile, String screen);
-    gfxButton(String label, String m_drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile, String screen);
-    gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile, String screen);
-    gfxButton initBlankButton(int x, int y, int w, int h, bool isTactile, String screen = "");
-    gfxButton initButton(String label, String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile, String screen = "");
-    gfxButton initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile, String screen = "");
+    gfxButton(int x, int y, int w, int h, bool isTactile);
+    gfxButton(String label, String m_drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
+    gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile);
+    gfxButton initBlankButton(int x, int y, int w, int h, bool isTactile);
+    gfxButton initVacantButton();
+    gfxButton initButton(String label, String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
+    gfxButton initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile);
     void addBorder(int width, unsigned long colour);
     void drawBorder(MCUFRIEND_kbv tft, int width);
     void drawBorder(MCUFRIEND_kbv tft, int width, unsigned long colour);
@@ -66,10 +67,8 @@ class gfxButton {
 
     void addToggle(void (*btnFunction)(bool state), int percent);
     void addMomentary(void (*btnFunction)(bool state), int percent);
-    void initNavigationLayout(gfxButton **array, int rows, int cols);
-    void setTouchBoundary(int x, int y, int w, int h, int r, int percent);
-    void checkTouchInput(String currentScreen, int touch_x, int touch_y);
-    void checkDigitalInput(String currentScreen, bool isActive);
+    void contains(int x, int y);
+    void actuateButton(bool actuate);
     void setButtonActive(bool active);
     bool isButtonActive();
     void setScreenSize(int width, int height);
@@ -85,7 +84,8 @@ class gfxButton {
     static bool g_toggleActive;
 
   private:
-    void runButtonFunction();
+    void executeFunction();
+    void setTouchBoundary(int x, int y, int w, int h, int r, int percent);
 
     bool m_buttonActive;
     unsigned long m_lastStateChange;

@@ -12,10 +12,12 @@
 / you to add touch functionality for using the shape
 / as a touch screen button.
 ******************************************************/
-gfxButton::gfxButton() {};
+gfxButton::gfxButton() {
+  m_isTactile = false;
+};
 
 
-gfxButton::gfxButton(String label, String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile, String screen) {
+gfxButton::gfxButton(String label, String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
   m_label = label;
   m_drawType = drawType;
   m_x = x;
@@ -24,7 +26,6 @@ gfxButton::gfxButton(String label, String drawType, int x, int y, int w, int h, 
   m_h = h;
   m_r = r;
   m_defaultColour = defaultColour;
-  m_screen = screen;
   m_isBitmapButton = false;
   m_isTactile = isTactile;
 }
@@ -36,7 +37,7 @@ gfxButton::gfxButton(String label, String drawType, int x, int y, int w, int h, 
 / you to add touch functionality for using the shape
 / as a touch screen button.
 ******************************************************/
-gfxButton::gfxButton(int x, int y, int w, int h, bool isTactile, String screen) {
+gfxButton::gfxButton(int x, int y, int w, int h, bool isTactile) {
   m_drawType = "blank";
   m_x = x;
   m_y = y;
@@ -44,7 +45,6 @@ gfxButton::gfxButton(int x, int y, int w, int h, bool isTactile, String screen) 
   m_h = h;
   m_r = 0;
   m_defaultColour = 0;
-  m_screen = screen;
   m_isBitmapButton = false;
   m_isTactile = isTactile;
 }
@@ -56,7 +56,7 @@ gfxButton::gfxButton(int x, int y, int w, int h, bool isTactile, String screen) 
 / you to add touch functionality for using the bitmap
 / as a touch screen button.
 ******************************************************/
-gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile, String screen) {
+gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile) {
   m_bitmap = bitmap;
   m_drawType = "bitmap";
   m_x = x;
@@ -65,7 +65,6 @@ gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, un
   m_h = h;
   m_r = 0;
   m_defaultColour = defaultColour;
-  m_screen = screen;
   m_isBitmapButton = true;
   m_isTactile = isTactile;
 }
@@ -76,8 +75,8 @@ gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, un
 / Initiates a button instance for GFX shapes, returns input
 / values to instance constructor.
 ******************************************************/
-gfxButton gfxButton::initButton(String label, String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile, String screen) {
-  return gfxButton(label, drawType, x, y, w, h, r, defaultColour, isTactile, screen);
+gfxButton gfxButton::initButton(String label, String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
+  return gfxButton(label, drawType, x, y, w, h, r, defaultColour, isTactile);
 }
 
 
@@ -86,8 +85,18 @@ gfxButton gfxButton::initButton(String label, String drawType, int x, int y, int
 / Used for a button with no background or shape
 / Suitable for printing and centering text
 ******************************************************/
-gfxButton gfxButton::initBlankButton(int x, int y, int w, int h, bool isTactile, String screen) {
-  return gfxButton(x, y, w, h, isTactile, screen);
+gfxButton gfxButton::initBlankButton(int x, int y, int w, int h, bool isTactile) {
+  return gfxButton(x, y, w, h, isTactile);
+}
+
+
+/******************************************************
+/                Init a vacant Button
+/ A vacant button can be used when you have a column
+or row of buttons with less than the min. amount
+******************************************************/
+gfxButton gfxButton::initVacantButton() {
+  return gfxButton();
 }
 
 
@@ -96,8 +105,8 @@ gfxButton gfxButton::initBlankButton(int x, int y, int w, int h, bool isTactile,
 / Initiates a button instance for bitmaps, returns input
 / values to instance constructor.
 ******************************************************/
-gfxButton gfxButton::initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile, String screen) {
-  return gfxButton(bitmap, x, y, w, h, defaultColour, isTactile, screen);
+gfxButton gfxButton::initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile) {
+  return gfxButton(bitmap, x, y, w, h, defaultColour, isTactile);
 }
 
 
@@ -819,50 +828,15 @@ void gfxButton::setTouchBoundary(int x, int y, int w, int h, int r, int percent)
 / boundary. Toggle  requires cooloff time before next
 / trigger.
 ******************************************************/
-void gfxButton::checkTouchInput(String currentScreen, int touch_x, int touch_y) {
-  // if no screen value provided, use currentScreen to bypass check
-  m_screen = (m_screen == "") ? currentScreen : m_screen;
-
-  if (m_screen == currentScreen) {
-    if ((touch_x >= m_xMin && touch_x <= m_xMax) && (touch_y >= m_yMin && touch_y <= m_yMax)) {
-      if (m_touchType == "momentary") {
-        if (millis() - m_lastStateChange >= g_momentaryDelay) {
-          m_lastStateChange = millis();
-          // set button state
-          setButtonActive(true); // momentary buttons are always active when pressed
-          // run function tied to button
-          runButtonFunction();
-        }
-      }
-      else if (m_touchType == "toggle" && isToggleActive() == false) {
-        if (millis() - m_lastStateChange >= g_toggleDelay) {
-          m_lastStateChange = millis();
-          // set button state
-          setButtonActive(!isButtonActive());
-          // set toggle flag state
-          // reset on client side when no touch detected
-          setToggleActive(true);
-          // run function tied to button
-          runButtonFunction();
-        }
-      }
-    }
-  }
-}
-
-
-void gfxButton::checkDigitalInput(String currentScreen, bool isActive) {
-  // if no screen value provided, use currentScreen to bypass check
-  m_screen = (m_screen == "") ? currentScreen : m_screen;
-
-  if (m_screen == currentScreen && isActive) {
+void gfxButton::contains(int x, int y) {
+  if ((x >= m_xMin && x <= m_xMax) && (y >= m_yMin && y <= m_yMax)) {
     if (m_touchType == "momentary") {
       if (millis() - m_lastStateChange >= g_momentaryDelay) {
         m_lastStateChange = millis();
         // set button state
         setButtonActive(true); // momentary buttons are always active when pressed
         // run function tied to button
-        runButtonFunction();
+        executeFunction();
       }
     }
     else if (m_touchType == "toggle" && isToggleActive() == false) {
@@ -874,32 +848,46 @@ void gfxButton::checkDigitalInput(String currentScreen, bool isActive) {
         // reset on client side when no touch detected
         setToggleActive(true);
         // run function tied to button
-        runButtonFunction();
+        executeFunction();
       }
     }
   }
 }
 
 
-void initNavigationLayout(gfxButton **array, int rows, int cols) {
-  int layout[rows][cols];
-  for (int i = 0; i < rows; i++) {
-      for (int j = 0; j < cols; j++) {
-        layout[i][j] = i+j;
-        Serial.println(layout[i][j]);
-        if (!array[i][j].isTactile()) {
-          Serial.println("not a real button");
-        }
+void gfxButton::actuateButton(bool actuate) {
+  if (actuate) {
+    if (m_touchType == "momentary") {
+      if (millis() - m_lastStateChange >= g_momentaryDelay) {
+        m_lastStateChange = millis();
+        // set button state
+        setButtonActive(true); // momentary buttons are always active when pressed
+        // run function tied to button
+        executeFunction();
       }
+    }
+    else if (m_touchType == "toggle" && isToggleActive() == false) {
+      if (millis() - m_lastStateChange >= g_toggleDelay) {
+        m_lastStateChange = millis();
+        // set button state
+        setButtonActive(!isButtonActive());
+        // set toggle flag state
+        // reset on client side when no touch detected
+        setToggleActive(true);
+        // run function tied to button
+        executeFunction();
+      }
+    }
   }
 }
+
 
 /******************************************************
 /            Run function tied to Button
 / Run the function assigned to that button when it
 / has been triggered by a touch.
 ******************************************************/
-void gfxButton::runButtonFunction() {
+void gfxButton::executeFunction() {
   m_btnFunc(isButtonActive());
 }
 
