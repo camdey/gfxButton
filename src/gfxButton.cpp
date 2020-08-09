@@ -740,9 +740,9 @@ bool gfxButton::isTactile() {
 / triggering that button with toggle functionality
 / and call a function on button state change
 ******************************************************/
-void gfxButton::addToggle(void (*btnFunction)(bool state), int percent) {
+void gfxButton::addToggle(void (*btnFunction)(bool state), int paddingPercent) {
   // set m_xMin, m_xMax, m_yMin, m_yMax
-  setTouchBoundary(m_x, m_y, m_w, m_h, m_r, percent);
+  setTouchBoundary(m_x, m_y, m_w, m_h, m_r, paddingPercent);
   // initialise button as off
   setButtonActive(false);
 
@@ -763,9 +763,9 @@ void gfxButton::addToggle(void (*btnFunction)(bool state), int percent) {
 / triggering that button with momentary functionality
 / and call a function on button state change
 ******************************************************/
-void gfxButton::addMomentary(void (*btnFunction)(bool state), int percent) {
+void gfxButton::addMomentary(void (*btnFunction)(bool state), int paddingPercent) {
   // set m_xMin, m_xMax, m_yMin, m_yMax
-  setTouchBoundary(m_x, m_y, m_w, m_h, m_r, percent);
+  setTouchBoundary(m_x, m_y, m_w, m_h, m_r, paddingPercent);
   // initialise button as off
   setButtonActive(false);
 
@@ -783,13 +783,13 @@ void gfxButton::addMomentary(void (*btnFunction)(bool state), int percent) {
 /         Set Touch Boundary for Button
 / Determines min and max XY values for where a
 / touch needs to register to trigger the button
-/ Boundary size can be modified by percent value
+/ Boundary size can be modified by paddingPercent value
 ******************************************************/
-void gfxButton::setTouchBoundary(int x, int y, int w, int h, int r, int percent) {
+void gfxButton::setTouchBoundary(int x, int y, int w, int h, int r, int paddingPercent) {
   // if w and h dimensions are zero and radius > 0, then button is circle
   if (w == 0 && h == 0 && r > 0) {
     // get new padded radius dimension
-    int _pad_r = ceil(r * (100 + percent)/100);
+    int _pad_r = ceil(r * (100 + paddingPercent)/100);
     // circles are drawn from the centre point
     m_xMin = x - _pad_r;
     m_xMax = x + _pad_r;
@@ -799,8 +799,8 @@ void gfxButton::setTouchBoundary(int x, int y, int w, int h, int r, int percent)
   // else button must be a rectangle
   else {
     // get new w,h dimensions
-    int _pad_w = ceil((w * (100 + percent))/100);
-    int _pad_h = ceil((h * (100 + percent))/100);
+    int _pad_w = ceil((w * (100 + paddingPercent))/100);
+    int _pad_h = ceil((h * (100 + paddingPercent))/100);
     // offset xy position by half the difference between original dimensions and padded dimensions
     m_xMin = x - (_pad_w - w)/2;
     m_yMin = y - (_pad_h - h)/2;
@@ -830,27 +830,7 @@ void gfxButton::setTouchBoundary(int x, int y, int w, int h, int r, int percent)
 ******************************************************/
 void gfxButton::contains(int x, int y) {
   if ((x >= m_xMin && x <= m_xMax) && (y >= m_yMin && y <= m_yMax)) {
-    if (m_touchType == "momentary") {
-      if (millis() - m_lastStateChange >= g_momentaryDelay) {
-        m_lastStateChange = millis();
-        // set button state
-        setButtonActive(true); // momentary buttons are always active when pressed
-        // run function tied to button
-        executeFunction();
-      }
-    }
-    else if (m_touchType == "toggle" && isToggleActive() == false) {
-      if (millis() - m_lastStateChange >= g_toggleDelay) {
-        m_lastStateChange = millis();
-        // set button state
-        setButtonActive(!isButtonActive());
-        // set toggle flag state
-        // reset on client side when no touch detected
-        setToggleActive(true);
-        // run function tied to button
-        executeFunction();
-      }
-    }
+    actuateButton(true);
   }
 }
 

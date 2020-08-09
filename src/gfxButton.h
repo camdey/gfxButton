@@ -3,10 +3,7 @@
 
 #include "Arduino.h"
 #include "Adafruit_GFX.h"
-#include "SPI.h"
 #include "MCUFRIEND_kbv.h"
-#include "TouchScreen.h"
-#include "Wire.h"
 
 class gfxButton {
   public:
@@ -55,18 +52,11 @@ class gfxButton {
     String m_previousText;
     unsigned long m_buttonColour, m_borderColour, m_isTactile;
     static unsigned long g_backgroundColour;
-// };
-// class gfxTouch {
-  public:
-    struct touchBoundary {
-      int xMin;
-      int xMax;
-      int yMin;
-      int yMax;
-    };
 
-    void addToggle(void (*btnFunction)(bool state), int percent);
-    void addMomentary(void (*btnFunction)(bool state), int percent);
+
+  public:
+    void addToggle(void (*btnFunction)(bool state), int paddingPercent);
+    void addMomentary(void (*btnFunction)(bool state), int paddingPercent);
     void contains(int x, int y);
     void actuateButton(bool actuate);
     void setButtonActive(bool active);
@@ -77,20 +67,27 @@ class gfxButton {
     void setToggleActive(bool active);
     bool isToggleActive();
 
-    struct touchBoundary vals;
     int m_xMin, m_xMax, m_yMin, m_yMax;
     String m_touchType;
     void (*m_btnFunc)(bool state);
-    static bool g_toggleActive;
+    
 
   private:
+    struct touchBoundary {
+      int xMin;
+      int xMax;
+      int yMin;
+      int yMax;
+    };
     void executeFunction();
-    void setTouchBoundary(int x, int y, int w, int h, int r, int percent);
+    void setTouchBoundary(int x, int y, int w, int h, int r, int paddingPercent);
 
+    struct touchBoundary vals;
     bool m_buttonActive;
     unsigned long m_lastStateChange;
     static unsigned long g_toggleDelay, g_momentaryDelay;
     static int g_screenWidth, g_screenHeight;
+    static bool g_toggleActive;
 };
 
 #endif
