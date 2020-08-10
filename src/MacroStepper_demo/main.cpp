@@ -7,7 +7,7 @@
 #include "TouchScreen.h"
 #include "Wire.h"
 
-gfxButton       gfxB;
+gfxButton       btn;
 MCUFRIEND_kbv   tft;
 TouchScreen	    ts = TouchScreen(XP, YP, XM, YM, 200);
 
@@ -24,7 +24,8 @@ void setup(void) {
   tft.setRotation(1);
 
   pinMode(joystickZ, INPUT_PULLUP);
-  gfxB.setScreenSize(480, 320);
+  btn.begin(&tft);
+  btn.setScreenSize(480, 320);
   initButtons(200, 75);
   populateScreen("Test");
 }

@@ -60,9 +60,8 @@
 #define microstepLength 0.3125 // distance travelled per microstep in um = 2 / 400 / 16
 
 
-extern gfxButton       gfxB;
-// extern gfxTouch        gfxT;
-extern MCUFRIEND_kbv   tft;
+extern gfxButton        btn;
+extern MCUFRIEND_kbv    tft;
 extern TouchScreen	    ts;
 
 extern int xDirection;

@@ -20,15 +20,15 @@ namespace test_screen {
   int colNr = 0; // keep track of column
 
 
-  gfxButton btn_StepSize    =   gfxB.initButton("Step Size", "fillRoundRect", 0,   20,  160,  80,  15,  DARKGRAY, true  );
-  gfxButton btn_StepNr      =   gfxB.initButton("Step Nr.",  "fillRoundRect", 0,  120,  160,  80,  15,  DARKGRAY, false );
-  gfxButton btn_RailPos     =   gfxB.initButton("Rail Pos.", "fillRoundRect", 0,  220,  160,  80,  15,  DARKGRAY, false );
-  gfxButton btn_Flash       =   gfxB.initBitmapButton(flashOff,   220,  20,   80,   80,   CUSTOM_RED,   true  );
-  gfxButton btn_Reset       =   gfxB.initBitmapButton(cancel,     220,  120,  80,   80,   WHITE,        true  );
-  gfxButton btn_Back        =   gfxB.initBitmapButton(backArrow,  220,  220,  80,   80,   WHITE,        true  );
-  gfxButton btn_ArrowUp     =   gfxB.initBitmapButton(arrowUp,    350,  20,   120,  120,  CUSTOM_GREEN, true  );
-  gfxButton btn_ArrowDown   =   gfxB.initBitmapButton(arrowDown,  350,  180,  120,  120,  CUSTOM_RED,   true  );
-  gfxButton btn_vacant      =   gfxB.initVacantButton();
+  gfxButton btn_StepSize    =   btn.initButton("Step Size", "fillRoundRect", 0,   20,  160,  80,  15,  DARKGRAY, true  );
+  gfxButton btn_StepNr      =   btn.initButton("Step Nr.",  "fillRoundRect", 0,  120,  160,  80,  15,  DARKGRAY, false );
+  gfxButton btn_RailPos     =   btn.initButton("Rail Pos.", "fillRoundRect", 0,  220,  160,  80,  15,  DARKGRAY, false );
+  gfxButton btn_Flash       =   btn.initBitmapButton(flashOff,   220,  20,   80,   80,   CUSTOM_RED,   true  );
+  gfxButton btn_Reset       =   btn.initBitmapButton(cancel,     220,  120,  80,   80,   WHITE,        true  );
+  gfxButton btn_Back        =   btn.initBitmapButton(backArrow,  220,  220,  80,   80,   WHITE,        true  );
+  gfxButton btn_ArrowUp     =   btn.initBitmapButton(arrowUp,    350,  20,   120,  120,  CUSTOM_GREEN, true  );
+  gfxButton btn_ArrowDown   =   btn.initBitmapButton(arrowDown,  350,  180,  120,  120,  CUSTOM_RED,   true  );
+  gfxButton btn_vacant      =   btn.initVacantButton();
 
 
   gfxButton *btn_array[num_btns];
@@ -72,27 +72,27 @@ namespace test_screen {
 
     // draw buttons
     for (int i=0; i < num_btns; i++) {
-      btn_array[i]->drawButton(tft);
+      btn_array[i]->drawButton();
     }
     // if (!isShutterEnabled) {
-    //   btn_Flash.drawButton(tft, CUSTOM_RED);
+    //   btn_Flash.drawButton(CUSTOM_RED);
     // }
     // else if (isShutterEnabled) {
-    //   btn_Flash.drawNewBitmap(tft, flashOn, CUSTOM_GREEN);
+    //   btn_Flash.drawNewBitmap(flashOn, CUSTOM_GREEN);
     // }
 
     // draw text
-    btn_StepSize.writeTextTopCentre(tft, Arimo_Regular_30, WHITE);
-    btn_StepSize.writeTextBottomCentre(tft, Arimo_Bold_30, WHITE, String(distancePerMovement, 4));
-    btn_StepNr.writeTextTopCentre(tft, Arimo_Regular_30, WHITE);
-    btn_StepNr.writeTextBottomCentre(tft, Arimo_Bold_30, WHITE, stepNr);
-    btn_RailPos.writeTextTopCentre(tft, Arimo_Regular_30, WHITE);
-    btn_RailPos.writeTextBottomCentre(tft, Arimo_Bold_30, WHITE, railPos);
+    btn_StepSize.writeTextTopCentre(Arimo_Regular_30, WHITE);
+    btn_StepSize.writeTextBottomCentre(Arimo_Bold_30, WHITE, String(distancePerMovement, 4));
+    btn_StepNr.writeTextTopCentre(Arimo_Regular_30, WHITE);
+    btn_StepNr.writeTextBottomCentre(Arimo_Bold_30, WHITE, stepNr);
+    btn_RailPos.writeTextTopCentre(Arimo_Regular_30, WHITE);
+    btn_RailPos.writeTextBottomCentre(Arimo_Bold_30, WHITE, railPos);
 
     // always start from first button when loading page
     rowNr = 0;
     colNr = 0;
-    nav_array[rowNr][colNr]->drawBorder(tft, 3, CUSTOM_YELLOW);
+    nav_array[rowNr][colNr]->drawBorder(3, CUSTOM_YELLOW);
   }
 
 
@@ -110,16 +110,16 @@ namespace test_screen {
       areArrowsEnabled = true;
       canEditMovementDistance = true;
 
-      btn_StepSize.writeTextTopCentre(tft, Arimo_Regular_30, YELLOW);
-      btn_StepSize.writeTextBottomCentre(tft, Arimo_Bold_30, YELLOW, String(distancePerMovement, 4));
+      btn_StepSize.writeTextTopCentre(Arimo_Regular_30, YELLOW);
+      btn_StepSize.writeTextBottomCentre(Arimo_Bold_30, YELLOW, String(distancePerMovement, 4));
     }
     else {
       areArrowsEnabled = false;
       canEditMovementDistance = false;
 
       // TODO would be nice to not re-write the top line on every arrow press
-      btn_StepSize.writeTextTopCentre(tft, Arimo_Regular_30, WHITE);
-      btn_StepSize.writeTextBottomCentre(tft, Arimo_Bold_30, WHITE, String(distancePerMovement, 4));
+      btn_StepSize.writeTextTopCentre(Arimo_Regular_30, WHITE);
+      btn_StepSize.writeTextBottomCentre(Arimo_Bold_30, WHITE, String(distancePerMovement, 4));
     }
     Serial.println("step dist btn");
   }
@@ -128,12 +128,12 @@ namespace test_screen {
   void func_Flash(bool active) {
     if (active) {
       isShutterEnabled = true;
-      btn_Flash.drawNewBitmap(tft, flashOn, CUSTOM_GREEN);
+      btn_Flash.drawNewBitmap(flashOn, CUSTOM_GREEN);
     }
     else if (!active) {
       isShutterEnabled = false;
       // use drawNewButton so previous bitmap is filled over
-      btn_Flash.drawNewBitmap(tft, flashOff, CUSTOM_RED);
+      btn_Flash.drawNewBitmap(flashOff, CUSTOM_RED);
     }
     Serial.println("flash btn");
   }
@@ -143,7 +143,7 @@ namespace test_screen {
     if (active) {
       movementCount = 0; // reset
       stepNr = String(movementCount); // get latest value
-      btn_StepNr.writeTextBottomCentre(tft, Arimo_Bold_30, WHITE, stepNr);
+      btn_StepNr.writeTextBottomCentre(Arimo_Bold_30, WHITE, stepNr);
       Serial.println("reset btn");
     }
   }
@@ -163,7 +163,7 @@ namespace test_screen {
       if (canEditMovementDistance && areArrowsEnabled) {
         stepsPerMovement++;
         distancePerMovement = microstepLength * stepsPerMovement;
-        btn_StepSize.writeTextBottomCentre(tft, Arimo_Bold_30, YELLOW, String(distancePerMovement, 4));
+        btn_StepSize.writeTextBottomCentre(Arimo_Bold_30, YELLOW, String(distancePerMovement, 4));
       }
       // if not setting step size, move the stepper forward
       else if (!canEditMovementDistance) {
@@ -186,7 +186,7 @@ namespace test_screen {
       if (canEditMovementDistance && areArrowsEnabled) {
         stepsPerMovement--;
         distancePerMovement = microstepLength * stepsPerMovement;
-        btn_StepSize.writeTextBottomCentre(tft, Arimo_Bold_30, YELLOW, String(distancePerMovement, 4));
+        btn_StepSize.writeTextBottomCentre(Arimo_Bold_30, YELLOW, String(distancePerMovement, 4));
       }
       // if not setting step size, move the stepper forward
       else if (!canEditMovementDistance) {
@@ -207,7 +207,7 @@ namespace test_screen {
   void printPosition() {
     // print new position of rail
     railPos = String(currentPosition*(microstepLength/1000), 5);
-    btn_RailPos.writeTextBottomCentre(tft, Arimo_Bold_30, WHITE, railPos);
+    btn_RailPos.writeTextBottomCentre(Arimo_Bold_30, WHITE, railPos);
   }
 
 
@@ -216,7 +216,7 @@ namespace test_screen {
     // increment movementCount and print to screen
     movementCount++;
     stepNr = String(movementCount);
-    btn_StepNr.writeTextBottomCentre(tft, Arimo_Bold_30, WHITE, stepNr);
+    btn_StepNr.writeTextBottomCentre(Arimo_Bold_30, WHITE, stepNr);
   }
 
 
@@ -241,9 +241,9 @@ namespace test_screen {
 
       if (newRowNr != rowNr || newColNr != colNr) {
         // change current button's border back to default
-        nav_array[rowNr][colNr]->drawBorder(tft, 3);
+        nav_array[rowNr][colNr]->drawBorder(3);
 
-        nav_array[newRowNr][newColNr]->drawBorder(tft, 3, CUSTOM_YELLOW);
+        nav_array[newRowNr][newColNr]->drawBorder(3, CUSTOM_YELLOW);
         rowNr = newRowNr;
         colNr = newColNr;
 

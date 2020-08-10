@@ -15,9 +15,9 @@ int yDirection = 0;
 unsigned long lastNavUpdate = 0;
 
 void initButtons(unsigned long toggleDebounce, unsigned long momentaryDebounce) {
-  gfxB.setBackgroundColour(BLACK);
-  gfxB.setToggleDelay(toggleDebounce);
-  gfxB.setMomentaryDelay(momentaryDebounce);
+  btn.setBackgroundColour(BLACK);
+  btn.setToggleDelay(toggleDebounce);
+  btn.setMomentaryDelay(momentaryDebounce);
 
   initTestButtons();
 }
@@ -55,9 +55,9 @@ void checkTouch(String screen) {
       }
     }
   }
-  else if (touch_z == 0 && !zState && gfxB.isToggleActive()) {
+  else if (touch_z == 0 && !zState && btn.isToggleActive()) {
     // if toggle active, reset flag to false when
-    gfxB.setToggleActive(false);
+    btn.setToggleActive(false);
   }
 }
 
@@ -77,9 +77,9 @@ void checkNavigationInput(String screen) {
   if (screen == "Test") {
     test_screen::checkTestNavInput();
   }
-  if (!zState && gfxB.isToggleActive()) {
+  if (!zState && btn.isToggleActive()) {
     // if toggle active, reset flag to false when
-    gfxB.setToggleActive(false);
+    btn.setToggleActive(false);
   }
 }
 

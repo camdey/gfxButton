@@ -6,6 +6,14 @@
 #include "TouchScreen.h"
 
 
+MCUFRIEND_kbv *m_tft;
+
+
+// init tft so it can be used in other functions
+void gfxButton::begin(MCUFRIEND_kbv *tft) {
+  m_tft = tft;
+}
+
 /******************************************************
 /              Create a Button Instance
 / Creates a button instance for GFX shapes that will allow
@@ -17,9 +25,9 @@ gfxButton::gfxButton() {
 };
 
 
-gfxButton::gfxButton(String label, String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
+gfxButton::gfxButton(String label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
   m_label = label;
-  m_drawType = drawType;
+  m_shape = shape;
   m_x = x;
   m_y = y;
   m_w = w;
@@ -38,7 +46,7 @@ gfxButton::gfxButton(String label, String drawType, int x, int y, int w, int h, 
 / as a touch screen button.
 ******************************************************/
 gfxButton::gfxButton(int x, int y, int w, int h, bool isTactile) {
-  m_drawType = "blank";
+  m_shape = "blank";
   m_x = x;
   m_y = y;
   m_w = w;
@@ -58,7 +66,7 @@ gfxButton::gfxButton(int x, int y, int w, int h, bool isTactile) {
 ******************************************************/
 gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile) {
   m_bitmap = bitmap;
-  m_drawType = "bitmap";
+  m_shape = "bitmap";
   m_x = x;
   m_y = y;
   m_w = w;
@@ -75,8 +83,8 @@ gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, un
 / Initiates a button instance for GFX shapes, returns input
 / values to instance constructor.
 ******************************************************/
-gfxButton gfxButton::initButton(String label, String drawType, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
-  return gfxButton(label, drawType, x, y, w, h, r, defaultColour, isTactile);
+gfxButton gfxButton::initButton(String label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
+  return gfxButton(label, shape, x, y, w, h, r, defaultColour, isTactile);
 }
 
 
@@ -85,7 +93,7 @@ gfxButton gfxButton::initButton(String label, String drawType, int x, int y, int
 / Used for a button with no background or shape
 / Suitable for printing and centering text
 ******************************************************/
-gfxButton gfxButton::initBlankButton(int x, int y, int w, int h, bool isTactile) {
+gfxButton gfxButton::initTransparentButton(int x, int y, int w, int h, bool isTactile) {
   return gfxButton(x, y, w, h, isTactile);
 }
 
@@ -115,43 +123,43 @@ gfxButton gfxButton::initBitmapButton(const unsigned char* bitmap, int x, int y,
 /               Draw Button Shapes
 / Draws a button based on the GFX Library commands.
 / Can draw different types of buttons based on the
-/ m_drawType parameter set for the button.
+/ m_shape parameter set for the button.
 ******************************************************/
-void gfxButton::drawButton(MCUFRIEND_kbv tft) {
-  if (m_drawType == "drawRect") {
-    tft.drawRect(m_x, m_y, m_w, m_h, m_defaultColour);
+void gfxButton::drawButton() {
+  if (m_shape == "drawRect") {
+    m_tft->drawRect(m_x, m_y, m_w, m_h, m_defaultColour);
   }
-  else if (m_drawType == "fillRect") {
-    tft.fillRect(m_x, m_y, m_w, m_h, m_defaultColour);
+  else if (m_shape == "fillRect") {
+    m_tft->fillRect(m_x, m_y, m_w, m_h, m_defaultColour);
   }
-  else if (m_drawType == "drawRoundRect") {
-    tft.drawRoundRect(m_x, m_y, m_w, m_h, m_r, m_defaultColour);
+  else if (m_shape == "drawRoundRect") {
+    m_tft->drawRoundRect(m_x, m_y, m_w, m_h, m_r, m_defaultColour);
   }
-  else if (m_drawType == "fillRoundRect") {
-    tft.fillRoundRect(m_x, m_y, m_w, m_h, m_r, m_defaultColour);
+  else if (m_shape == "fillRoundRect") {
+    m_tft->fillRoundRect(m_x, m_y, m_w, m_h, m_r, m_defaultColour);
   }
-  else if (m_drawType == "drawCircle") {
-    tft.drawCircle(m_x, m_y, m_r, m_defaultColour);
+  else if (m_shape == "drawCircle") {
+    m_tft->drawCircle(m_x, m_y, m_r, m_defaultColour);
   }
-  else if (m_drawType == "fillCircle") {
-    tft.fillCircle(m_x, m_y, m_r, m_defaultColour);
+  else if (m_shape == "fillCircle") {
+    m_tft->fillCircle(m_x, m_y, m_r, m_defaultColour);
   }
-  else if (m_drawType == "bitmap") {
-    tft.drawBitmap(m_x, m_y, m_bitmap, m_w, m_h, m_defaultColour);
+  else if (m_shape == "bitmap") {
+    m_tft->drawBitmap(m_x, m_y, m_bitmap, m_w, m_h, m_defaultColour);
   }
   // TODO support triangles
-  // else if (button.m_drawType == "drawTriangle") {
-  //   tft.drawTriangle(button.m_x, button.m_y, button.m_w, button.m_h, button.m_defaultColour);
+  // else if (button.m_shape == "drawTriangle") {
+  //   m_tft->drawTriangle(button.m_x, button.m_y, button.m_w, button.m_h, button.m_defaultColour);
   // }
-  // else if (button.m_drawType == "fillTriangle") {
-  //   tft.fillTriangle(button.m_x, button.m_y, button.m_w, button.m_h, button.m_defaultColour);
+  // else if (button.m_shape == "fillTriangle") {
+  //   m_tft->fillTriangle(button.m_x, button.m_y, button.m_w, button.m_h, button.m_defaultColour);
   // }
 
   // store button colour, used for overwriting text
   setButtonColour(m_defaultColour);
 
   if (m_hasBorder == true) {
-    drawBorder(tft, m_borderWidth, m_borderColour);
+    drawBorder(m_borderWidth, m_borderColour);
   }
 }
 
@@ -160,43 +168,43 @@ void gfxButton::drawButton(MCUFRIEND_kbv tft) {
 /               Draw Button Shapes
 / Draws a button based on the GFX Library commands.
 / Can draw different types of buttons based on the
-/ m_drawType parameter set for the button.
+/ m_shape parameter set for the button.
 ******************************************************/
-void gfxButton::drawButton(MCUFRIEND_kbv tft, unsigned long colour) {
-  if (m_drawType == "drawRect") {
-    tft.drawRect(m_x, m_y, m_w, m_h, colour);
+void gfxButton::drawButton(unsigned long colour) {
+  if (m_shape == "drawRect") {
+    m_tft->drawRect(m_x, m_y, m_w, m_h, colour);
   }
-  else if (m_drawType == "fillRect") {
-    tft.fillRect(m_x, m_y, m_w, m_h, colour);
+  else if (m_shape == "fillRect") {
+    m_tft->fillRect(m_x, m_y, m_w, m_h, colour);
   }
-  else if (m_drawType == "drawRoundRect") {
-    tft.drawRoundRect(m_x, m_y, m_w, m_h, m_r, colour);
+  else if (m_shape == "drawRoundRect") {
+    m_tft->drawRoundRect(m_x, m_y, m_w, m_h, m_r, colour);
   }
-  else if (m_drawType == "fillRoundRect") {
-    tft.fillRoundRect(m_x, m_y, m_w, m_h, m_r, colour);
+  else if (m_shape == "fillRoundRect") {
+    m_tft->fillRoundRect(m_x, m_y, m_w, m_h, m_r, colour);
   }
-  else if (m_drawType == "drawCircle") {
-    tft.drawCircle(m_x, m_y, m_r, colour);
+  else if (m_shape == "drawCircle") {
+    m_tft->drawCircle(m_x, m_y, m_r, colour);
   }
-  else if (m_drawType == "fillCircle") {
-    tft.fillCircle(m_x, m_y, m_r, colour);
+  else if (m_shape == "fillCircle") {
+    m_tft->fillCircle(m_x, m_y, m_r, colour);
   }
-  else if (m_drawType == "bitmap") {
-    tft.drawBitmap(m_x, m_y, m_bitmap, m_w, m_h, colour);
+  else if (m_shape == "bitmap") {
+    m_tft->drawBitmap(m_x, m_y, m_bitmap, m_w, m_h, colour);
   }
   // TODO support triangles
-  // else if (button.m_drawType == "drawTriangle") {
-  //   tft.drawTriangle(button.m_x, button.m_y, button.m_w, button.m_h, colour);
+  // else if (button.m_shape == "drawTriangle") {
+  //   m_tft->drawTriangle(button.m_x, button.m_y, button.m_w, button.m_h, colour);
   // }
-  // else if (button.m_drawType == "fillTriangle") {
-  //   tft.fillTriangle(button.m_x, button.m_y, button.m_w, button.m_h, colour);
+  // else if (button.m_shape == "fillTriangle") {
+  //   m_tft->fillTriangle(button.m_x, button.m_y, button.m_w, button.m_h, colour);
   // }
 
   // store button colour, used for overwriting text
   setButtonColour(colour);
 
   if (m_hasBorder == true) {
-    drawBorder(tft, m_borderWidth, m_borderColour);
+    drawBorder(m_borderWidth, m_borderColour);
   }
 }
 
@@ -207,11 +215,11 @@ void gfxButton::drawButton(MCUFRIEND_kbv tft, unsigned long colour) {
 / Allows you to change the bitmap image depending on
 / the state of the button.
 ******************************************************/
-void gfxButton::drawNewBitmap(MCUFRIEND_kbv tft, const unsigned char* bitmap, unsigned long colour) {
+void gfxButton::drawNewBitmap(const unsigned char* bitmap, unsigned long colour) {
   // fill over previous bitmap/button
-  tft.fillRect(m_x, m_y, m_w, m_h, getBackgroundColour());
+  m_tft->fillRect(m_x, m_y, m_w, m_h, getBackgroundColour());
   // draw new bitmap
-  tft.drawBitmap(m_x, m_y, bitmap, m_w, m_h, colour);
+  m_tft->drawBitmap(m_x, m_y, bitmap, m_w, m_h, colour);
 
   // store button colour, used for overwriting text
   setButtonColour(colour);
@@ -219,7 +227,7 @@ void gfxButton::drawNewBitmap(MCUFRIEND_kbv tft, const unsigned char* bitmap, un
 
 
 void gfxButton::addBorder(int width, unsigned long colour) {
-  if (m_drawType == "fillRect" || m_drawType == "fillRoundRect" || m_drawType == "fillCircle") {
+  if (m_shape == "fillRect" || m_shape == "fillRoundRect" || m_shape == "fillCircle") {
     m_hasBorder = true;
     m_borderWidth = width;
     m_borderColour = colour;
@@ -227,7 +235,7 @@ void gfxButton::addBorder(int width, unsigned long colour) {
 }
 
 
-void gfxButton::drawBorder(MCUFRIEND_kbv tft, int width, unsigned long colour) {
+void gfxButton::drawBorder(int width, unsigned long colour) {
   if (!m_isBitmapButton) {
     for (int i = 0; i < width; i++) {
       int x = m_x + i;
@@ -236,14 +244,14 @@ void gfxButton::drawBorder(MCUFRIEND_kbv tft, int width, unsigned long colour) {
       int h = m_h - i*2;
       int r = m_r - i;
 
-      if (m_drawType == "fillRect") {
-        tft.drawRect(x, y, w, h, colour);
+      if (m_shape == "fillRect") {
+        m_tft->drawRect(x, y, w, h, colour);
       }
-      else if (m_drawType == "fillRoundRect") {
-        tft.drawRoundRect(x, y, w, h, r, colour);
+      else if (m_shape == "fillRoundRect") {
+        m_tft->drawRoundRect(x, y, w, h, r, colour);
       }
-      else if (m_drawType == "fillCircle") {
-        tft.drawCircle(m_x, m_y, r, colour);
+      else if (m_shape == "fillCircle") {
+        m_tft->drawCircle(m_x, m_y, r, colour);
       }
     }
   }
@@ -252,12 +260,12 @@ void gfxButton::drawBorder(MCUFRIEND_kbv tft, int width, unsigned long colour) {
     int borderY = m_y - 5;
     int borderW = m_w + 5*2;
     int borderH = m_h + 5*2;
-    tft.drawRect(borderX, borderY, borderW, borderH, colour);
+    m_tft->drawRect(borderX, borderY, borderW, borderH, colour);
   }
 }
 
 
-void gfxButton::drawBorder(MCUFRIEND_kbv tft, int width) {
+void gfxButton::drawBorder(int width) {
   // if no colour specified use background colour
   unsigned long colour = getBackgroundColour();
   // but if button has a border use default values
@@ -266,7 +274,7 @@ void gfxButton::drawBorder(MCUFRIEND_kbv tft, int width) {
     width = m_borderWidth;
   }
 
-  drawBorder(tft, width, colour);
+  drawBorder(width, colour);
 }
 
 
@@ -278,7 +286,7 @@ void gfxButton::drawBorder(MCUFRIEND_kbv tft, int width) {
 / centre/left/right aligned point within a button's
 / dimensions to print the text.
 ******************************************************/
-void gfxButton::writeTextCentre(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextCentre(GFXfont font, unsigned long colour, String btnText) {
   if (btnText == "") {
     btnText = m_label; // if no text provided, use button label
   }
@@ -290,9 +298,9 @@ void gfxButton::writeTextCentre(MCUFRIEND_kbv tft, GFXfont font, unsigned long c
   int16_t textX, textY;
   uint16_t textW, textH;
   // set font to get text size
-  tft.setFont(&font);
+  m_tft->setFont(&font);
   // set cursor to 0 as only text box dimensions required
-  tft.getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
+  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
 
   int xPad;
   int yPad;
@@ -309,23 +317,23 @@ void gfxButton::writeTextCentre(MCUFRIEND_kbv tft, GFXfont font, unsigned long c
   yPos = btnY - yPad;
 
   if (btnText == m_label) {
-    replaceButtonLabel(tft, m_label, "centre", btnX, btnY, btnW, btnH);
+    replaceButtonLabel(m_label, "centre", btnX, btnY, btnW, btnH);
   }
   else {
-    replaceButtonValue(tft, btnText, "centre", btnX, btnY, btnW, btnH);
+    replaceButtonValue(btnText, "centre", btnX, btnY, btnW, btnH);
     setPreviousText(btnText);
   }
 
-  tft.setTextColor(colour);
-  tft.setCursor(xPos, yPos);
-  tft.print(btnText);
+  m_tft->setTextColor(colour);
+  m_tft->setCursor(xPos, yPos);
+  m_tft->print(btnText);
 }
 
 
 /******************************************************
 /          Top centre align text on button
 ******************************************************/
-void gfxButton::writeTextTopCentre(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextTopCentre(GFXfont font, unsigned long colour, String btnText) {
   if (btnText == "") {
     btnText = m_label; // if no text provided, use button label
   }
@@ -337,9 +345,9 @@ void gfxButton::writeTextTopCentre(MCUFRIEND_kbv tft, GFXfont font, unsigned lon
   int16_t textX, textY;
   uint16_t textW, textH;
   // set font to get text size
-  tft.setFont(&font);
+  m_tft->setFont(&font);
   // set cursor to 0 as only text box dimensions required
-  tft.getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
+  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
 
   int xPad, yPad, xPos, yPos;
 
@@ -353,23 +361,23 @@ void gfxButton::writeTextTopCentre(MCUFRIEND_kbv tft, GFXfont font, unsigned lon
   yPos = btnY - yPad;
 
   if (btnText == m_label) {
-    replaceButtonLabel(tft, m_label, "centre", btnX, btnY, btnW, btnH);
+    replaceButtonLabel(m_label, "centre", btnX, btnY, btnW, btnH);
   }
   else {
-    replaceButtonValue(tft, btnText, "centre", btnX, btnY, btnW, btnH);
+    replaceButtonValue(btnText, "centre", btnX, btnY, btnW, btnH);
     setPreviousText(btnText);
   }
 
-  tft.setTextColor(colour);
-  tft.setCursor(xPos, yPos);
-  tft.print(btnText);
+  m_tft->setTextColor(colour);
+  m_tft->setCursor(xPos, yPos);
+  m_tft->print(btnText);
 }
 
 
 /******************************************************
 /          Bottom centre align text on button
 ******************************************************/
-void gfxButton::writeTextBottomCentre(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextBottomCentre(GFXfont font, unsigned long colour, String btnText) {
   if (btnText == "") {
     btnText = m_label; // if no text provided, use button label
   }
@@ -381,9 +389,9 @@ void gfxButton::writeTextBottomCentre(MCUFRIEND_kbv tft, GFXfont font, unsigned 
   int16_t textX, textY;
   uint16_t textW, textH;
   // set font to get text size
-  tft.setFont(&font);
+  m_tft->setFont(&font);
   // set cursor to 0 as only text box dimensions required
-  tft.getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
+  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
 
   int xPad, yPad, xPos, yPos;
 
@@ -397,23 +405,23 @@ void gfxButton::writeTextBottomCentre(MCUFRIEND_kbv tft, GFXfont font, unsigned 
   yPos = btnY - yPad;
 
   if (btnText == m_label) {
-    replaceButtonLabel(tft, m_label, "centre", btnX, btnY, btnW, btnH);
+    replaceButtonLabel(m_label, "centre", btnX, btnY, btnW, btnH);
   }
   else {
-    replaceButtonValue(tft, btnText, "centre", btnX, btnY, btnW, btnH);
+    replaceButtonValue(btnText, "centre", btnX, btnY, btnW, btnH);
     setPreviousText(btnText);
   }
 
-  tft.setTextColor(colour);
-  tft.setCursor(xPos, yPos);
-  tft.print(btnText);
+  m_tft->setTextColor(colour);
+  m_tft->setCursor(xPos, yPos);
+  m_tft->print(btnText);
 }
 
 
 /******************************************************
 /          Top left align text on button
 ******************************************************/
-void gfxButton::writeTextTopLeft(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextTopLeft(GFXfont font, unsigned long colour, String btnText) {
   if (btnText == "") {
     btnText = m_label; // if no text provided, use button label
   }
@@ -425,9 +433,9 @@ void gfxButton::writeTextTopLeft(MCUFRIEND_kbv tft, GFXfont font, unsigned long 
   int16_t textX, textY;
   uint16_t textW, textH;
   // set font to get text size
-  tft.setFont(&font);
+  m_tft->setFont(&font);
   // set cursor to 0 as only text box dimensions required
-  tft.getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
+  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
 
   int yPad, xPos, yPos;
 
@@ -440,23 +448,23 @@ void gfxButton::writeTextTopLeft(MCUFRIEND_kbv tft, GFXfont font, unsigned long 
   yPos = btnY - yPad;
 
   if (btnText == m_label) {
-    replaceButtonLabel(tft, m_label, "left", btnX, btnY, btnW, btnH);
+    replaceButtonLabel(m_label, "left", btnX, btnY, btnW, btnH);
   }
   else {
-    replaceButtonValue(tft, btnText, "left", btnX, btnY, btnW, btnH);
+    replaceButtonValue(btnText, "left", btnX, btnY, btnW, btnH);
     setPreviousText(btnText);
   }
 
-  tft.setTextColor(colour);
-  tft.setCursor(xPos, yPos);
-  tft.print(btnText);
+  m_tft->setTextColor(colour);
+  m_tft->setCursor(xPos, yPos);
+  m_tft->print(btnText);
 }
 
 
 /******************************************************
 /          Bottom centre align text on button
 ******************************************************/
-void gfxButton::writeTextBottomLeft(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextBottomLeft(GFXfont font, unsigned long colour, String btnText) {
   if (btnText == "") {
     btnText = m_label; // if no text provided, use button label
   }
@@ -468,9 +476,9 @@ void gfxButton::writeTextBottomLeft(MCUFRIEND_kbv tft, GFXfont font, unsigned lo
   int16_t textX, textY;
   uint16_t textW, textH;
   // set font to get text size
-  tft.setFont(&font);
+  m_tft->setFont(&font);
   // set cursor to 0 as only text box dimensions required
-  tft.getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
+  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
 
   int yPad, xPos, yPos;
 
@@ -483,23 +491,23 @@ void gfxButton::writeTextBottomLeft(MCUFRIEND_kbv tft, GFXfont font, unsigned lo
   yPos = btnY - yPad;
 
   if (btnText == m_label) {
-    replaceButtonLabel(tft, m_label, "left", btnX, btnY, btnW, btnH);
+    replaceButtonLabel(m_label, "left", btnX, btnY, btnW, btnH);
   }
   else {
-    replaceButtonValue(tft, btnText, "left", btnX, btnY, btnW, btnH);
+    replaceButtonValue(btnText, "left", btnX, btnY, btnW, btnH);
     setPreviousText(btnText);
   }
 
-  tft.setTextColor(colour);
-  tft.setCursor(xPos, yPos);
-  tft.print(btnText);
+  m_tft->setTextColor(colour);
+  m_tft->setCursor(xPos, yPos);
+  m_tft->print(btnText);
 }
 
 
 /******************************************************
 /           Left align text on button
 ******************************************************/
-void gfxButton::writeTextLeft(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextLeft(GFXfont font, unsigned long colour, String btnText) {
   if (btnText == "") {
     btnText = m_label; // if no text provided, use button label
   }
@@ -511,9 +519,9 @@ void gfxButton::writeTextLeft(MCUFRIEND_kbv tft, GFXfont font, unsigned long col
   int16_t textX, textY;
   uint16_t textW, textH;
   // set font to get text size
-  tft.setFont(&font);
+  m_tft->setFont(&font);
   // set cursor to 0 as only text box dimensions required
-  tft.getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
+  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
 
   int yPad, xPos, yPos;
 
@@ -526,23 +534,23 @@ void gfxButton::writeTextLeft(MCUFRIEND_kbv tft, GFXfont font, unsigned long col
   yPos = btnY - yPad;
 
   if (btnText == m_label) {
-    replaceButtonLabel(tft, m_label, "left", btnX, btnY, btnW, btnH);
+    replaceButtonLabel(m_label, "left", btnX, btnY, btnW, btnH);
   }
   else {
-    replaceButtonValue(tft, btnText, "left", btnX, btnY, btnW, btnH);
+    replaceButtonValue(btnText, "left", btnX, btnY, btnW, btnH);
     setPreviousText(btnText);
   }
 
-  tft.setTextColor(colour);
-  tft.setCursor(xPos, yPos);
-  tft.print(btnText);
+  m_tft->setTextColor(colour);
+  m_tft->setCursor(xPos, yPos);
+  m_tft->print(btnText);
 }
 
 
 /******************************************************
 /           Right align text on button
 ******************************************************/
-void gfxButton::writeTextRight(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextRight(GFXfont font, unsigned long colour, String btnText) {
   if (btnText == "") {
     btnText = m_label; // if no text provided, use button label
   }
@@ -554,9 +562,9 @@ void gfxButton::writeTextRight(MCUFRIEND_kbv tft, GFXfont font, unsigned long co
   int16_t textX, textY;
   uint16_t textW, textH;
   // set font to get text size
-  tft.setFont(&font);
+  m_tft->setFont(&font);
   // set cursor to 0 as only text box dimensions required
-  tft.getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
+  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
 
   int yPad, xPos, yPos;
 
@@ -569,23 +577,23 @@ void gfxButton::writeTextRight(MCUFRIEND_kbv tft, GFXfont font, unsigned long co
   yPos = btnY - yPad;
 
   if (btnText == m_label) {
-    replaceButtonLabel(tft, m_label, "right", btnX, btnY, btnW, btnH);
+    replaceButtonLabel(m_label, "right", btnX, btnY, btnW, btnH);
   }
   else {
-    replaceButtonValue(tft, btnText, "right", btnX, btnY, btnW, btnH);
+    replaceButtonValue(btnText, "right", btnX, btnY, btnW, btnH);
     setPreviousText(btnText);
   }
 
-  tft.setTextColor(colour);
-  tft.setCursor(xPos, yPos);
-  tft.print(btnText);
+  m_tft->setTextColor(colour);
+  m_tft->setCursor(xPos, yPos);
+  m_tft->print(btnText);
 }
 
 
 /******************************************************
 /         Centre align text on circle button
 ******************************************************/
-void gfxButton::writeTextCircle(MCUFRIEND_kbv tft, GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextCircle(GFXfont font, unsigned long colour, String btnText) {
   if (btnText == "") {
     btnText = m_label; // if no text provided, use button label
   }
@@ -595,9 +603,9 @@ void gfxButton::writeTextCircle(MCUFRIEND_kbv tft, GFXfont font, unsigned long c
   int16_t textX, textY;
   uint16_t textW, textH;
   // set font to get text size
-  tft.setFont(&font);
+  m_tft->setFont(&font);
   // set cursor to 0 as only text box dimensions required
-  tft.getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
+  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
 
   int xPad, yPad, xPos, yPos;
 
@@ -610,26 +618,34 @@ void gfxButton::writeTextCircle(MCUFRIEND_kbv tft, GFXfont font, unsigned long c
   yPos = btnY + yPad;
 
   if (btnText == m_label) {
-    replaceButtonLabel(tft, m_label, "centre", btnX, btnY);
+    replaceButtonLabel(m_label, "centre", btnX, btnY);
   }
   else {
-    replaceButtonValue(tft, btnText, "centre", btnX, btnY);
+    replaceButtonValue(btnText, "centre", btnX, btnY);
     setPreviousText(btnText);
   }
 
-  tft.setTextColor(colour);
-  tft.setCursor(xPos, yPos);
-  tft.print(btnText);
+  m_tft->setTextColor(colour);
+  m_tft->setCursor(xPos, yPos);
+  m_tft->print(btnText);
 }
 
 
-void gfxButton::replaceButtonLabel(MCUFRIEND_kbv tft, String m_label, String aligned, int btnX, int btnY, int btnW, int btnH) {
-  replaceButtonText(tft, m_label, m_label, aligned, btnX, btnY, btnW, btnH);
+void gfxButton::replaceButtonLabel(String m_label, String aligned, int btnX, int btnY, int btnW, int btnH) {
+  replaceButtonText(m_label, m_label, aligned, btnX, btnY, btnW, btnH);
 }
 
 
-void gfxButton::replaceButtonValue(MCUFRIEND_kbv tft, String value, String aligned, int btnX, int btnY, int btnW, int btnH) {
-  replaceButtonText(tft, value, getPreviousText(), aligned, btnX, btnY, btnW, btnH);
+void gfxButton::replaceButtonValue(String value, String aligned, int btnX, int btnY, int btnW, int btnH) {
+  replaceButtonText(value, getPreviousText(), aligned, btnX, btnY, btnW, btnH);
+}
+
+
+// use this function to change the label assigned to a button
+// if you use a writeText function before updating the label,
+// it will cause issues when updating other text on the button
+void gfxButton::updateLabel(String label) {
+  m_label = label;
 }
 
 
@@ -638,7 +654,7 @@ void gfxButton::replaceButtonValue(MCUFRIEND_kbv tft, String value, String align
 / Replaces the previous text on a button with the
 / colour of the button before new text is written to it
 ******************************************************/
-void gfxButton::replaceButtonText(MCUFRIEND_kbv tft, String newText, String prevText, String aligned, int btnX, int btnY, int btnW, int btnH) {
+void gfxButton::replaceButtonText(String newText, String prevText, String aligned, int btnX, int btnY, int btnW, int btnH) {
   // only replace if there is text to replace and it's different from current text
   if (prevText.length() > 0 && prevText != newText) {
     unsigned long m_buttonColour = getButtonColour();
@@ -646,7 +662,7 @@ void gfxButton::replaceButtonText(MCUFRIEND_kbv tft, String newText, String prev
     int16_t textX, textY;
     uint16_t textW, textH;
     // get size of previous text string
-    tft.getTextBounds(prevText, 0, 0, &textX, &textY, &textW, &textH);
+    m_tft->getTextBounds(prevText, 0, 0, &textX, &textY, &textW, &textH);
     // calculate previous text x,y co-ordinates
     int prevXPos = 0, prevYPos = 0;
     if (aligned == "centre") {
@@ -675,11 +691,11 @@ void gfxButton::replaceButtonText(MCUFRIEND_kbv tft, String newText, String prev
     }
 
     // if button type not a fill, use specified background colour to fill over previous text
-    if (m_drawType == "blank" || m_drawType == "drawRect" || m_drawType == "drawRoundRect" || m_drawType == "drawCircle") {
-      tft.fillRect(prevXPos, prevYPos, textW, textH, backgroundColour);
+    if (m_shape == "blank" || m_shape == "drawRect" || m_shape == "drawRoundRect" || m_shape == "drawCircle") {
+      m_tft->fillRect(prevXPos, prevYPos, textW, textH, backgroundColour);
     }
     else {
-      tft.fillRect(prevXPos, prevYPos, textW, textH, m_buttonColour);
+      m_tft->fillRect(prevXPos, prevYPos, textW, textH, m_buttonColour);
     }
   }
 }
