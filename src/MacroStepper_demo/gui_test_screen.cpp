@@ -61,7 +61,6 @@ namespace test_screen {
     btn_StepSize.addBorder(3, WHITE);
     btn_StepNr.addBorder(3, WHITE);
     btn_RailPos.addBorder(3, WHITE);
-
   }
 
 
@@ -227,12 +226,6 @@ namespace test_screen {
       newRowNr = setIndex("row", rowNr, yDirection);
       newColNr = setIndex("col", colNr, xDirection);
 
-      // newRowNr = skipButtonGap(rowNr, colNr, newRowNr, newColNr);
-
-      // if (newRowNr == 1 && newColNr == 2) {
-      //   newRowNr = 2;
-      // }
-
       // if not tactile button, skip
       if (!nav_array[newRowNr][newColNr]->isTactile()) {
         newRowNr = rowNr;
@@ -280,16 +273,16 @@ namespace test_screen {
   }
 
 
-  int skipButtonGap(int row, int col, int newRow, int newCol) {
-    int diff = (newRow + newCol) - (row + col);
-    // if array position empty
-    if (nav_array[newRow][newCol]->isTactile()) {
-      newRow += diff;
-      if (newRow > totalRows-1) {
-        newRow = totalRows-1;
-      }
-    }
-    return newRow;
-  }
+  // int skipButtonGap(int row, int col, int newRow, int newCol) {
+  //   int diff = (newRow + newCol) - (row + col);
+  //   // if array position empty
+  //   if (nav_array[newRow][newCol]->isTactile()) {
+  //     newRow += diff;
+  //     if (newRow > totalRows-1) {
+  //       newRow = totalRows-1;
+  //     }
+  //   }
+  //   return newRow;
+  // }
 
 }

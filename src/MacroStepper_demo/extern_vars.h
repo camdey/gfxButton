@@ -69,8 +69,8 @@ extern int yDirection;
 extern bool zState;
 extern unsigned long lastNavUpdate;
 #define navDelay 200
-#define joystickX A14
-#define joystickY A15
+#define joystickX A9
+#define joystickY A10
 #define joystickZ 31
 
 #endif
