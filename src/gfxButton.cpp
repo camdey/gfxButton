@@ -665,6 +665,21 @@ void gfxButton::updateBitmap(const unsigned char* bitmap) {
 }
 
 
+// enable the tactility of a button so that it can be
+// interacted with
+void gfxButton::enableTactile() {
+  m_isTactile = true;
+}
+
+
+// disable the tactility of a button so that it can not
+// be interacted with. Useful if you need to disable a
+// button temporarily.
+void gfxButton::disableTactile() {
+  m_isTactile = false;
+}
+
+
 /******************************************************
 /               Replace Button Text
 / Replaces the previous text on a button with the

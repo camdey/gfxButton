@@ -35,9 +35,11 @@ class gfxButton {
     void setButtonColour(unsigned long colour);
     unsigned long getButtonColour();
     bool isTactile();
-    void updateLabel(String label);
-    void updateColour(unsigned long colour);
     void updateBitmap(const unsigned char* bitmap);
+    void updateColour(unsigned long colour);
+    void updateLabel(String label);
+    void enableTactile();
+    void disableTactile();
 
     String m_shape, m_label;
     const unsigned char* m_bitmap;
