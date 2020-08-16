@@ -677,7 +677,7 @@ void gfxButton::hideButton(bool hide) {
 
 // check if button is hidden
 bool gfxButton::isHidden() {
-  return m_isHidden = true;
+  return m_isHidden;
 }
 
 
