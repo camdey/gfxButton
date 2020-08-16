@@ -665,18 +665,16 @@ void gfxButton::updateBitmap(const unsigned char* bitmap) {
 }
 
 
-// enable the tactility of a button so that it can be
-// interacted with
-void gfxButton::enableTactile() {
-  m_isTactile = true;
+// hide button and disable tactile functionality
+void gfxButton::hideButton(bool hide) {
+  m_isTactile = !hide;
+  m_isHidden = hide;
 }
 
 
-// disable the tactility of a button so that it can not
-// be interacted with. Useful if you need to disable a
-// button temporarily.
-void gfxButton::disableTactile() {
-  m_isTactile = false;
+// check if button is hidden
+bool gfxButton::isHidden() {
+  return m_isHidden = true;
 }
 
 
@@ -773,11 +771,16 @@ void gfxButton::setBackgroundColour(unsigned long colour) {
 }
 
 
+// change whether button is tactile or not
+void gfxButton::setTactile(bool tactile) {
+  m_isTactile = tactile;
+}
+
+
 // check if button is tactile, i.e. can be pressed/change state
 bool gfxButton::isTactile() {
   return m_isTactile;
 }
-
 
 
 /******************************************************

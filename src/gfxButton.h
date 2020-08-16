@@ -34,12 +34,13 @@ class gfxButton {
     unsigned long getBackgroundColour();
     void setButtonColour(unsigned long colour);
     unsigned long getButtonColour();
+    void setTactile(bool tactile);
     bool isTactile();
     void updateBitmap(const unsigned char* bitmap);
     void updateColour(unsigned long colour);
     void updateLabel(String label);
-    void enableTactile();
-    void disableTactile();
+    void hideButton(bool hide);
+    bool isHidden();
 
     String m_shape, m_label;
     const unsigned char* m_bitmap;
@@ -57,8 +58,9 @@ class gfxButton {
     String getPreviousText();
 
     String m_previousText;
-    unsigned long m_buttonColour, m_borderColour, m_isTactile;
+    unsigned long m_buttonColour, m_borderColour;
     static unsigned long g_backgroundColour;
+    bool m_isTactile, m_isHidden;
 
 
   public:
