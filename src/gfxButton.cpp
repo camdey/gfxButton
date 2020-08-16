@@ -36,6 +36,7 @@ gfxButton::gfxButton(String label, String shape, int x, int y, int w, int h, int
   m_defaultColour = defaultColour;
   m_isBitmapButton = false;
   m_isTactile = isTactile;
+  m_isHidden = false;
 }
 
 
@@ -55,6 +56,7 @@ gfxButton::gfxButton(int x, int y, int w, int h, bool isTactile) {
   m_defaultColour = 0;
   m_isBitmapButton = false;
   m_isTactile = isTactile;
+  m_isHidden = false;
 }
 
 
@@ -75,6 +77,7 @@ gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, un
   m_defaultColour = defaultColour;
   m_isBitmapButton = true;
   m_isTactile = isTactile;
+  m_isHidden = false;
 }
 
 
