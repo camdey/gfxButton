@@ -649,6 +649,22 @@ void gfxButton::updateLabel(String label) {
 }
 
 
+// use this function to change the default colour assigned
+// to a button. Useful when a button can have different states
+// that may depend on other variables
+void gfxButton::updateColour(unsigned long colour) {
+  m_defaultColour = colour;
+}
+
+
+// use this function to change the bitmap assigned
+// to a bitmap button. Useful when a button can have different
+// states that may depend on other variables
+void gfxButton::updateBitmap(const unsigned char* bitmap) {
+  m_bitmap = bitmap;
+}
+
+
 /******************************************************
 /               Replace Button Text
 / Replaces the previous text on a button with the

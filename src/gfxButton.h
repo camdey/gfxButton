@@ -36,6 +36,8 @@ class gfxButton {
     unsigned long getButtonColour();
     bool isTactile();
     void updateLabel(String label);
+    void updateColour(unsigned long colour);
+    void updateBitmap(const unsigned char* bitmap);
 
     String m_shape, m_label;
     const unsigned char* m_bitmap;
@@ -44,6 +46,7 @@ class gfxButton {
     unsigned long m_defaultColour;
     bool m_isBitmapButton, m_hasBorder;
 
+
   private:
     void replaceButtonLabel(String m_label, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
     void replaceButtonText(String newText, String prevText, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
@@ -51,7 +54,6 @@ class gfxButton {
     void setPreviousText(String _text);
     String getPreviousText();
 
-    
     String m_previousText;
     unsigned long m_buttonColour, m_borderColour, m_isTactile;
     static unsigned long g_backgroundColour;
