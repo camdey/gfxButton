@@ -270,7 +270,8 @@ void gfxButton::drawBorder(int width, unsigned long colour) {
 
 void gfxButton::drawBorder(int width) {
   // if no colour specified use background colour
-  unsigned long colour = getBackgroundColour();
+  // unsigned long colour = getBackgroundColour();
+  unsigned long colour = m_defaultColour;
   // but if button has a border use default values
   if (m_hasBorder) {
     colour = m_borderColour;
@@ -805,7 +806,7 @@ void gfxButton::addToggle(void (*btnFunction)(bool state), int paddingPercent) {
   m_yMax = vals.yMax;
   m_touchType = "toggle";
   m_lastStateChange = 0UL;
-  m_btnFunc = *btnFunction;
+  m_boolFunction = *btnFunction;
 }
 
 
@@ -828,7 +829,32 @@ void gfxButton::addMomentary(void (*btnFunction)(bool state), int paddingPercent
   m_yMax = vals.yMax;
   m_touchType = "momentary";
   m_lastStateChange = 0UL;
-  m_btnFunc = *btnFunction;
+  m_boolFunction = *btnFunction;
+  m_returnLabel = false;
+}
+
+
+/******************************************************
+/                Init new Momentary
+/ Initiates a momentary type instance based on a
+/ previously  created button instance. Will allow
+/ triggering that button with momentary functionality
+/ and call a function on button state change
+******************************************************/
+void gfxButton::addMomentary(void (*btnFunction)(String label), int paddingPercent) {
+  // set m_xMin, m_xMax, m_yMin, m_yMax
+  setTouchBoundary(m_x, m_y, m_w, m_h, m_r, paddingPercent);
+  // initialise button as off
+  setButtonActive(false);
+
+  m_xMin = vals.xMin;
+  m_xMax = vals.xMax;
+  m_yMin = vals.yMin;
+  m_yMax = vals.yMax;
+  m_touchType = "momentary";
+  m_lastStateChange = 0UL;
+  m_stringFunction = *btnFunction;
+  m_returnLabel = true;
 }
 
 
@@ -921,7 +947,12 @@ void gfxButton::actuateButton(bool actuate) {
 / has been triggered by a touch.
 ******************************************************/
 void gfxButton::executeFunction() {
-  m_btnFunc(isButtonActive());
+  if (m_returnLabel) {
+    m_stringFunction(m_label);
+  }
+  else {
+    m_boolFunction(isButtonActive());
+  }
 }
 
 

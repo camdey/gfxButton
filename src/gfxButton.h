@@ -66,6 +66,7 @@ class gfxButton {
   public:
     void addToggle(void (*btnFunction)(bool state), int paddingPercent);
     void addMomentary(void (*btnFunction)(bool state), int paddingPercent);
+    void addMomentary(void (*btnFunction)(String label), int paddingPercent);
     void contains(int x, int y);
     void actuateButton(bool actuate);
     void setButtonActive(bool active);
@@ -78,7 +79,8 @@ class gfxButton {
 
     int m_xMin, m_xMax, m_yMin, m_yMax;
     String m_touchType;
-    void (*m_btnFunc)(bool state);
+    void (*m_boolFunction)(bool state);
+    void (*m_stringFunction)(String label);
     
 
   private:
@@ -92,7 +94,7 @@ class gfxButton {
     void setTouchBoundary(int x, int y, int w, int h, int r, int paddingPercent);
 
     struct touchBoundary vals;
-    bool m_buttonActive;
+    bool m_buttonActive, m_returnLabel;
     unsigned long m_lastStateChange;
     static unsigned long g_toggleDelay, g_momentaryDelay;
     static int g_screenWidth, g_screenHeight;

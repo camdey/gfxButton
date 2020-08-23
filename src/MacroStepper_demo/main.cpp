@@ -27,7 +27,8 @@ void setup(void) {
   btn.begin(&tft);
   btn.setScreenSize(480, 320);
   initButtons(200, 75);
-  populateScreen("Test");
+  // populateScreen("Test");
+  populateScreen("Calc");
 }
 
 // todo delay between joystick inputs?
