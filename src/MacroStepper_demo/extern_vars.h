@@ -14,6 +14,7 @@
 #include "icons/Cancel.h"
 #include "icons/FlashOff.h"
 #include "icons/FlashOn.h"
+#include "icons/Rocket.h"
 
 #define	BLACK   						0x0000
 #define	BLUE    						0x001F

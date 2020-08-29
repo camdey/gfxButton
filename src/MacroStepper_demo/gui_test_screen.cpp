@@ -150,7 +150,7 @@ namespace test_screen {
 
   void func_Back(bool active) {
     if (active && !areArrowsEnabled) {
-      // populateScreen("Test");
+      populateScreen("Calc");
     }
     Serial.println("back btn");
   }

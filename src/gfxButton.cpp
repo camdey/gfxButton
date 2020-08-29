@@ -25,7 +25,7 @@ gfxButton::gfxButton() {
 };
 
 
-gfxButton::gfxButton(String label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
+gfxButton::gfxButton(char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
   m_label = label;
   m_shape = shape;
   m_x = x;
@@ -86,7 +86,7 @@ gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, un
 / Initiates a button instance for GFX shapes, returns input
 / values to instance constructor.
 ******************************************************/
-gfxButton gfxButton::initButton(String label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
+gfxButton gfxButton::initButton(char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
   return gfxButton(label, shape, x, y, w, h, r, defaultColour, isTactile);
 }
 
@@ -635,7 +635,7 @@ void gfxButton::writeTextCircle(GFXfont font, unsigned long colour, String btnTe
 }
 
 
-void gfxButton::replaceButtonLabel(String m_label, String aligned, int btnX, int btnY, int btnW, int btnH) {
+void gfxButton::replaceButtonLabel(char* m_label, String aligned, int btnX, int btnY, int btnW, int btnH) {
   replaceButtonText(m_label, m_label, aligned, btnX, btnY, btnW, btnH);
 }
 
@@ -648,7 +648,7 @@ void gfxButton::replaceButtonValue(String value, String aligned, int btnX, int b
 // use this function to change the label assigned to a button
 // if you use a writeText function before updating the label,
 // it will cause issues when updating other text on the button
-void gfxButton::updateLabel(String label) {
+void gfxButton::updateLabel(char* label) {
   m_label = label;
 }
 
@@ -789,10 +789,9 @@ bool gfxButton::isTactile() {
 
 /******************************************************
 /                Init new Toggle
-/ Initiates a toggle type instance based on a
-/ previously  created button instance. Will allow
-/ triggering that button with toggle functionality
-/ and call a function on button state change
+/ Adds toggle-like responsiveness for a button.
+/ Allows triggering that button with toggle
+/ functionality and call a function on state change
 ******************************************************/
 void gfxButton::addToggle(void (*btnFunction)(bool state), int paddingPercent) {
   // set m_xMin, m_xMax, m_yMin, m_yMax
@@ -807,15 +806,15 @@ void gfxButton::addToggle(void (*btnFunction)(bool state), int paddingPercent) {
   m_touchType = "toggle";
   m_lastStateChange = 0UL;
   m_boolFunction = *btnFunction;
+  m_returnLabel = false;
 }
 
 
 /******************************************************
 /                Init new Momentary
-/ Initiates a momentary type instance based on a
-/ previously  created button instance. Will allow
-/ triggering that button with momentary functionality
-/ and call a function on button state change
+/ Adds momentary-like responsiveness for a button.
+/ Allows triggering that button with momentary
+/ functionality and call a function on state change
 ******************************************************/
 void gfxButton::addMomentary(void (*btnFunction)(bool state), int paddingPercent) {
   // set m_xMin, m_xMax, m_yMin, m_yMax
@@ -835,13 +834,15 @@ void gfxButton::addMomentary(void (*btnFunction)(bool state), int paddingPercent
 
 
 /******************************************************
-/                Init new Momentary
-/ Initiates a momentary type instance based on a
-/ previously  created button instance. Will allow
-/ triggering that button with momentary functionality
-/ and call a function on button state change
+/                Init new Input Key
+/ Adds momentary-like responsiveness for a button. The
+/ button will function as an input key, using the label
+/ of the button as the argument in the button's
+/ function. This makes it easy to implement a keyboard
+/ of buttons as you require only one catch function on
+/ the client side.
 ******************************************************/
-void gfxButton::addMomentary(void (*btnFunction)(String label), int paddingPercent) {
+void gfxButton::addInputKey(void (*btnFunction)(char* label), int paddingPercent) {
   // set m_xMin, m_xMax, m_yMin, m_yMax
   setTouchBoundary(m_x, m_y, m_w, m_h, m_r, paddingPercent);
   // initialise button as off
@@ -853,7 +854,7 @@ void gfxButton::addMomentary(void (*btnFunction)(String label), int paddingPerce
   m_yMax = vals.yMax;
   m_touchType = "momentary";
   m_lastStateChange = 0UL;
-  m_stringFunction = *btnFunction;
+  m_charFunction = *btnFunction;
   m_returnLabel = true;
 }
 
@@ -948,7 +949,7 @@ void gfxButton::actuateButton(bool actuate) {
 ******************************************************/
 void gfxButton::executeFunction() {
   if (m_returnLabel) {
-    m_stringFunction(m_label);
+    m_charFunction(m_label);
   }
   else {
     m_boolFunction(isButtonActive());

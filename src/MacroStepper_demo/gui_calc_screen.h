@@ -7,12 +7,12 @@ namespace calc_screen {
   void initCalcButtons();
   void populateCalcScreen();
   void checkCalcButtons(int touch_x, int touch_y);
-  void func_StepDistance(bool active);
-  void func_Number(String label);
-  // void func_Reset(bool active);
-  // void func_Back(bool active);
-  // void printPosition();
-  // void updateMovementCount();
+  void func_Distance(bool active);
+  void func_Number(char* label);
+  void incrementIndex();
+  void decrementIndex();
+  void func_Back(bool active);
+  void func_Run(bool active);
   void checkCalcNav();
   void checkCalcNavInput();
   int setIndex(String dimension, int index, int direction);
