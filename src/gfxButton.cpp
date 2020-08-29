@@ -803,7 +803,7 @@ void gfxButton::addToggle(void (*btnFunction)(bool state), int paddingPercent) {
   m_xMax = vals.xMax;
   m_yMin = vals.yMin;
   m_yMax = vals.yMax;
-  m_touchType = "toggle";
+  m_isMomentaryButton = false;
   m_lastStateChange = 0UL;
   m_boolFunction = *btnFunction;
   m_returnLabel = false;
@@ -826,7 +826,7 @@ void gfxButton::addMomentary(void (*btnFunction)(bool state), int paddingPercent
   m_xMax = vals.xMax;
   m_yMin = vals.yMin;
   m_yMax = vals.yMax;
-  m_touchType = "momentary";
+  m_isMomentaryButton = true;
   m_lastStateChange = 0UL;
   m_boolFunction = *btnFunction;
   m_returnLabel = false;
@@ -852,7 +852,7 @@ void gfxButton::addInputKey(void (*btnFunction)(char* label), int paddingPercent
   m_xMax = vals.xMax;
   m_yMin = vals.yMin;
   m_yMax = vals.yMax;
-  m_touchType = "momentary";
+  m_isMomentaryButton = true;
   m_lastStateChange = 0UL;
   m_charFunction = *btnFunction;
   m_returnLabel = true;
@@ -917,7 +917,7 @@ void gfxButton::contains(int x, int y) {
 
 void gfxButton::actuateButton(bool actuate) {
   if (actuate) {
-    if (m_touchType == "momentary") {
+    if (m_isMomentaryButton) {
       if (millis() - m_lastStateChange >= g_momentaryDelay) {
         m_lastStateChange = millis();
         // set button state
@@ -926,7 +926,7 @@ void gfxButton::actuateButton(bool actuate) {
         executeFunction();
       }
     }
-    else if (m_touchType == "toggle" && isToggleActive() == false) {
+    else if (!m_isMomentaryButton && isToggleActive() == false) {
       if (millis() - m_lastStateChange >= g_toggleDelay) {
         m_lastStateChange = millis();
         // set button state

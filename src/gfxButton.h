@@ -79,7 +79,7 @@ class gfxButton {
     bool isToggleActive();
 
     int m_xMin, m_xMax, m_yMin, m_yMax;
-    String m_touchType;
+    bool m_isMomentaryButton;
     void (*m_boolFunction)(bool state);
     void (*m_charFunction)(char* label);
     
