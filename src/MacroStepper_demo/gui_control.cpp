@@ -1,10 +1,12 @@
 #include "gui_control.h"
 #include "gui_test_screen.h"
+#include "gui_calc_screen.h"
 #include "extern_vars.h"
 
 using namespace test_screen;
+using namespace calc_screen;
 
-String currentScreen = "Test"; // set current screen shown to user
+String currentScreen = ""; // set current screen shown to user
 int xVal = 0, yVal = 0;
 bool zState = false;
 void readXStick();
@@ -20,6 +22,7 @@ void initButtons(unsigned long toggleDebounce, unsigned long momentaryDebounce) 
   btn.setMomentaryDelay(momentaryDebounce);
 
   initTestButtons();
+  initCalcButtons();
 }
 
 
@@ -29,6 +32,9 @@ void populateScreen(String screen) {
   tft.fillScreen(BLACK);
   if (screen == "Test") {
     populateTestScreen();
+  }
+  else if (screen == "Calc") {
+    populateCalcScreen();
   }
 }
 
@@ -53,6 +59,9 @@ void checkTouch(String screen) {
       if (screen == "Test") {
         test_screen::checkTestButtons(touch_x, touch_y);
       }
+      else if (screen == "Calc") {
+        calc_screen::checkCalcButtons(touch_x, touch_y);
+      }
     }
   }
   else if (touch_z == 0 && !zState && btn.isToggleActive()) {
@@ -66,8 +75,13 @@ void checkNavigation(String screen) {
   readXStick();
   readYStick();
 
-  if (screen == "Test" && millis() - lastNavUpdate >= navDelay) {
-    test_screen::checkTestNav();
+  if (millis() - lastNavUpdate >= navDelay) {
+    if (screen == "Test") {
+      test_screen::checkTestNav();
+    }
+    else if (screen == "Calc") {
+      calc_screen::checkCalcNav();
+    }
   }
 }
 
@@ -76,6 +90,9 @@ void checkNavigationInput(String screen) {
   readZStick();
   if (screen == "Test") {
     test_screen::checkTestNavInput();
+  }
+  if (screen == "Calc") {
+    calc_screen::checkCalcNavInput();
   }
   if (!zState && btn.isToggleActive()) {
     // if toggle active, reset flag to false when

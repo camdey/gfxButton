@@ -10,9 +10,9 @@ class gfxButton {
     void begin(MCUFRIEND_kbv *tft);
     gfxButton();
     gfxButton(int x, int y, int w, int h, bool isTactile);
-    gfxButton(String label, String m_shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
+    gfxButton(char* label, String m_shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
     gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile);
-    gfxButton initButton(String label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
+    gfxButton initButton(char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
     gfxButton initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile);
     gfxButton initTransparentButton(int x, int y, int w, int h, bool isTactile);
     gfxButton initVacantButton();
@@ -38,11 +38,12 @@ class gfxButton {
     bool isTactile();
     void updateBitmap(const unsigned char* bitmap);
     void updateColour(unsigned long colour);
-    void updateLabel(String label);
+    void updateLabel(char* label);
     void hideButton(bool hide);
     bool isHidden();
 
-    String m_shape, m_label;
+    String m_shape;
+    char* m_label;
     const unsigned char* m_bitmap;
     int m_x, m_y, m_w, m_h, m_r;
     int m_borderWidth;
@@ -51,7 +52,7 @@ class gfxButton {
 
 
   private:
-    void replaceButtonLabel(String m_label, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
+    void replaceButtonLabel(char* m_label, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
     void replaceButtonText(String newText, String prevText, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
     void replaceButtonValue(String value, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
     void setPreviousText(String _text);
@@ -66,6 +67,7 @@ class gfxButton {
   public:
     void addToggle(void (*btnFunction)(bool state), int paddingPercent);
     void addMomentary(void (*btnFunction)(bool state), int paddingPercent);
+    void addInputKey(void (*btnFunction)(char* label), int paddingPercent);
     void contains(int x, int y);
     void actuateButton(bool actuate);
     void setButtonActive(bool active);
@@ -77,8 +79,9 @@ class gfxButton {
     bool isToggleActive();
 
     int m_xMin, m_xMax, m_yMin, m_yMax;
-    String m_touchType;
-    void (*m_btnFunc)(bool state);
+    bool m_isMomentaryButton;
+    void (*m_boolFunction)(bool state);
+    void (*m_charFunction)(char* label);
     
 
   private:
@@ -92,7 +95,7 @@ class gfxButton {
     void setTouchBoundary(int x, int y, int w, int h, int r, int paddingPercent);
 
     struct touchBoundary vals;
-    bool m_buttonActive;
+    bool m_buttonActive, m_returnLabel;
     unsigned long m_lastStateChange;
     static unsigned long g_toggleDelay, g_momentaryDelay;
     static int g_screenWidth, g_screenHeight;
