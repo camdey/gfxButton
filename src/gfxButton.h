@@ -10,11 +10,13 @@ class gfxButton {
     void begin(MCUFRIEND_kbv *tft);
     gfxButton();
     gfxButton(int x, int y, int w, int h, bool isTactile);
+    gfxButton(char* label, int x, int y, int w, int h, bool isTactile);
     gfxButton(char* label, String m_shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
     gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile);
     gfxButton initButton(char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
     gfxButton initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile);
     gfxButton initTransparentButton(int x, int y, int w, int h, bool isTactile);
+    gfxButton initTransparentButton(char* label, int x, int y, int w, int h, bool isTactile);
     gfxButton initVacantButton();
     void addBorder(int width, unsigned long colour);
     void drawBorder(int width);

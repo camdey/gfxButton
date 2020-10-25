@@ -60,6 +60,21 @@ gfxButton::gfxButton(int x, int y, int w, int h, bool isTactile) {
 }
 
 
+gfxButton::gfxButton(char* label, int x, int y, int w, int h, bool isTactile) {
+  m_label = label;
+  m_shape = "blank";
+  m_x = x;
+  m_y = y;
+  m_w = w;
+  m_h = h;
+  m_r = 0;
+  m_defaultColour = 0;
+  m_isBitmapButton = false;
+  m_isTactile = isTactile;
+  m_isHidden = false;
+}
+
+
 /******************************************************
 /           Create a Bitmap Button Instance
 / Creates a button instance for bitmaps that will allow
@@ -98,6 +113,11 @@ gfxButton gfxButton::initButton(char* label, String shape, int x, int y, int w, 
 ******************************************************/
 gfxButton gfxButton::initTransparentButton(int x, int y, int w, int h, bool isTactile) {
   return gfxButton(x, y, w, h, isTactile);
+}
+
+
+gfxButton gfxButton::initTransparentButton(char* label, int x, int y, int w, int h, bool isTactile) {
+  return gfxButton(label, x, y, w, h, isTactile);
 }
 
 
