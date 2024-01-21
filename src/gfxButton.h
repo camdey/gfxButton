@@ -4,17 +4,23 @@
 #include "Arduino.h"
 #include "Adafruit_GFX.h"
 #include "MCUFRIEND_kbv.h"
+#include "SdFat.h"
 
 class gfxButton {
   public:
     void begin(MCUFRIEND_kbv *tft);
+    void begin(MCUFRIEND_kbv *tft, SdFat *SD);
     gfxButton();
     gfxButton(int x, int y, int w, int h, bool isTactile);
     gfxButton(char* label, int x, int y, int w, int h, bool isTactile);
     gfxButton(char* label, String m_shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
-    gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile);
+    gfxButton(const uint16_t* bitmap, int x, int y, int w, int h, bool isTactile);
+    gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, unsigned long defaultBgColour, bool isTactile);
+    gfxButton(char* filename, int x, int y, bool isTactile); // bitmap from sd card
     gfxButton initButton(char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
-    gfxButton initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, bool isTactile);
+    gfxButton initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, unsigned long defaultBgColour, bool isTactile);
+    gfxButton initRGBBitmapButton(const uint16_t* bitmap, int x, int y, int w, int h, bool isTactile);
+    gfxButton initSDBitmapButton(char* filename, int x, int y, bool isTactile);
     gfxButton initTransparentButton(int x, int y, int w, int h, bool isTactile);
     gfxButton initTransparentButton(char* label, int x, int y, int w, int h, bool isTactile);
     gfxButton initVacantButton();
@@ -22,8 +28,9 @@ class gfxButton {
     void drawBorder(int width);
     void drawBorder(int width, unsigned long colour);
     void drawButton();
-    void drawButton(unsigned long colour);
-    void drawNewBitmap(const unsigned char* bitmap, unsigned long colour);
+    void drawButton(unsigned long colour, unsigned long bg = 0x00);
+    void drawNewBitmap(const uint16_t* bitmap);
+    void drawNewBitmap(const unsigned char* bitmap, unsigned long colour, unsigned long bg = 0x00);
     void writeTextCentre(GFXfont font, unsigned long colour, String btnText = "");
     void writeTextTopCentre(GFXfont font, unsigned long colour, String btnText = "");
     void writeTextBottomCentre(GFXfont font, unsigned long colour, String btnText = "");
@@ -39,17 +46,32 @@ class gfxButton {
     void setTactile(bool tactile);
     bool isTactile();
     void updateBitmap(const unsigned char* bitmap);
+    void updateRGBBitmap(const uint16_t* bitmap);
     void updateColour(unsigned long colour);
     void updateLabel(char* label);
-    void hideButton(bool hide);
+    void hideButton();
     bool isHidden();
+
+    // bitmap loaded from sd card
+    #define BMPIMAGEOFFSET  54
+    #define BUFFPIXEL       20
+    #define NAMEMATCH       ""
+    #define PALETTEDEPTH    0     // do not support Palette modes
+
+    uint8_t drawBMPFromSD(char* nm, int x, int y);
+    uint16_t read16(File& f);
+    uint32_t read32(File& f);
+    void setBitmapDimensions(char* filename);
+
 
     String m_shape;
     char* m_label;
+    char* m_filename;
     const unsigned char* m_bitmap;
+    const uint16_t* m_rgb_bitmap;
     int m_x, m_y, m_w, m_h, m_r;
     int m_borderWidth;
-    unsigned long m_defaultColour;
+    unsigned long m_defaultColour, m_defaultBgColour;
     bool m_isBitmapButton, m_hasBorder;
 
 
