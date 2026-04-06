@@ -31,7 +31,7 @@ gfxButton::gfxButton() {
 };
 
 
-gfxButton::gfxButton(char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
+gfxButton::gfxButton(const char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
   m_label = label;
   m_shape = shape;
   m_x = x;
@@ -66,7 +66,7 @@ gfxButton::gfxButton(int x, int y, int w, int h, bool isTactile) {
 }
 
 
-gfxButton::gfxButton(char* label, int x, int y, int w, int h, bool isTactile) {
+gfxButton::gfxButton(const char* label, int x, int y, int w, int h, bool isTactile) {
   m_label = label;
   m_shape = "blank";
   m_x = x;
@@ -128,7 +128,7 @@ gfxButton::gfxButton(const uint16_t* bitmap, int x, int y, int w, int h, bool is
 / Creates a button instance for bitmaps loaded from SD
 / card
 ******************************************************/
-gfxButton::gfxButton(char* filename, int x, int y, bool isTactile) {
+gfxButton::gfxButton(const char* filename, int x, int y, bool isTactile) {
   m_filename = filename;
   m_shape = "sd_bitmap";
   m_x = x;
@@ -144,7 +144,7 @@ gfxButton::gfxButton(char* filename, int x, int y, bool isTactile) {
 / Initiates a button instance for GFX shapes, returns input
 / values to instance constructor.
 ******************************************************/
-gfxButton gfxButton::initButton(char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
+gfxButton gfxButton::initButton(const char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
   return gfxButton(label, shape, x, y, w, h, r, defaultColour, isTactile);
 }
 
@@ -159,7 +159,7 @@ gfxButton gfxButton::initTransparentButton(int x, int y, int w, int h, bool isTa
 }
 
 
-gfxButton gfxButton::initTransparentButton(char* label, int x, int y, int w, int h, bool isTactile) {
+gfxButton gfxButton::initTransparentButton(const char* label, int x, int y, int w, int h, bool isTactile) {
   return gfxButton(label, x, y, w, h, isTactile);
 }
 
@@ -199,7 +199,7 @@ gfxButton gfxButton::initRGBBitmapButton(const uint16_t* bitmap, int x, int y, i
 / Initiates a button instance for bitmaps, returns input
 / values to instance constructor.
 ******************************************************/
-gfxButton gfxButton::initSDBitmapButton(char* filename, int x, int y, bool isTactile) {
+gfxButton gfxButton::initSDBitmapButton(const char* filename, int x, int y, bool isTactile) {
   return gfxButton(filename, x, y, isTactile);
 }
 
@@ -392,6 +392,81 @@ void gfxButton::drawBorder(int width) {
 }
 
 
+/******************************************************
+/          Common Text Rendering Helper
+/ Handles text positioning, overdraw, and rendering for
+/ all writeText variants.
+******************************************************/
+void gfxButton::writeTextHelper(GFXfont font, unsigned long colour, String btnText, TextAlignX alignX, TextRegionY regionY) {
+  if (btnText == "") {
+    btnText = m_label;
+  }
+
+  // compute button region based on vertical region
+  int btnX = m_x;
+  int btnW = m_w;
+  int btnY, btnH;
+  switch (regionY) {
+    case RegionTop:
+      btnY = m_y + (m_h / 2);
+      btnH = (m_h / 2);
+      break;
+    case RegionBottom:
+      btnY = m_y + m_h;
+      btnH = (m_h / 2);
+      break;
+    case RegionFull:
+    default:
+      btnY = m_y + m_h;
+      btnH = m_h;
+      break;
+  }
+
+  int16_t textX, textY;
+  uint16_t textW, textH;
+  m_tft->setFont(&font);
+  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
+
+  int xPad = (btnW - textW) / 2;
+  int yPad = (btnH - textH) / 2;
+  int xPos, yPos;
+
+  String alignStr;
+  switch (alignX) {
+    case AlignLeft:
+      xPos = btnX + ceil(btnW * 0.05);
+      yPos = btnY - yPad;
+      alignStr = "left";
+      break;
+    case AlignRight:
+      xPos = (btnX + btnW) - (textW + ceil(btnW * 0.05));
+      yPos = btnY - yPad;
+      alignStr = "right";
+      break;
+    case AlignCentre:
+    default:
+      xPos = btnX + xPad;
+      yPos = btnY - yPad;
+      alignStr = "centre";
+      break;
+  }
+
+  if (btnText == m_label) {
+    replaceButtonLabel(m_label, alignStr, btnX, btnY, btnW, btnH);
+  }
+  else {
+    if (!replaceButtonValue(btnText, alignStr, btnX, btnY, btnW, btnH)) {
+      return;  // text unchanged, skip redraw
+    }
+    setPreviousText(btnText);
+  }
+
+  m_tft->setTextColor(colour);
+  m_tft->setCursor(xPos, yPos);
+  m_tft->print(btnText);
+}
+
+
 // TODO support text alignment for triangles
 /******************************************************
 /          Write Text for Buttons
@@ -401,341 +476,63 @@ void gfxButton::drawBorder(int width) {
 / dimensions to print the text.
 ******************************************************/
 void gfxButton::writeTextCentre(GFXfont font, unsigned long colour, String btnText) {
-  if (btnText == "") {
-    btnText = m_label; // if no text provided, use button label
-  }
-  int btnX = m_x;
-  int btnY = m_y + m_h; // text is printed from bottom left so add height value to y
-  int btnW = m_w;
-  int btnH = m_h;
-
-  int16_t textX, textY;
-  uint16_t textW, textH;
-  // set font to get text size
-  m_tft->setFont(&font);
-  // set cursor to 0 as only text box dimensions required
-  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
-
-  int xPad;
-  int yPad;
-  int xPos;
-  int yPos;
-
-  // find space left over after text added
-  // divide by two to get x and y padding
-  xPad = (btnW - textW) / 2;
-  yPad = (btnH - textH) / 2;
-
-  // centre align text
-  xPos = btnX + xPad;
-  yPos = btnY - yPad;
-
-  if (btnText == m_label) {
-    replaceButtonLabel(m_label, "centre", btnX, btnY, btnW, btnH);
-  }
-  else {
-    replaceButtonValue(btnText, "centre", btnX, btnY, btnW, btnH);
-    setPreviousText(btnText);
-  }
-
-  m_tft->setTextColor(colour);
-  m_tft->setCursor(xPos, yPos);
-  m_tft->print(btnText);
+  writeTextHelper(font, colour, btnText, AlignCentre, RegionFull);
 }
 
 
-/******************************************************
-/          Top centre align text on button
-******************************************************/
 void gfxButton::writeTextTopCentre(GFXfont font, unsigned long colour, String btnText) {
-  if (btnText == "") {
-    btnText = m_label; // if no text provided, use button label
-  }
-  int btnX = m_x;
-  int btnY = m_y + (m_h / 2);  // text is printed from bottom left so add half height value to y
-  int btnW = m_w;
-  int btnH = (m_h / 2);      // treat button as if it is only half the height
-
-  int16_t textX, textY;
-  uint16_t textW, textH;
-  // set font to get text size
-  m_tft->setFont(&font);
-  // set cursor to 0 as only text box dimensions required
-  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
-
-  int xPad, yPad, xPos, yPos;
-
-  // find space left over after text added
-  // divide by two to get x and y padding
-  xPad = (btnW - textW) / 2;
-  yPad = (btnH - textH) / 2;
-
-  // centre align text
-  xPos = btnX + xPad;
-  yPos = btnY - yPad;
-
-  if (btnText == m_label) {
-    replaceButtonLabel(m_label, "centre", btnX, btnY, btnW, btnH);
-  }
-  else {
-    replaceButtonValue(btnText, "centre", btnX, btnY, btnW, btnH);
-    setPreviousText(btnText);
-  }
-
-  m_tft->setTextColor(colour);
-  m_tft->setCursor(xPos, yPos);
-  m_tft->print(btnText);
+  writeTextHelper(font, colour, btnText, AlignCentre, RegionTop);
 }
 
 
-/******************************************************
-/          Bottom centre align text on button
-******************************************************/
 void gfxButton::writeTextBottomCentre(GFXfont font, unsigned long colour, String btnText) {
-  if (btnText == "") {
-    btnText = m_label; // if no text provided, use button label
-  }
-  int btnX = m_x;
-  int btnY = m_y + m_h;    // text is printed from bottom left so add height value to y
-  int btnW = m_w;
-  int btnH = (m_h / 2);  // treat button as if it is only half the height
-
-  int16_t textX, textY;
-  uint16_t textW, textH;
-  // set font to get text size
-  m_tft->setFont(&font);
-  // set cursor to 0 as only text box dimensions required
-  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
-
-  int xPad, yPad, xPos, yPos;
-
-  // find space left over after text added
-  // divide by two to get x and y padding
-  xPad = (btnW - textW) / 2;
-  yPad = (btnH - textH) / 2;
-
-  // centre align text
-  xPos = btnX + xPad;
-  yPos = btnY - yPad;
-
-  if (btnText == m_label) {
-    replaceButtonLabel(m_label, "centre", btnX, btnY, btnW, btnH);
-  }
-  else {
-    replaceButtonValue(btnText, "centre", btnX, btnY, btnW, btnH);
-    setPreviousText(btnText);
-  }
-
-  m_tft->setTextColor(colour);
-  m_tft->setCursor(xPos, yPos);
-  m_tft->print(btnText);
+  writeTextHelper(font, colour, btnText, AlignCentre, RegionBottom);
 }
 
 
-/******************************************************
-/          Top left align text on button
-******************************************************/
 void gfxButton::writeTextTopLeft(GFXfont font, unsigned long colour, String btnText) {
-  if (btnText == "") {
-    btnText = m_label; // if no text provided, use button label
-  }
-  int btnX = m_x;
-  int btnY = m_y + (m_h / 2);  // text is printed from bottom left so add half height value to y
-  int btnW = m_w;
-  int btnH = (m_h / 2);      // treat button as if it is only half the height
-
-  int16_t textX, textY;
-  uint16_t textW, textH;
-  // set font to get text size
-  m_tft->setFont(&font);
-  // set cursor to 0 as only text box dimensions required
-  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
-
-  int yPad, xPos, yPos;
-
-  // find space left over after text added
-  // divide by two to ge y padding
-  yPad = (btnH - textH) / 2;
-
-  // left align text, padded by 5% of button width
-  xPos = btnX + ceil(btnW * 0.05);
-  yPos = btnY - yPad;
-
-  if (btnText == m_label) {
-    replaceButtonLabel(m_label, "left", btnX, btnY, btnW, btnH);
-  }
-  else {
-    replaceButtonValue(btnText, "left", btnX, btnY, btnW, btnH);
-    setPreviousText(btnText);
-  }
-
-  m_tft->setTextColor(colour);
-  m_tft->setCursor(xPos, yPos);
-  m_tft->print(btnText);
+  writeTextHelper(font, colour, btnText, AlignLeft, RegionTop);
 }
 
 
-/******************************************************
-/          Bottom centre align text on button
-******************************************************/
 void gfxButton::writeTextBottomLeft(GFXfont font, unsigned long colour, String btnText) {
-  if (btnText == "") {
-    btnText = m_label; // if no text provided, use button label
-  }
-  int btnX = m_x;
-  int btnY = m_y + m_h;    // text is printed from bottom left so add height value to y
-  int btnW = m_w;
-  int btnH = (m_h / 2);  // treat button as if it is only half the height
-
-  int16_t textX, textY;
-  uint16_t textW, textH;
-  // set font to get text size
-  m_tft->setFont(&font);
-  // set cursor to 0 as only text box dimensions required
-  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
-
-  int yPad, xPos, yPos;
-
-  // find space left over after text added
-  // divide by two to get y padding
-  yPad = (btnH - textH) / 2;
-
-  // left align text, padded by 5% of button width
-  xPos = btnX + ceil(btnW * 0.05);
-  yPos = btnY - yPad;
-
-  if (btnText == m_label) {
-    replaceButtonLabel(m_label, "left", btnX, btnY, btnW, btnH);
-  }
-  else {
-    replaceButtonValue(btnText, "left", btnX, btnY, btnW, btnH);
-    setPreviousText(btnText);
-  }
-
-  m_tft->setTextColor(colour);
-  m_tft->setCursor(xPos, yPos);
-  m_tft->print(btnText);
+  writeTextHelper(font, colour, btnText, AlignLeft, RegionBottom);
 }
 
 
-/******************************************************
-/           Left align text on button
-******************************************************/
 void gfxButton::writeTextLeft(GFXfont font, unsigned long colour, String btnText) {
-  if (btnText == "") {
-    btnText = m_label; // if no text provided, use button label
-  }
-  int btnX = m_x;
-  int btnY = m_y + m_h; // text is printed from bottom left so add height value to y
-  int btnW = m_w;
-  int btnH = m_h;
-
-  int16_t textX, textY;
-  uint16_t textW, textH;
-  // set font to get text size
-  m_tft->setFont(&font);
-  // set cursor to 0 as only text box dimensions required
-  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
-
-  int yPad, xPos, yPos;
-
-  // find space left over after text added
-  // divide by two to y padding
-  yPad = (btnH - textH) / 2;
-
-  // left align text, padded by 5% of button width
-  xPos = btnX + ceil(btnW * 0.05);
-  yPos = btnY - yPad;
-
-  if (btnText == m_label) {
-    replaceButtonLabel(m_label, "left", btnX, btnY, btnW, btnH);
-  }
-  else {
-    replaceButtonValue(btnText, "left", btnX, btnY, btnW, btnH);
-    setPreviousText(btnText);
-  }
-
-  m_tft->setTextColor(colour);
-  m_tft->setCursor(xPos, yPos);
-  m_tft->print(btnText);
+  writeTextHelper(font, colour, btnText, AlignLeft, RegionFull);
 }
 
 
-/******************************************************
-/           Right align text on button
-******************************************************/
 void gfxButton::writeTextRight(GFXfont font, unsigned long colour, String btnText) {
-  if (btnText == "") {
-    btnText = m_label; // if no text provided, use button label
-  }
-  int btnX = m_x;
-  int btnY = m_y + m_h; // text is printed from bottom left so add height value to y
-  int btnW = m_w;
-  int btnH = m_h;
-
-  int16_t textX, textY;
-  uint16_t textW, textH;
-  // set font to get text size
-  m_tft->setFont(&font);
-  // set cursor to 0 as only text box dimensions required
-  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
-
-  int yPad, xPos, yPos;
-
-  // find space left over after text added
-  // divide by two to get y padding
-  yPad = (btnH - textH) / 2;
-
-  // right align text
-  xPos = (btnX + btnW) - (textW + ceil(btnW * 0.05));
-  yPos = btnY - yPad;
-
-  if (btnText == m_label) {
-    replaceButtonLabel(m_label, "right", btnX, btnY, btnW, btnH);
-  }
-  else {
-    replaceButtonValue(btnText, "right", btnX, btnY, btnW, btnH);
-    setPreviousText(btnText);
-  }
-
-  m_tft->setTextColor(colour);
-  m_tft->setCursor(xPos, yPos);
-  m_tft->print(btnText);
+  writeTextHelper(font, colour, btnText, AlignRight, RegionFull);
 }
 
 
-/******************************************************
-/         Centre align text on circle button
-******************************************************/
 void gfxButton::writeTextCircle(GFXfont font, unsigned long colour, String btnText) {
   if (btnText == "") {
-    btnText = m_label; // if no text provided, use button label
+    btnText = m_label;
   }
   int btnX = m_x;
-  int btnY = m_y + m_h; // text is printed from bottom left so add height value to y
+  int btnY = m_y + m_h;
 
   int16_t textX, textY;
   uint16_t textW, textH;
-  // set font to get text size
   m_tft->setFont(&font);
-  // set cursor to 0 as only text box dimensions required
   m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
 
-  int xPad, yPad, xPos, yPos;
-
-  // for cicles, x and y define centre so divide
-  // text w/h by two to offset centre point
-  xPad = (textW / 2);
-  yPad = (textH / 2);
-
-  xPos = btnX - xPad;
-  yPos = btnY + yPad;
+  // for circles, x and y define centre so offset by half text dimensions
+  int xPos = btnX - (textW / 2);
+  int yPos = btnY + (textH / 2);
 
   if (btnText == m_label) {
     replaceButtonLabel(m_label, "centre", btnX, btnY);
   }
   else {
-    replaceButtonValue(btnText, "centre", btnX, btnY);
+    if (!replaceButtonValue(btnText, "centre", btnX, btnY)) {
+      return;  // text unchanged, skip redraw
+    }
     setPreviousText(btnText);
   }
 
@@ -745,20 +542,24 @@ void gfxButton::writeTextCircle(GFXfont font, unsigned long colour, String btnTe
 }
 
 
-void gfxButton::replaceButtonLabel(char* m_label, String aligned, int btnX, int btnY, int btnW, int btnH) {
+void gfxButton::replaceButtonLabel(const char* m_label, String aligned, int btnX, int btnY, int btnW, int btnH) {
   replaceButtonText(m_label, m_label, aligned, btnX, btnY, btnW, btnH);
 }
 
 
-void gfxButton::replaceButtonValue(String value, String aligned, int btnX, int btnY, int btnW, int btnH) {
+bool gfxButton::replaceButtonValue(String value, String aligned, int btnX, int btnY, int btnW, int btnH) {
+  if (value == getPreviousText()) {
+    return false;  // text unchanged, skip redraw
+  }
   replaceButtonText(value, getPreviousText(), aligned, btnX, btnY, btnW, btnH);
+  return true;
 }
 
 
 // use this function to change the label assigned to a button
 // if you use a writeText function before updating the label,
 // it will cause issues when updating other text on the button
-void gfxButton::updateLabel(char* label) {
+void gfxButton::updateLabel(const char* label) {
   m_label = label;
 }
 
@@ -787,8 +588,13 @@ void gfxButton::updateRGBBitmap(const uint16_t* bitmap) {
 }
 
 
-// hide button and disable tactile functionality
-void gfxButton::hideButton() {
+// hide or show button — show=false (default) hides, show=true redraws
+void gfxButton::hideButton(bool show) {
+  if (show) {
+    m_isHidden = false;
+    drawButton();
+    return;
+  }
   m_isHidden = true;
 
   if (m_shape == "drawRect") {
@@ -819,7 +625,7 @@ void gfxButton::hideButton() {
 
 
 // check if button is hidden
-bool gfxButton::isHidden() {
+bool gfxButton::isHidden() const {
   return m_isHidden;
 }
 
@@ -876,7 +682,7 @@ void gfxButton::replaceButtonText(String newText, String prevText, String aligne
 }
 
 
-String gfxButton::getPreviousText() {
+String gfxButton::getPreviousText() const {
   return m_previousText;
 }
 
@@ -886,9 +692,9 @@ void gfxButton::setPreviousText(String _text) {
 }
 
 
-unsigned long gfxButton::getButtonColour() {
+unsigned long gfxButton::getButtonColour() const {
   if (m_buttonColour == 0) {
-    m_buttonColour = m_defaultColour;
+    return m_defaultColour;
   }
   return m_buttonColour;
 }
@@ -907,7 +713,7 @@ void gfxButton::setButtonColour(unsigned long colour) {
 ******************************************************/
 unsigned long gfxButton::g_backgroundColour = 0x0000;
 
-unsigned long gfxButton::getBackgroundColour() {
+unsigned long gfxButton::getBackgroundColour() const {
   return g_backgroundColour;
 }
 
@@ -924,7 +730,7 @@ void gfxButton::setTactile(bool tactile) {
 
 
 // check if button is tactile, i.e. can be pressed/change state
-bool gfxButton::isTactile() {
+bool gfxButton::isTactile() const {
   return m_isTactile;
 }
 
@@ -947,6 +753,8 @@ void gfxButton::addToggle(void (*btnFunction)(bool state), int paddingPercent) {
   m_yMax = vals.yMax;
   m_isMomentaryButton = false;
   m_lastStateChange = 0UL;
+  m_buttonToggleDelay = 0UL;
+  m_buttonMomentaryDelay = 0UL;
   m_boolFunction = *btnFunction;
   m_returnLabel = false;
 }
@@ -970,6 +778,8 @@ void gfxButton::addMomentary(void (*btnFunction)(bool state), int paddingPercent
   m_yMax = vals.yMax;
   m_isMomentaryButton = true;
   m_lastStateChange = 0UL;
+  m_buttonToggleDelay = 0UL;
+  m_buttonMomentaryDelay = 0UL;
   m_boolFunction = *btnFunction;
   m_returnLabel = false;
 }
@@ -984,7 +794,7 @@ void gfxButton::addMomentary(void (*btnFunction)(bool state), int paddingPercent
 / of buttons as you require only one catch function on
 / the client side.
 ******************************************************/
-void gfxButton::addInputKey(void (*btnFunction)(char* label), int paddingPercent) {
+void gfxButton::addInputKey(void (*btnFunction)(const char* label), int paddingPercent) {
   // set m_xMin, m_xMax, m_yMin, m_yMax
   setTouchBoundary(m_x, m_y, m_w, m_h, m_r, paddingPercent);
   // initialise button as off
@@ -996,6 +806,8 @@ void gfxButton::addInputKey(void (*btnFunction)(char* label), int paddingPercent
   m_yMax = vals.yMax;
   m_isMomentaryButton = true;
   m_lastStateChange = 0UL;
+  m_buttonToggleDelay = 0UL;
+  m_buttonMomentaryDelay = 0UL;
   m_charFunction = *btnFunction;
   m_returnLabel = true;
 }
@@ -1066,7 +878,8 @@ void gfxButton::contains(int x, int y) {
 void gfxButton::actuateButton(bool actuate) {
   if (actuate) {
     if (m_isMomentaryButton) {
-      if (millis() - m_lastStateChange >= g_momentaryDelay) {
+      unsigned long delay = m_buttonMomentaryDelay > 0 ? m_buttonMomentaryDelay : g_momentaryDelay;
+      if (millis() - m_lastStateChange >= delay) {
         m_lastStateChange = millis();
         // set button state
         setButtonActive(true); // momentary buttons are always active when pressed
@@ -1075,7 +888,8 @@ void gfxButton::actuateButton(bool actuate) {
       }
     }
     else if (!m_isMomentaryButton && isToggleActive() == false) {
-      if (millis() - m_lastStateChange >= g_toggleDelay) {
+      unsigned long delay = m_buttonToggleDelay > 0 ? m_buttonToggleDelay : g_toggleDelay;
+      if (millis() - m_lastStateChange >= delay) {
         m_lastStateChange = millis();
         // set button state
         setButtonActive(!isButtonActive());
@@ -1109,7 +923,7 @@ void gfxButton::executeFunction() {
 /               Get Button State
 / Get the latest state of the button, false if inactive.
 ******************************************************/
-bool gfxButton::isButtonActive() {
+bool gfxButton::isButtonActive() const {
   return m_buttonActive;
 }
 
@@ -1149,6 +963,16 @@ void gfxButton::setMomentaryDelay(unsigned long delay) {
   g_momentaryDelay = delay;
 }
 
+
+void gfxButton::setButtonToggleDelay(unsigned long delay) {
+  m_buttonToggleDelay = delay;
+}
+
+
+void gfxButton::setButtonMomentaryDelay(unsigned long delay) {
+  m_buttonMomentaryDelay = delay;
+}
+
 // delcare and initialise global variable for toggle state
 bool gfxButton::g_toggleActive = false;
 
@@ -1165,7 +989,7 @@ void gfxButton::setToggleActive(bool active) {
 / Get state of toggle flag. Set when a toggle button
 / is active and needs to be reset by 0 touch reading.
 ******************************************************/
-bool gfxButton::isToggleActive() {
+bool gfxButton::isToggleActive() const {
   return g_toggleActive;
 }
 
@@ -1194,7 +1018,7 @@ uint32_t gfxButton::read32(File& f) {
 }
 
 
-uint8_t gfxButton::drawBMPFromSD(char *nm, int x, int y) {
+uint8_t gfxButton::drawBMPFromSD(const char *nm, int x, int y) {
   File bmpFile;
   int bmpWidth, bmpHeight;    // W+H in pixels
   uint8_t bmpDepth;           // Bit depth (currently must be 24, 16, 8, 4, 1)
@@ -1359,11 +1183,12 @@ struct bmp_image_header_t {
 /******************************************************
 /   Parse Bitmap on SD Card to get width and height
 ******************************************************/
-void gfxButton::setBitmapDimensions(char* filename) {
+void gfxButton::setBitmapDimensions(const char* filename) {
   File bmpImage = m_SD->open(filename);
   bmpImage.seek(0x12);
-  m_w = bmpImage.read();
+  m_w = read32(bmpImage);  // BMP width is 32-bit little-endian at offset 0x12
   bmpImage.seek(0x16);
-  m_h = bmpImage.read();
+  int32_t h = read32(bmpImage);  // BMP height is 32-bit LE at 0x16, can be negative (top-down)
+  m_h = (h < 0) ? -h : h;
   bmpImage.close();
 }

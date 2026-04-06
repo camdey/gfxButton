@@ -12,17 +12,17 @@ class gfxButton {
     void begin(MCUFRIEND_kbv *tft, SdFat *SD);
     gfxButton();
     gfxButton(int x, int y, int w, int h, bool isTactile);
-    gfxButton(char* label, int x, int y, int w, int h, bool isTactile);
-    gfxButton(char* label, String m_shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
+    gfxButton(const char* label, int x, int y, int w, int h, bool isTactile);
+    gfxButton(const char* label, String m_shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
     gfxButton(const uint16_t* bitmap, int x, int y, int w, int h, bool isTactile);
     gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, unsigned long defaultBgColour, bool isTactile);
-    gfxButton(char* filename, int x, int y, bool isTactile); // bitmap from sd card
-    gfxButton initButton(char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
+    gfxButton(const char* filename, int x, int y, bool isTactile); // bitmap from sd card
+    gfxButton initButton(const char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
     gfxButton initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, unsigned long defaultBgColour, bool isTactile);
     gfxButton initRGBBitmapButton(const uint16_t* bitmap, int x, int y, int w, int h, bool isTactile);
-    gfxButton initSDBitmapButton(char* filename, int x, int y, bool isTactile);
+    gfxButton initSDBitmapButton(const char* filename, int x, int y, bool isTactile);
     gfxButton initTransparentButton(int x, int y, int w, int h, bool isTactile);
-    gfxButton initTransparentButton(char* label, int x, int y, int w, int h, bool isTactile);
+    gfxButton initTransparentButton(const char* label, int x, int y, int w, int h, bool isTactile);
     gfxButton initVacantButton();
     void addBorder(int width, unsigned long colour);
     void drawBorder(int width);
@@ -40,17 +40,17 @@ class gfxButton {
     void writeTextRight(GFXfont font, unsigned long colour, String btnText = "");
     void writeTextCircle(GFXfont font, unsigned long colour, String btnText = "");
     void setBackgroundColour(unsigned long colour);
-    unsigned long getBackgroundColour();
+    unsigned long getBackgroundColour() const;
     void setButtonColour(unsigned long colour);
-    unsigned long getButtonColour();
+    unsigned long getButtonColour() const;
     void setTactile(bool tactile);
-    bool isTactile();
+    bool isTactile() const;
     void updateBitmap(const unsigned char* bitmap);
     void updateRGBBitmap(const uint16_t* bitmap);
     void updateColour(unsigned long colour);
-    void updateLabel(char* label);
-    void hideButton();
-    bool isHidden();
+    void updateLabel(const char* label);
+    void hideButton(bool show = false);
+    bool isHidden() const;
 
     // bitmap loaded from sd card
     #define BMPIMAGEOFFSET  54
@@ -58,15 +58,15 @@ class gfxButton {
     #define NAMEMATCH       ""
     #define PALETTEDEPTH    0     // do not support Palette modes
 
-    uint8_t drawBMPFromSD(char* nm, int x, int y);
+    uint8_t drawBMPFromSD(const char* nm, int x, int y);
     uint16_t read16(File& f);
     uint32_t read32(File& f);
-    void setBitmapDimensions(char* filename);
+    void setBitmapDimensions(const char* filename);
 
 
     String m_shape;
-    char* m_label;
-    char* m_filename;
+    const char* m_label;  // non-owning pointer — caller must ensure string outlives the button
+    const char* m_filename;
     const unsigned char* m_bitmap;
     const uint16_t* m_rgb_bitmap;
     int m_x, m_y, m_w, m_h, m_r;
@@ -76,11 +76,14 @@ class gfxButton {
 
 
   private:
-    void replaceButtonLabel(char* m_label, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
+    enum TextAlignX { AlignCentre, AlignLeft, AlignRight };
+    enum TextRegionY { RegionFull, RegionTop, RegionBottom };
+    void writeTextHelper(GFXfont font, unsigned long colour, String btnText, TextAlignX alignX, TextRegionY regionY);
+    void replaceButtonLabel(const char* m_label, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
     void replaceButtonText(String newText, String prevText, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
-    void replaceButtonValue(String value, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
+    bool replaceButtonValue(String value, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
     void setPreviousText(String _text);
-    String getPreviousText();
+    String getPreviousText() const;
 
     String m_previousText;
     unsigned long m_buttonColour, m_borderColour;
@@ -91,21 +94,23 @@ class gfxButton {
   public:
     void addToggle(void (*btnFunction)(bool state), int paddingPercent);
     void addMomentary(void (*btnFunction)(bool state), int paddingPercent);
-    void addInputKey(void (*btnFunction)(char* label), int paddingPercent);
+    void addInputKey(void (*btnFunction)(const char* label), int paddingPercent);
     void contains(int x, int y);
     void actuateButton(bool actuate);
     void setButtonActive(bool active);
-    bool isButtonActive();
+    bool isButtonActive() const;
     void setScreenSize(int width, int height);
     void setToggleDelay(unsigned long delay);
     void setMomentaryDelay(unsigned long delay);
+    void setButtonToggleDelay(unsigned long delay);
+    void setButtonMomentaryDelay(unsigned long delay);
     void setToggleActive(bool active);
-    bool isToggleActive();
+    bool isToggleActive() const;
 
     int m_xMin, m_xMax, m_yMin, m_yMax;
     bool m_isMomentaryButton;
     void (*m_boolFunction)(bool state);
-    void (*m_charFunction)(char* label);
+    void (*m_charFunction)(const char* label);
     
 
   private:
@@ -121,6 +126,7 @@ class gfxButton {
     struct touchBoundary vals;
     bool m_buttonActive, m_returnLabel;
     unsigned long m_lastStateChange;
+    unsigned long m_buttonToggleDelay, m_buttonMomentaryDelay;  // per-button overrides (0 = use global)
     static unsigned long g_toggleDelay, g_momentaryDelay;
     static int g_screenWidth, g_screenHeight;
     static bool g_toggleActive;
