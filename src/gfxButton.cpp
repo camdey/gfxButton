@@ -212,6 +212,7 @@ gfxButton gfxButton::initSDBitmapButton(const char* filename, int x, int y, bool
 ******************************************************/
 void gfxButton::drawButton() {
   m_isHidden = false;
+  m_previousText = "";
   if (m_shape == "drawRect") {
     m_tft->drawRect(m_x, m_y, m_w, m_h, m_defaultColour);
   }
@@ -264,6 +265,7 @@ void gfxButton::drawButton() {
 ******************************************************/
 void gfxButton::drawButton(unsigned long colour, unsigned long bg) {
   m_isHidden = false;
+  m_previousText = "";
   if (m_shape == "drawRect") {
     m_tft->drawRect(m_x, m_y, m_w, m_h, colour);
   }
@@ -455,9 +457,7 @@ void gfxButton::writeTextHelper(GFXfont font, unsigned long colour, String btnTe
     replaceButtonLabel(m_label, alignStr, btnX, btnY, btnW, btnH);
   }
   else {
-    if (!replaceButtonValue(btnText, alignStr, btnX, btnY, btnW, btnH)) {
-      return;  // text unchanged, skip redraw
-    }
+    replaceButtonValue(btnText, alignStr, btnX, btnY, btnW, btnH);
     setPreviousText(btnText);
   }
 
@@ -530,9 +530,7 @@ void gfxButton::writeTextCircle(GFXfont font, unsigned long colour, String btnTe
     replaceButtonLabel(m_label, "centre", btnX, btnY);
   }
   else {
-    if (!replaceButtonValue(btnText, "centre", btnX, btnY)) {
-      return;  // text unchanged, skip redraw
-    }
+    replaceButtonValue(btnText, "centre", btnX, btnY);
     setPreviousText(btnText);
   }
 
@@ -547,12 +545,8 @@ void gfxButton::replaceButtonLabel(const char* m_label, String aligned, int btnX
 }
 
 
-bool gfxButton::replaceButtonValue(String value, String aligned, int btnX, int btnY, int btnW, int btnH) {
-  if (value == getPreviousText()) {
-    return false;  // text unchanged, skip redraw
-  }
+void gfxButton::replaceButtonValue(String value, String aligned, int btnX, int btnY, int btnW, int btnH) {
   replaceButtonText(value, getPreviousText(), aligned, btnX, btnY, btnW, btnH);
-  return true;
 }
 
 
@@ -596,6 +590,7 @@ void gfxButton::hideButton(bool show) {
     return;
   }
   m_isHidden = true;
+  m_previousText = "";
 
   if (m_shape == "drawRect") {
     m_tft->drawRect(m_x, m_y, m_w, m_h, g_backgroundColour);
@@ -690,6 +685,7 @@ String gfxButton::getPreviousText() const {
 void gfxButton::setPreviousText(String _text) {
   m_previousText = _text;
 }
+
 
 
 unsigned long gfxButton::getButtonColour() const {

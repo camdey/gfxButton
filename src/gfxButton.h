@@ -81,10 +81,9 @@ class gfxButton {
     void writeTextHelper(GFXfont font, unsigned long colour, String btnText, TextAlignX alignX, TextRegionY regionY);
     void replaceButtonLabel(const char* m_label, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
     void replaceButtonText(String newText, String prevText, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
-    bool replaceButtonValue(String value, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
+    void replaceButtonValue(String value, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
     void setPreviousText(String _text);
     String getPreviousText() const;
-
     String m_previousText;
     unsigned long m_buttonColour, m_borderColour;
     static unsigned long g_backgroundColour;
