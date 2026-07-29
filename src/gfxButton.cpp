@@ -317,6 +317,9 @@ void gfxButton::drawButton(unsigned long colour, unsigned long bg) {
 / the state of the button.
 ******************************************************/
 void gfxButton::drawNewBitmap(const unsigned char* bitmap, unsigned long colour, unsigned long bg) {
+  m_bitmap = bitmap;
+  m_isHidden = false;
+  m_previousText = "";
   // fill over previous bitmap/button
   m_tft->fillRect(m_x, m_y, m_w, m_h, getBackgroundColour());
   // draw new bitmap
@@ -334,6 +337,9 @@ void gfxButton::drawNewBitmap(const unsigned char* bitmap, unsigned long colour,
 / the state of the button.
 ******************************************************/
 void gfxButton::drawNewBitmap(const uint16_t* bitmap) {
+  m_rgb_bitmap = bitmap;
+  m_isHidden = false;
+  m_previousText = "";
   // fill over previous bitmap/button
   m_tft->fillRect(m_x, m_y, m_w, m_h, getBackgroundColour());
   // draw new bitmap
@@ -582,13 +588,12 @@ void gfxButton::updateRGBBitmap(const uint16_t* bitmap) {
 }
 
 
-// hide or show button — show=false (default) hides, show=true redraws
-void gfxButton::hideButton(bool show) {
-  if (show) {
-    m_isHidden = false;
-    drawButton();
+// Hide the button, erase its drawn area, and disable touch handling.
+void gfxButton::hideButton() {
+  if (m_isHidden) {
     return;
   }
+
   m_isHidden = true;
   m_previousText = "";
 
@@ -610,11 +615,31 @@ void gfxButton::hideButton(bool show) {
   else if (m_shape == "fillCircle") {
     m_tft->fillCircle(m_x, m_y, m_r, g_backgroundColour);
   }
-  else if (m_shape == "bitmap") {
+  else if (m_shape == "blank" ||
+           m_shape == "bitmap" ||
+           m_shape == "rgb_bitmap" ||
+           m_shape == "sd_bitmap") {
     m_tft->fillRect(m_x, m_y, m_w, m_h, g_backgroundColour);
   }
-  else if (m_shape == "rgb_bitmap") {
-    m_tft->fillRect(m_x, m_y, m_w, m_h, g_backgroundColour);
+}
+
+
+// Show and redraw a hidden button.
+void gfxButton::showButton() {
+  drawButton();
+}
+
+
+// Change visibility without redrawing or erasing when the state is unchanged.
+void gfxButton::setVisible(bool visible) {
+  if (visible == !m_isHidden) {
+    return;
+  }
+  if (visible) {
+    showButton();
+  }
+  else {
+    hideButton();
   }
 }
 
@@ -865,6 +890,9 @@ void gfxButton::setTouchBoundary(int x, int y, int w, int h, int r, int paddingP
 / trigger.
 ******************************************************/
 void gfxButton::contains(int x, int y) {
+  if (!m_isTactile || m_isHidden) {
+    return;
+  }
   if ((x >= m_xMin && x <= m_xMax) && (y >= m_yMin && y <= m_yMax)) {
     actuateButton(true);
   }
@@ -872,7 +900,7 @@ void gfxButton::contains(int x, int y) {
 
 
 void gfxButton::actuateButton(bool actuate) {
-  if (actuate) {
+  if (actuate && m_isTactile && !m_isHidden) {
     if (m_isMomentaryButton) {
       unsigned long delay = m_buttonMomentaryDelay > 0 ? m_buttonMomentaryDelay : g_momentaryDelay;
       if (millis() - m_lastStateChange >= delay) {
@@ -1024,7 +1052,8 @@ uint8_t gfxButton::drawBMPFromSD(const char *nm, int x, int y) {
   uint16_t lcdbuffer[(1 << PALETTEDEPTH) + BUFFPIXEL], *palette = NULL;
   uint8_t bitmask, bitshift;
   boolean flip = true;        // BMP is stored bottom-to-top
-  int w, h, row, col, lcdbufsiz = (1 << PALETTEDEPTH) + BUFFPIXEL, buffidx;
+  int w, h, row, col, lcdbufsiz = (1 << PALETTEDEPTH) + BUFFPIXEL;
+  size_t buffidx = sizeof(sdbuffer);
   uint32_t pos;               // seek position
   boolean is565 = false;      //
 
@@ -1036,6 +1065,9 @@ uint8_t gfxButton::drawBMPFromSD(const char *nm, int x, int y) {
     return 1;               // off screen
 
   bmpFile = m_SD->open(nm);   // Parse BMP header
+  if (!bmpFile) {
+    return 2;
+  }
   bmpID = read16(bmpFile);    // BMP signature
   (void) read32(bmpFile);     // Read & ignore file size
   (void) read32(bmpFile);     // Read & ignore creator bytes
@@ -1092,7 +1124,7 @@ uint8_t gfxButton::drawBMPFromSD(const char *nm, int x, int y) {
       // and scanline padding.  Also, the seek only takes
       // place if the file position actually needs to change
       // (avoids a lot of cluster math in SD library).
-      uint8_t r, g, b, *sdptr;
+      uint8_t r, g, b;
       int lcdidx, lcdleft;
       if (flip)   // Bitmap is stored bottom-to-top order (normal BMP)
           pos = bmpImageoffset + (bmpHeight - 1 - row) * rowSize;
@@ -1107,7 +1139,7 @@ uint8_t gfxButton::drawBMPFromSD(const char *nm, int x, int y) {
         lcdleft = w - col;
         if (lcdleft > lcdbufsiz) lcdleft = lcdbufsiz;
         for (lcdidx = 0; lcdidx < lcdleft; lcdidx++) { // buffer at a time
-          uint16_t color;
+          uint16_t color = 0;
           // Time to read more pixel data?
           if (buffidx >= sizeof(sdbuffer)) { // Indeed
               bmpFile.read(sdbuffer, sizeof(sdbuffer));

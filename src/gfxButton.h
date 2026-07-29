@@ -49,7 +49,9 @@ class gfxButton {
     void updateRGBBitmap(const uint16_t* bitmap);
     void updateColour(unsigned long colour);
     void updateLabel(const char* label);
-    void hideButton(bool show = false);
+    void hideButton();
+    void showButton();
+    void setVisible(bool visible);
     bool isHidden() const;
 
     // bitmap loaded from sd card
@@ -65,14 +67,14 @@ class gfxButton {
 
 
     String m_shape;
-    const char* m_label;  // non-owning pointer — caller must ensure string outlives the button
-    const char* m_filename;
-    const unsigned char* m_bitmap;
-    const uint16_t* m_rgb_bitmap;
-    int m_x, m_y, m_w, m_h, m_r;
-    int m_borderWidth;
-    unsigned long m_defaultColour, m_defaultBgColour;
-    bool m_isBitmapButton, m_hasBorder;
+    const char* m_label = nullptr;  // non-owning pointer — caller must ensure string outlives the button
+    const char* m_filename = nullptr;
+    const unsigned char* m_bitmap = nullptr;
+    const uint16_t* m_rgb_bitmap = nullptr;
+    int m_x = 0, m_y = 0, m_w = 0, m_h = 0, m_r = 0;
+    int m_borderWidth = 0;
+    unsigned long m_defaultColour = 0, m_defaultBgColour = 0;
+    bool m_isBitmapButton = false, m_hasBorder = false;
 
 
   private:
@@ -85,9 +87,9 @@ class gfxButton {
     void setPreviousText(String _text);
     String getPreviousText() const;
     String m_previousText;
-    unsigned long m_buttonColour, m_borderColour;
+    unsigned long m_buttonColour = 0, m_borderColour = 0;
     static unsigned long g_backgroundColour;
-    bool m_isTactile, m_isHidden;
+    bool m_isTactile = false, m_isHidden = false;
 
 
   public:
@@ -106,10 +108,10 @@ class gfxButton {
     void setToggleActive(bool active);
     bool isToggleActive() const;
 
-    int m_xMin, m_xMax, m_yMin, m_yMax;
-    bool m_isMomentaryButton;
-    void (*m_boolFunction)(bool state);
-    void (*m_charFunction)(const char* label);
+    int m_xMin = 0, m_xMax = 0, m_yMin = 0, m_yMax = 0;
+    bool m_isMomentaryButton = false;
+    void (*m_boolFunction)(bool state) = nullptr;
+    void (*m_charFunction)(const char* label) = nullptr;
     
 
   private:
@@ -122,10 +124,10 @@ class gfxButton {
     void executeFunction();
     void setTouchBoundary(int x, int y, int w, int h, int r, int paddingPercent);
 
-    struct touchBoundary vals;
-    bool m_buttonActive, m_returnLabel;
-    unsigned long m_lastStateChange;
-    unsigned long m_buttonToggleDelay, m_buttonMomentaryDelay;  // per-button overrides (0 = use global)
+    struct touchBoundary vals = {0, 0, 0, 0};
+    bool m_buttonActive = false, m_returnLabel = false;
+    unsigned long m_lastStateChange = 0;
+    unsigned long m_buttonToggleDelay = 0, m_buttonMomentaryDelay = 0;  // per-button overrides (0 = use global)
     static unsigned long g_toggleDelay, g_momentaryDelay;
     static int g_screenWidth, g_screenHeight;
     static bool g_toggleActive;
