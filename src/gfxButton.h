@@ -8,16 +8,30 @@
 
 class gfxButton {
   public:
-    void begin(MCUFRIEND_kbv *tft);
-    void begin(MCUFRIEND_kbv *tft, SdFat *SD);
+    enum class Shape : uint8_t {
+      Vacant,
+      Blank,
+      DrawRect,
+      FillRect,
+      DrawRoundRect,
+      FillRoundRect,
+      DrawCircle,
+      FillCircle,
+      Bitmap,
+      RGBBitmap,
+      SDBitmap
+    };
+
+    static void begin(MCUFRIEND_kbv *tft);
+    static void begin(MCUFRIEND_kbv *tft, SdFat *SD);
     gfxButton();
     gfxButton(int x, int y, int w, int h, bool isTactile);
     gfxButton(const char* label, int x, int y, int w, int h, bool isTactile);
-    gfxButton(const char* label, String m_shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
+    gfxButton(const char* label, Shape shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
     gfxButton(const uint16_t* bitmap, int x, int y, int w, int h, bool isTactile);
     gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, unsigned long defaultBgColour, bool isTactile);
     gfxButton(const char* filename, int x, int y, bool isTactile); // bitmap from sd card
-    gfxButton initButton(const char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
+    gfxButton initButton(const char* label, Shape shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile);
     gfxButton initBitmapButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, unsigned long defaultBgColour, bool isTactile);
     gfxButton initRGBBitmapButton(const uint16_t* bitmap, int x, int y, int w, int h, bool isTactile);
     gfxButton initSDBitmapButton(const char* filename, int x, int y, bool isTactile);
@@ -66,7 +80,7 @@ class gfxButton {
     void setBitmapDimensions(const char* filename);
 
 
-    String m_shape;
+    Shape m_shape = Shape::Vacant;
     const char* m_label = nullptr;  // non-owning pointer — caller must ensure string outlives the button
     const char* m_filename = nullptr;
     const unsigned char* m_bitmap = nullptr;
@@ -89,6 +103,8 @@ class gfxButton {
     String m_previousText;
     unsigned long m_buttonColour = 0, m_borderColour = 0;
     static unsigned long g_backgroundColour;
+    static MCUFRIEND_kbv *s_tft;
+    static SdFat *s_sd;
     bool m_isTactile = false, m_isHidden = false;
 
 

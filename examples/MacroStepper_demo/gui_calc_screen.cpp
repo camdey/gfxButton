@@ -20,21 +20,21 @@ namespace calc_screen {
   int colNr = 0; // keep track of column
 
 
-  gfxButton btn_Distance  =   btn.initButton("Dist. steps", "fillRoundRect", 0,   20,  160,  80,  15,  DARKGRAY, true   );
-  gfxButton btn_Steps     =   btn.initButton("Dist. mm",    "fillRoundRect", 0,  120,  160,  80,  15,  DARKGRAY, true   );
-  gfxButton btn_Actual    =   btn.initButton("Actual",      "fillRoundRect", 0,  220,  160,  80,  15,  DARKGRAY, false  );
-  gfxButton btn_Cancel    =   btn.initButton("X",  "fillRoundRect", 264,  238,  60, 60,  5,   CUSTOM_BLUE,  true  );
-  gfxButton btn_Minus     =   btn.initButton("-",  "fillRoundRect", 336,  238,  60, 60,  5,   CUSTOM_BLUE,  true  );
-  gfxButton btn_Zero      =   btn.initButton("0",  "fillRoundRect", 408,  238,  60, 60,  5,   CUSTOM_BLUE,  true  );
-  gfxButton btn_One       =   btn.initButton("1",  "fillRoundRect", 264,  166,  60, 60,  5,   CUSTOM_BLUE,  true  );
-  gfxButton btn_Two       =   btn.initButton("2",  "fillRoundRect", 336,  166,  60, 60,  5,   CUSTOM_BLUE,  true  );
-  gfxButton btn_Three     =   btn.initButton("3",  "fillRoundRect", 408,  166,  60, 60,  5,   CUSTOM_BLUE,  true  );
-  gfxButton btn_Four      =   btn.initButton("4",  "fillRoundRect", 264,  94,   60, 60,  5,   CUSTOM_BLUE,  true  );
-  gfxButton btn_Five      =   btn.initButton("5",  "fillRoundRect", 336,  94,   60, 60,  5,   CUSTOM_BLUE,  true  );
-  gfxButton btn_Six       =   btn.initButton("6",  "fillRoundRect", 408,  94,   60, 60,  5,   CUSTOM_BLUE,  true  );
-  gfxButton btn_Seven     =   btn.initButton("7",  "fillRoundRect", 264,  22,   60, 60,  5,   CUSTOM_BLUE,  true  );
-  gfxButton btn_Eight     =   btn.initButton("8",  "fillRoundRect", 336,  22,   60, 60,  5,   CUSTOM_BLUE,  true  );
-  gfxButton btn_Nine      =   btn.initButton("9",  "fillRoundRect", 408,  22,   60, 60,  5,   CUSTOM_BLUE,  true  );
+  gfxButton btn_Distance  =   btn.initButton("Dist. steps", gfxButton::Shape::FillRoundRect, 0,   20,  160,  80,  15,  DARKGRAY, true   );
+  gfxButton btn_Steps     =   btn.initButton("Dist. mm",    gfxButton::Shape::FillRoundRect, 0,  120,  160,  80,  15,  DARKGRAY, true   );
+  gfxButton btn_Actual    =   btn.initButton("Actual",      gfxButton::Shape::FillRoundRect, 0,  220,  160,  80,  15,  DARKGRAY, false  );
+  gfxButton btn_Cancel    =   btn.initButton("X",  gfxButton::Shape::FillRoundRect, 264,  238,  60, 60,  5,   CUSTOM_BLUE,  true  );
+  gfxButton btn_Minus     =   btn.initButton("-",  gfxButton::Shape::FillRoundRect, 336,  238,  60, 60,  5,   CUSTOM_BLUE,  true  );
+  gfxButton btn_Zero      =   btn.initButton("0",  gfxButton::Shape::FillRoundRect, 408,  238,  60, 60,  5,   CUSTOM_BLUE,  true  );
+  gfxButton btn_One       =   btn.initButton("1",  gfxButton::Shape::FillRoundRect, 264,  166,  60, 60,  5,   CUSTOM_BLUE,  true  );
+  gfxButton btn_Two       =   btn.initButton("2",  gfxButton::Shape::FillRoundRect, 336,  166,  60, 60,  5,   CUSTOM_BLUE,  true  );
+  gfxButton btn_Three     =   btn.initButton("3",  gfxButton::Shape::FillRoundRect, 408,  166,  60, 60,  5,   CUSTOM_BLUE,  true  );
+  gfxButton btn_Four      =   btn.initButton("4",  gfxButton::Shape::FillRoundRect, 264,  94,   60, 60,  5,   CUSTOM_BLUE,  true  );
+  gfxButton btn_Five      =   btn.initButton("5",  gfxButton::Shape::FillRoundRect, 336,  94,   60, 60,  5,   CUSTOM_BLUE,  true  );
+  gfxButton btn_Six       =   btn.initButton("6",  gfxButton::Shape::FillRoundRect, 408,  94,   60, 60,  5,   CUSTOM_BLUE,  true  );
+  gfxButton btn_Seven     =   btn.initButton("7",  gfxButton::Shape::FillRoundRect, 264,  22,   60, 60,  5,   CUSTOM_BLUE,  true  );
+  gfxButton btn_Eight     =   btn.initButton("8",  gfxButton::Shape::FillRoundRect, 336,  22,   60, 60,  5,   CUSTOM_BLUE,  true  );
+  gfxButton btn_Nine      =   btn.initButton("9",  gfxButton::Shape::FillRoundRect, 408,  22,   60, 60,  5,   CUSTOM_BLUE,  true  );
   gfxButton btn_Back      =   btn.initBitmapButton(backArrow,       172,  220,  80, 80,       WHITE,        BLACK,  true  );
   gfxButton btn_Run       =   btn.initBitmapButton(rocket,          172,  20,   80, 80,       WHITE,        BLACK,  true  );
   gfxButton btn_vacant    =   btn.initVacantButton();

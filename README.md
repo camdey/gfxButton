@@ -42,6 +42,21 @@ cd examples/MacroStepper_demo
 pio run
 ```
 
+## Typed shapes
+
+Shape buttons use the `gfxButton::Shape` enum rather than string primitive
+names:
+
+```cpp
+gfxButton btn_StepSize = btn.initButton(
+    "Step Size",
+    gfxButton::Shape::FillRoundRect,
+    0, 20, 160, 80, 15,
+    DARKGRAY,
+    true
+);
+```
+
 The default environment is `adafruit_grandcentral_m4`. To build for Arduino
 Due instead:
 

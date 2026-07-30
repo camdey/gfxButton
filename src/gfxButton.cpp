@@ -6,18 +6,18 @@
 #include "TouchScreen.h"
 
 
-MCUFRIEND_kbv *m_tft;
-SdFat         *m_SD;
+MCUFRIEND_kbv *gfxButton::s_tft = nullptr;
+SdFat *gfxButton::s_sd = nullptr;
 
 
 // init tft so it can be used in other functions
 void gfxButton::begin(MCUFRIEND_kbv *tft) {
-  m_tft = tft;
+  s_tft = tft;
 }
 
 void gfxButton::begin(MCUFRIEND_kbv *tft, SdFat *SD) {
-  m_tft = tft;
-  m_SD  = SD;
+  s_tft = tft;
+  s_sd = SD;
 }
 
 /******************************************************
@@ -31,7 +31,7 @@ gfxButton::gfxButton() {
 };
 
 
-gfxButton::gfxButton(const char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
+gfxButton::gfxButton(const char* label, Shape shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
   m_label = label;
   m_shape = shape;
   m_x = x;
@@ -53,7 +53,7 @@ gfxButton::gfxButton(const char* label, String shape, int x, int y, int w, int h
 / as a touch screen button.
 ******************************************************/
 gfxButton::gfxButton(int x, int y, int w, int h, bool isTactile) {
-  m_shape = "blank";
+  m_shape = Shape::Blank;
   m_x = x;
   m_y = y;
   m_w = w;
@@ -68,7 +68,7 @@ gfxButton::gfxButton(int x, int y, int w, int h, bool isTactile) {
 
 gfxButton::gfxButton(const char* label, int x, int y, int w, int h, bool isTactile) {
   m_label = label;
-  m_shape = "blank";
+  m_shape = Shape::Blank;
   m_x = x;
   m_y = y;
   m_w = w;
@@ -89,7 +89,7 @@ gfxButton::gfxButton(const char* label, int x, int y, int w, int h, bool isTacti
 ******************************************************/
 gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, unsigned long defaultColour, unsigned long defaultBgColour, bool isTactile) {
   m_bitmap = bitmap;
-  m_shape = "bitmap";
+  m_shape = Shape::Bitmap;
   m_x = x;
   m_y = y;
   m_w = w;
@@ -111,7 +111,7 @@ gfxButton::gfxButton(const unsigned char* bitmap, int x, int y, int w, int h, un
 ******************************************************/
 gfxButton::gfxButton(const uint16_t* bitmap, int x, int y, int w, int h, bool isTactile) {
   m_rgb_bitmap = bitmap;
-  m_shape = "rgb_bitmap";
+  m_shape = Shape::RGBBitmap;
   m_x = x;
   m_y = y;
   m_w = w;
@@ -130,7 +130,7 @@ gfxButton::gfxButton(const uint16_t* bitmap, int x, int y, int w, int h, bool is
 ******************************************************/
 gfxButton::gfxButton(const char* filename, int x, int y, bool isTactile) {
   m_filename = filename;
-  m_shape = "sd_bitmap";
+  m_shape = Shape::SDBitmap;
   m_x = x;
   m_y = y;
   m_isBitmapButton = true;
@@ -144,7 +144,7 @@ gfxButton::gfxButton(const char* filename, int x, int y, bool isTactile) {
 / Initiates a button instance for GFX shapes, returns input
 / values to instance constructor.
 ******************************************************/
-gfxButton gfxButton::initButton(const char* label, String shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
+gfxButton gfxButton::initButton(const char* label, Shape shape, int x, int y, int w, int h, int r, unsigned long defaultColour, bool isTactile) {
   return gfxButton(label, shape, x, y, w, h, r, defaultColour, isTactile);
 }
 
@@ -213,39 +213,44 @@ gfxButton gfxButton::initSDBitmapButton(const char* filename, int x, int y, bool
 void gfxButton::drawButton() {
   m_isHidden = false;
   m_previousText = "";
-  if (m_shape == "drawRect") {
-    m_tft->drawRect(m_x, m_y, m_w, m_h, m_defaultColour);
-  }
-  else if (m_shape == "fillRect") {
-    m_tft->fillRect(m_x, m_y, m_w, m_h, m_defaultColour);
-  }
-  else if (m_shape == "drawRoundRect") {
-    m_tft->drawRoundRect(m_x, m_y, m_w, m_h, m_r, m_defaultColour);
-  }
-  else if (m_shape == "fillRoundRect") {
-    m_tft->fillRoundRect(m_x, m_y, m_w, m_h, m_r, m_defaultColour);
-  }
-  else if (m_shape == "drawCircle") {
-    m_tft->drawCircle(m_x, m_y, m_r, m_defaultColour);
-  }
-  else if (m_shape == "fillCircle") {
-    m_tft->fillCircle(m_x, m_y, m_r, m_defaultColour);
-  }
-  else if (m_shape == "bitmap") {
-    m_tft->drawBitmap(m_x, m_y, m_bitmap, m_w, m_h, m_defaultColour, m_defaultBgColour);
-  }
-  else if (m_shape == "rgb_bitmap") {
-    m_tft->drawRGBBitmap(m_x, m_y, m_rgb_bitmap, m_w, m_h);
-  }
-  else if (m_shape == "sd_bitmap") {
-    drawBMPFromSD(m_filename, m_x, m_y);
+  switch (m_shape) {
+    case Shape::DrawRect:
+      s_tft->drawRect(m_x, m_y, m_w, m_h, m_defaultColour);
+      break;
+    case Shape::FillRect:
+      s_tft->fillRect(m_x, m_y, m_w, m_h, m_defaultColour);
+      break;
+    case Shape::DrawRoundRect:
+      s_tft->drawRoundRect(m_x, m_y, m_w, m_h, m_r, m_defaultColour);
+      break;
+    case Shape::FillRoundRect:
+      s_tft->fillRoundRect(m_x, m_y, m_w, m_h, m_r, m_defaultColour);
+      break;
+    case Shape::DrawCircle:
+      s_tft->drawCircle(m_x, m_y, m_r, m_defaultColour);
+      break;
+    case Shape::FillCircle:
+      s_tft->fillCircle(m_x, m_y, m_r, m_defaultColour);
+      break;
+    case Shape::Bitmap:
+      s_tft->drawBitmap(m_x, m_y, m_bitmap, m_w, m_h, m_defaultColour, m_defaultBgColour);
+      break;
+    case Shape::RGBBitmap:
+      s_tft->drawRGBBitmap(m_x, m_y, m_rgb_bitmap, m_w, m_h);
+      break;
+    case Shape::SDBitmap:
+      drawBMPFromSD(m_filename, m_x, m_y);
+      break;
+    case Shape::Vacant:
+    case Shape::Blank:
+      break;
   }
   // TODO support triangles
   // else if (button.m_shape == "drawTriangle") {
-  //   m_tft->drawTriangle(button.m_x, button.m_y, button.m_w, button.m_h, button.m_defaultColour);
+  //   s_tft->drawTriangle(button.m_x, button.m_y, button.m_w, button.m_h, button.m_defaultColour);
   // }
   // else if (button.m_shape == "fillTriangle") {
-  //   m_tft->fillTriangle(button.m_x, button.m_y, button.m_w, button.m_h, button.m_defaultColour);
+  //   s_tft->fillTriangle(button.m_x, button.m_y, button.m_w, button.m_h, button.m_defaultColour);
   // }
 
   // store button colour, used for overwriting text
@@ -266,39 +271,44 @@ void gfxButton::drawButton() {
 void gfxButton::drawButton(unsigned long colour, unsigned long bg) {
   m_isHidden = false;
   m_previousText = "";
-  if (m_shape == "drawRect") {
-    m_tft->drawRect(m_x, m_y, m_w, m_h, colour);
-  }
-  else if (m_shape == "fillRect") {
-    m_tft->fillRect(m_x, m_y, m_w, m_h, colour);
-  }
-  else if (m_shape == "drawRoundRect") {
-    m_tft->drawRoundRect(m_x, m_y, m_w, m_h, m_r, colour);
-  }
-  else if (m_shape == "fillRoundRect") {
-    m_tft->fillRoundRect(m_x, m_y, m_w, m_h, m_r, colour);
-  }
-  else if (m_shape == "drawCircle") {
-    m_tft->drawCircle(m_x, m_y, m_r, colour);
-  }
-  else if (m_shape == "fillCircle") {
-    m_tft->fillCircle(m_x, m_y, m_r, colour);
-  }
-  else if (m_shape == "bitmap") {
-    m_tft->drawBitmap(m_x, m_y, m_bitmap, m_w, m_h, colour, bg);
-  }
-  else if (m_shape == "rgb_bitmap") {
-    m_tft->drawRGBBitmap(m_x, m_y, m_rgb_bitmap, m_w, m_h);
-  }
-  else if (m_shape == "sd_bitmap") {
-    drawBMPFromSD(m_filename, m_x, m_y);
+  switch (m_shape) {
+    case Shape::DrawRect:
+      s_tft->drawRect(m_x, m_y, m_w, m_h, colour);
+      break;
+    case Shape::FillRect:
+      s_tft->fillRect(m_x, m_y, m_w, m_h, colour);
+      break;
+    case Shape::DrawRoundRect:
+      s_tft->drawRoundRect(m_x, m_y, m_w, m_h, m_r, colour);
+      break;
+    case Shape::FillRoundRect:
+      s_tft->fillRoundRect(m_x, m_y, m_w, m_h, m_r, colour);
+      break;
+    case Shape::DrawCircle:
+      s_tft->drawCircle(m_x, m_y, m_r, colour);
+      break;
+    case Shape::FillCircle:
+      s_tft->fillCircle(m_x, m_y, m_r, colour);
+      break;
+    case Shape::Bitmap:
+      s_tft->drawBitmap(m_x, m_y, m_bitmap, m_w, m_h, colour, bg);
+      break;
+    case Shape::RGBBitmap:
+      s_tft->drawRGBBitmap(m_x, m_y, m_rgb_bitmap, m_w, m_h);
+      break;
+    case Shape::SDBitmap:
+      drawBMPFromSD(m_filename, m_x, m_y);
+      break;
+    case Shape::Vacant:
+    case Shape::Blank:
+      break;
   }
   // TODO support triangles
   // else if (button.m_shape == "drawTriangle") {
-  //   m_tft->drawTriangle(button.m_x, button.m_y, button.m_w, button.m_h, colour);
+  //   s_tft->drawTriangle(button.m_x, button.m_y, button.m_w, button.m_h, colour);
   // }
   // else if (button.m_shape == "fillTriangle") {
-  //   m_tft->fillTriangle(button.m_x, button.m_y, button.m_w, button.m_h, colour);
+  //   s_tft->fillTriangle(button.m_x, button.m_y, button.m_w, button.m_h, colour);
   // }
 
   // store button colour, used for overwriting text
@@ -321,9 +331,9 @@ void gfxButton::drawNewBitmap(const unsigned char* bitmap, unsigned long colour,
   m_isHidden = false;
   m_previousText = "";
   // fill over previous bitmap/button
-  m_tft->fillRect(m_x, m_y, m_w, m_h, getBackgroundColour());
+  s_tft->fillRect(m_x, m_y, m_w, m_h, getBackgroundColour());
   // draw new bitmap
-  m_tft->drawBitmap(m_x, m_y, bitmap, m_w, m_h, colour, bg);
+  s_tft->drawBitmap(m_x, m_y, bitmap, m_w, m_h, colour, bg);
 
   // store button colour, used for overwriting text
   setButtonColour(colour);
@@ -341,14 +351,16 @@ void gfxButton::drawNewBitmap(const uint16_t* bitmap) {
   m_isHidden = false;
   m_previousText = "";
   // fill over previous bitmap/button
-  m_tft->fillRect(m_x, m_y, m_w, m_h, getBackgroundColour());
+  s_tft->fillRect(m_x, m_y, m_w, m_h, getBackgroundColour());
   // draw new bitmap
-  m_tft->drawRGBBitmap(m_x, m_y, bitmap, m_w, m_h);
+  s_tft->drawRGBBitmap(m_x, m_y, bitmap, m_w, m_h);
 }
 
 
 void gfxButton::addBorder(int width, unsigned long colour) {
-  if (m_shape == "fillRect" || m_shape == "fillRoundRect" || m_shape == "fillCircle") {
+  if (m_shape == Shape::FillRect ||
+      m_shape == Shape::FillRoundRect ||
+      m_shape == Shape::FillCircle) {
     m_hasBorder = true;
     m_borderWidth = width;
     m_borderColour = colour;
@@ -365,14 +377,14 @@ void gfxButton::drawBorder(int width, unsigned long colour) {
       int h = m_h - i*2;
       int r = m_r - i;
 
-      if (m_shape == "fillRect") {
-        m_tft->drawRect(x, y, w, h, colour);
+      if (m_shape == Shape::FillRect) {
+        s_tft->drawRect(x, y, w, h, colour);
       }
-      else if (m_shape == "fillRoundRect") {
-        m_tft->drawRoundRect(x, y, w, h, r, colour);
+      else if (m_shape == Shape::FillRoundRect) {
+        s_tft->drawRoundRect(x, y, w, h, r, colour);
       }
-      else if (m_shape == "fillCircle") {
-        m_tft->drawCircle(m_x, m_y, r, colour);
+      else if (m_shape == Shape::FillCircle) {
+        s_tft->drawCircle(m_x, m_y, r, colour);
       }
     }
   }
@@ -381,7 +393,7 @@ void gfxButton::drawBorder(int width, unsigned long colour) {
     int borderY = m_y - 5;
     int borderW = m_w + 5*2;
     int borderH = m_h + 5*2;
-    m_tft->drawRect(borderX, borderY, borderW, borderH, colour);
+    s_tft->drawRect(borderX, borderY, borderW, borderH, colour);
   }
 }
 
@@ -432,8 +444,8 @@ void gfxButton::writeTextHelper(GFXfont font, unsigned long colour, String btnTe
 
   int16_t textX, textY;
   uint16_t textW, textH;
-  m_tft->setFont(&font);
-  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
+  s_tft->setFont(&font);
+  s_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
 
   int xPad = (btnW - textW) / 2;
   int yPad = (btnH - textH) / 2;
@@ -467,9 +479,9 @@ void gfxButton::writeTextHelper(GFXfont font, unsigned long colour, String btnTe
     setPreviousText(btnText);
   }
 
-  m_tft->setTextColor(colour);
-  m_tft->setCursor(xPos, yPos);
-  m_tft->print(btnText);
+  s_tft->setTextColor(colour);
+  s_tft->setCursor(xPos, yPos);
+  s_tft->print(btnText);
 }
 
 
@@ -525,8 +537,8 @@ void gfxButton::writeTextCircle(GFXfont font, unsigned long colour, String btnTe
 
   int16_t textX, textY;
   uint16_t textW, textH;
-  m_tft->setFont(&font);
-  m_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
+  s_tft->setFont(&font);
+  s_tft->getTextBounds(btnText, 0, 0, &textX, &textY, &textW, &textH);
 
   // for circles, x and y define centre so offset by half text dimensions
   int xPos = btnX - (textW / 2);
@@ -540,9 +552,9 @@ void gfxButton::writeTextCircle(GFXfont font, unsigned long colour, String btnTe
     setPreviousText(btnText);
   }
 
-  m_tft->setTextColor(colour);
-  m_tft->setCursor(xPos, yPos);
-  m_tft->print(btnText);
+  s_tft->setTextColor(colour);
+  s_tft->setCursor(xPos, yPos);
+  s_tft->print(btnText);
 }
 
 
@@ -597,29 +609,31 @@ void gfxButton::hideButton() {
   m_isHidden = true;
   m_previousText = "";
 
-  if (m_shape == "drawRect") {
-    m_tft->drawRect(m_x, m_y, m_w, m_h, g_backgroundColour);
-  }
-  else if (m_shape == "fillRect") {
-    m_tft->fillRect(m_x, m_y, m_w, m_h, g_backgroundColour);
-  }
-  else if (m_shape == "drawRoundRect") {
-    m_tft->drawRoundRect(m_x, m_y, m_w, m_h, m_r, g_backgroundColour);
-  }
-  else if (m_shape == "fillRoundRect") {
-    m_tft->fillRoundRect(m_x, m_y, m_w, m_h, m_r, g_backgroundColour);
-  }
-  else if (m_shape == "drawCircle") {
-    m_tft->drawCircle(m_x, m_y, m_r, g_backgroundColour);
-  }
-  else if (m_shape == "fillCircle") {
-    m_tft->fillCircle(m_x, m_y, m_r, g_backgroundColour);
-  }
-  else if (m_shape == "blank" ||
-           m_shape == "bitmap" ||
-           m_shape == "rgb_bitmap" ||
-           m_shape == "sd_bitmap") {
-    m_tft->fillRect(m_x, m_y, m_w, m_h, g_backgroundColour);
+  switch (m_shape) {
+    case Shape::DrawRect:
+      s_tft->drawRect(m_x, m_y, m_w, m_h, g_backgroundColour);
+      break;
+    case Shape::FillRect:
+    case Shape::Blank:
+    case Shape::Bitmap:
+    case Shape::RGBBitmap:
+    case Shape::SDBitmap:
+      s_tft->fillRect(m_x, m_y, m_w, m_h, g_backgroundColour);
+      break;
+    case Shape::DrawRoundRect:
+      s_tft->drawRoundRect(m_x, m_y, m_w, m_h, m_r, g_backgroundColour);
+      break;
+    case Shape::FillRoundRect:
+      s_tft->fillRoundRect(m_x, m_y, m_w, m_h, m_r, g_backgroundColour);
+      break;
+    case Shape::DrawCircle:
+      s_tft->drawCircle(m_x, m_y, m_r, g_backgroundColour);
+      break;
+    case Shape::FillCircle:
+      s_tft->fillCircle(m_x, m_y, m_r, g_backgroundColour);
+      break;
+    case Shape::Vacant:
+      break;
   }
 }
 
@@ -663,7 +677,7 @@ void gfxButton::replaceButtonText(String newText, String prevText, String aligne
     int16_t textX, textY;
     uint16_t textW, textH;
     // get size of previous text string
-    m_tft->getTextBounds(prevText, 0, 0, &textX, &textY, &textW, &textH);
+    s_tft->getTextBounds(prevText, 0, 0, &textX, &textY, &textW, &textH);
     // calculate previous text x,y co-ordinates
     int prevXPos = 0, prevYPos = 0;
     if (aligned == "centre") {
@@ -692,11 +706,14 @@ void gfxButton::replaceButtonText(String newText, String prevText, String aligne
     }
 
     // if button type not a fill, use specified background colour to fill over previous text
-    if (m_shape == "blank" || m_shape == "drawRect" || m_shape == "drawRoundRect" || m_shape == "drawCircle") {
-      m_tft->fillRect(prevXPos, prevYPos, textW, textH, backgroundColour);
+    if (m_shape == Shape::Blank ||
+        m_shape == Shape::DrawRect ||
+        m_shape == Shape::DrawRoundRect ||
+        m_shape == Shape::DrawCircle) {
+      s_tft->fillRect(prevXPos, prevYPos, textW, textH, backgroundColour);
     }
     else {
-      m_tft->fillRect(prevXPos, prevYPos, textW, textH, m_buttonColour);
+      s_tft->fillRect(prevXPos, prevYPos, textW, textH, m_buttonColour);
     }
   }
 }
@@ -842,7 +859,7 @@ void gfxButton::addInputKey(void (*btnFunction)(const char* label), int paddingP
 ******************************************************/
 void gfxButton::setTouchBoundary(int x, int y, int w, int h, int r, int paddingPercent) {
   // if reading bitmap from sd card, width and height are not known at initialisation
-  if (m_shape == "sd_bitmap") {
+  if (m_shape == Shape::SDBitmap) {
     setBitmapDimensions(m_filename);
     w = m_w;
     h = m_h;
@@ -1061,10 +1078,10 @@ uint8_t gfxButton::drawBMPFromSD(const char *nm, int x, int y) {
   uint16_t n;                 // blocks read
   uint8_t ret;
 
-  if ((x >= m_tft->width()) || (y >= m_tft->height()))
+  if ((x >= s_tft->width()) || (y >= s_tft->height()))
     return 1;               // off screen
 
-  bmpFile = m_SD->open(nm);   // Parse BMP header
+  bmpFile = s_sd->open(nm);   // Parse BMP header
   if (!bmpFile) {
     return 2;
   }
@@ -1094,10 +1111,10 @@ uint8_t gfxButton::drawBMPFromSD(const char *nm, int x, int y) {
 
     w = bmpWidth;
     h = bmpHeight;
-    if ((x + w) >= m_tft->width())       // Crop area to be loaded
-      w = m_tft->width() - x;
-    if ((y + h) >= m_tft->height())      //
-      h = m_tft->height() - y;
+    if ((x + w) >= s_tft->width())       // Crop area to be loaded
+      w = s_tft->width() - x;
+    if ((y + h) >= s_tft->height())      //
+      h = s_tft->height() - y;
 
     if (bmpDepth <= PALETTEDEPTH) {   // these modes have separate palette
       //bmpFile.seek(BMPIMAGEOFFSET); //palette is always @ 54
@@ -1116,7 +1133,7 @@ uint8_t gfxButton::drawBMPFromSD(const char *nm, int x, int y) {
     }
 
     // Set TFT address window to clipped image bounds
-    m_tft->setAddrWindow(x, y, x + w - 1, y + h - 1);
+    s_tft->setAddrWindow(x, y, x + w - 1, y + h - 1);
     for (row = 0; row < h; row++) { // For each scanline...
       // Seek to start of scan line.  It might seem labor-
       // intensive to be doing this on every line, but this
@@ -1151,7 +1168,7 @@ uint8_t gfxButton::drawBMPFromSD(const char *nm, int x, int y) {
               b = sdbuffer[buffidx++];
               g = sdbuffer[buffidx++];
               r = sdbuffer[buffidx++];
-              color = m_tft->color565(r, g, b);
+              color = s_tft->color565(r, g, b);
               break;
             case 16:
               b = sdbuffer[buffidx++];
@@ -1173,12 +1190,12 @@ uint8_t gfxButton::drawBMPFromSD(const char *nm, int x, int y) {
           }
           lcdbuffer[lcdidx] = color;
         }
-        m_tft->pushColors(lcdbuffer, lcdidx, first);
+        s_tft->pushColors(lcdbuffer, lcdidx, first);
         first = false;
         col += lcdidx;
       }           // end cols
     }               // end rows
-    m_tft->setAddrWindow(0, 0, m_tft->width() - 1, m_tft->height() - 1); //restore full screen
+    s_tft->setAddrWindow(0, 0, s_tft->width() - 1, s_tft->height() - 1); //restore full screen
     ret = 0;        // good render
   }
   bmpFile.close();
@@ -1212,7 +1229,7 @@ struct bmp_image_header_t {
 /   Parse Bitmap on SD Card to get width and height
 ******************************************************/
 void gfxButton::setBitmapDimensions(const char* filename) {
-  File bmpImage = m_SD->open(filename);
+  File bmpImage = s_sd->open(filename);
   bmpImage.seek(0x12);
   m_w = read32(bmpImage);  // BMP width is 32-bit little-endian at offset 0x12
   bmpImage.seek(0x16);
