@@ -45,14 +45,15 @@ class gfxButton {
     void drawButton(unsigned long colour, unsigned long bg = 0x00);
     void drawNewBitmap(const uint16_t* bitmap);
     void drawNewBitmap(const unsigned char* bitmap, unsigned long colour, unsigned long bg = 0x00);
-    void writeTextCentre(GFXfont font, unsigned long colour, String btnText = "");
-    void writeTextTopCentre(GFXfont font, unsigned long colour, String btnText = "");
-    void writeTextBottomCentre(GFXfont font, unsigned long colour, String btnText = "");
-    void writeTextTopLeft(GFXfont font, unsigned long colour, String btnText = "");
-    void writeTextBottomLeft(GFXfont font, unsigned long colour, String btnText = "");
-    void writeTextLeft(GFXfont font, unsigned long colour, String btnText = "");
-    void writeTextRight(GFXfont font, unsigned long colour, String btnText = "");
-    void writeTextCircle(GFXfont font, unsigned long colour, String btnText = "");
+    void writeTextCentre(const GFXfont &font, unsigned long colour, String btnText = "");
+    void writeTextTopCentre(const GFXfont &font, unsigned long colour, String btnText = "");
+    void writeTextBottomCentre(const GFXfont &font, unsigned long colour, String btnText = "");
+    void writeTextTopLeft(const GFXfont &font, unsigned long colour, String btnText = "");
+    void writeTextBottomLeft(const GFXfont &font, unsigned long colour, String btnText = "");
+    void writeTextLeft(const GFXfont &font, unsigned long colour, String btnText = "");
+    void writeTextRight(const GFXfont &font, unsigned long colour, String btnText = "");
+    void writeTextCircle(const GFXfont &font, unsigned long colour, String btnText = "");
+    void invalidateTextCache();
     void setBackgroundColour(unsigned long colour);
     unsigned long getBackgroundColour() const;
     void setButtonColour(unsigned long colour);
@@ -92,15 +93,31 @@ class gfxButton {
 
 
   private:
-    enum TextAlignX { AlignCentre, AlignLeft, AlignRight };
-    enum TextRegionY { RegionFull, RegionTop, RegionBottom };
-    void writeTextHelper(GFXfont font, unsigned long colour, String btnText, TextAlignX alignX, TextRegionY regionY);
-    void replaceButtonLabel(const char* m_label, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
-    void replaceButtonText(String newText, String prevText, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
-    void replaceButtonValue(String value, String aligned, int btnX, int btnY, int btnW = 0, int btnH = 0);
-    void setPreviousText(String _text);
-    String getPreviousText() const;
-    String m_previousText;
+    enum TextAlignX : uint8_t { AlignCentre, AlignLeft, AlignRight };
+    enum TextRegionY : uint8_t { RegionFull, RegionTop, RegionBottom, RegionCircle };
+    static const uint8_t TextCacheSlots = 2;
+    struct TextRenderState {
+      bool valid = false;
+      uint32_t textHash = 0;
+      const GFXfont *font = nullptr;
+      unsigned long colour = 0;
+      TextAlignX alignment = AlignCentre;
+      TextRegionY region = RegionFull;
+      int16_t cursorX = 0;
+      int16_t cursorY = 0;
+      int16_t boundsX = 0;
+      int16_t boundsY = 0;
+      uint16_t boundsW = 0;
+      uint16_t boundsH = 0;
+    };
+    void writeTextHelper(const GFXfont &font, unsigned long colour, String btnText, TextAlignX alignX, TextRegionY regionY);
+    void renderCachedText(const GFXfont &font, unsigned long colour, const String &text, TextAlignX alignX, TextRegionY regionY, int16_t cursorX, int16_t cursorY);
+    void eraseTextRegion(TextRegionY region);
+    void prepareTextRegion(TextRegionY region);
+    uint8_t textCacheSlot(TextRegionY region) const;
+    uint32_t textHash(const String &text) const;
+    unsigned long textBackgroundColour() const;
+    TextRenderState m_textCache[TextCacheSlots];
     unsigned long m_buttonColour = 0, m_borderColour = 0;
     static unsigned long g_backgroundColour;
     static MCUFRIEND_kbv *s_tft;

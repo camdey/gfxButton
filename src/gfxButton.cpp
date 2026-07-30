@@ -212,7 +212,7 @@ gfxButton gfxButton::initSDBitmapButton(const char* filename, int x, int y, bool
 ******************************************************/
 void gfxButton::drawButton() {
   m_isHidden = false;
-  m_previousText = "";
+  invalidateTextCache();
   switch (m_shape) {
     case Shape::DrawRect:
       s_tft->drawRect(m_x, m_y, m_w, m_h, m_defaultColour);
@@ -270,7 +270,7 @@ void gfxButton::drawButton() {
 ******************************************************/
 void gfxButton::drawButton(unsigned long colour, unsigned long bg) {
   m_isHidden = false;
-  m_previousText = "";
+  invalidateTextCache();
   switch (m_shape) {
     case Shape::DrawRect:
       s_tft->drawRect(m_x, m_y, m_w, m_h, colour);
@@ -329,7 +329,7 @@ void gfxButton::drawButton(unsigned long colour, unsigned long bg) {
 void gfxButton::drawNewBitmap(const unsigned char* bitmap, unsigned long colour, unsigned long bg) {
   m_bitmap = bitmap;
   m_isHidden = false;
-  m_previousText = "";
+  invalidateTextCache();
   // fill over previous bitmap/button
   s_tft->fillRect(m_x, m_y, m_w, m_h, getBackgroundColour());
   // draw new bitmap
@@ -349,7 +349,7 @@ void gfxButton::drawNewBitmap(const unsigned char* bitmap, unsigned long colour,
 void gfxButton::drawNewBitmap(const uint16_t* bitmap) {
   m_rgb_bitmap = bitmap;
   m_isHidden = false;
-  m_previousText = "";
+  invalidateTextCache();
   // fill over previous bitmap/button
   s_tft->fillRect(m_x, m_y, m_w, m_h, getBackgroundColour());
   // draw new bitmap
@@ -417,9 +417,9 @@ void gfxButton::drawBorder(int width) {
 / Handles text positioning, overdraw, and rendering for
 / all writeText variants.
 ******************************************************/
-void gfxButton::writeTextHelper(GFXfont font, unsigned long colour, String btnText, TextAlignX alignX, TextRegionY regionY) {
+void gfxButton::writeTextHelper(const GFXfont &font, unsigned long colour, String btnText, TextAlignX alignX, TextRegionY regionY) {
   if (btnText == "") {
-    btnText = m_label;
+    btnText = m_label == nullptr ? "" : m_label;
   }
 
   // compute button region based on vertical region
@@ -451,37 +451,23 @@ void gfxButton::writeTextHelper(GFXfont font, unsigned long colour, String btnTe
   int yPad = (btnH - textH) / 2;
   int xPos, yPos;
 
-  String alignStr;
   switch (alignX) {
     case AlignLeft:
       xPos = btnX + ceil(btnW * 0.05);
       yPos = btnY - yPad;
-      alignStr = "left";
       break;
     case AlignRight:
       xPos = (btnX + btnW) - (textW + ceil(btnW * 0.05));
       yPos = btnY - yPad;
-      alignStr = "right";
       break;
     case AlignCentre:
     default:
       xPos = btnX + xPad;
       yPos = btnY - yPad;
-      alignStr = "centre";
       break;
   }
 
-  if (btnText == m_label) {
-    replaceButtonLabel(m_label, alignStr, btnX, btnY, btnW, btnH);
-  }
-  else {
-    replaceButtonValue(btnText, alignStr, btnX, btnY, btnW, btnH);
-    setPreviousText(btnText);
-  }
-
-  s_tft->setTextColor(colour);
-  s_tft->setCursor(xPos, yPos);
-  s_tft->print(btnText);
+  renderCachedText(font, colour, btnText, alignX, regionY, xPos, yPos);
 }
 
 
@@ -493,44 +479,44 @@ void gfxButton::writeTextHelper(GFXfont font, unsigned long colour, String btnTe
 / centre/left/right aligned point within a button's
 / dimensions to print the text.
 ******************************************************/
-void gfxButton::writeTextCentre(GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextCentre(const GFXfont &font, unsigned long colour, String btnText) {
   writeTextHelper(font, colour, btnText, AlignCentre, RegionFull);
 }
 
 
-void gfxButton::writeTextTopCentre(GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextTopCentre(const GFXfont &font, unsigned long colour, String btnText) {
   writeTextHelper(font, colour, btnText, AlignCentre, RegionTop);
 }
 
 
-void gfxButton::writeTextBottomCentre(GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextBottomCentre(const GFXfont &font, unsigned long colour, String btnText) {
   writeTextHelper(font, colour, btnText, AlignCentre, RegionBottom);
 }
 
 
-void gfxButton::writeTextTopLeft(GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextTopLeft(const GFXfont &font, unsigned long colour, String btnText) {
   writeTextHelper(font, colour, btnText, AlignLeft, RegionTop);
 }
 
 
-void gfxButton::writeTextBottomLeft(GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextBottomLeft(const GFXfont &font, unsigned long colour, String btnText) {
   writeTextHelper(font, colour, btnText, AlignLeft, RegionBottom);
 }
 
 
-void gfxButton::writeTextLeft(GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextLeft(const GFXfont &font, unsigned long colour, String btnText) {
   writeTextHelper(font, colour, btnText, AlignLeft, RegionFull);
 }
 
 
-void gfxButton::writeTextRight(GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextRight(const GFXfont &font, unsigned long colour, String btnText) {
   writeTextHelper(font, colour, btnText, AlignRight, RegionFull);
 }
 
 
-void gfxButton::writeTextCircle(GFXfont font, unsigned long colour, String btnText) {
+void gfxButton::writeTextCircle(const GFXfont &font, unsigned long colour, String btnText) {
   if (btnText == "") {
-    btnText = m_label;
+    btnText = m_label == nullptr ? "" : m_label;
   }
   int btnX = m_x;
   int btnY = m_y + m_h;
@@ -544,27 +530,147 @@ void gfxButton::writeTextCircle(GFXfont font, unsigned long colour, String btnTe
   int xPos = btnX - (textW / 2);
   int yPos = btnY + (textH / 2);
 
-  if (btnText == m_label) {
-    replaceButtonLabel(m_label, "centre", btnX, btnY);
+  renderCachedText(
+    font, colour, btnText, AlignCentre, RegionCircle, xPos, yPos);
+}
+
+
+uint32_t gfxButton::textHash(const String &text) const {
+  uint32_t hash = 2166136261UL;
+  for (unsigned int i = 0; i < text.length(); ++i) {
+    hash ^= (uint8_t)text[i];
+    hash *= 16777619UL;
   }
-  else {
-    replaceButtonValue(btnText, "centre", btnX, btnY);
-    setPreviousText(btnText);
+  return hash;
+}
+
+
+unsigned long gfxButton::textBackgroundColour() const {
+  if (m_shape == Shape::FillRect ||
+      m_shape == Shape::FillRoundRect ||
+      m_shape == Shape::FillCircle) {
+    return getButtonColour();
+  }
+  return getBackgroundColour();
+}
+
+
+void gfxButton::eraseTextRegion(TextRegionY region) {
+  TextRenderState &state = m_textCache[textCacheSlot(region)];
+  if (!state.valid || state.region != region) return;
+
+  const bool circle =
+    m_shape == Shape::DrawCircle || m_shape == Shape::FillCircle;
+  const int buttonLeft = circle ? m_x - m_r : m_x;
+  const int buttonTop = circle ? m_y - m_r : m_y;
+  const int buttonRight = circle ? m_x + m_r + 1 : m_x + m_w;
+  const int buttonBottom = circle ? m_y + m_r + 1 : m_y + m_h;
+  const int left = max(max(0, buttonLeft), (int)state.boundsX);
+  const int top = max(max(0, buttonTop), (int)state.boundsY);
+  const int right = min(
+    min(g_screenWidth, buttonRight),
+    (int)state.boundsX + (int)state.boundsW);
+  const int bottom = min(
+    min(g_screenHeight, buttonBottom),
+    (int)state.boundsY + (int)state.boundsH);
+  if (right > left && bottom > top) {
+    s_tft->fillRect(
+      left, top, right - left, bottom - top, textBackgroundColour());
+  }
+  state.valid = false;
+}
+
+
+uint8_t gfxButton::textCacheSlot(TextRegionY region) const {
+  return region == RegionBottom ? 1 : 0;
+}
+
+
+void gfxButton::prepareTextRegion(TextRegionY region) {
+  if (region == RegionFull || region == RegionCircle) {
+    if (m_textCache[0].valid) {
+      eraseTextRegion(m_textCache[0].region);
+    }
+    if (m_textCache[1].valid) {
+      eraseTextRegion(m_textCache[1].region);
+    }
+    return;
   }
 
+  if (region == RegionTop) {
+    if (m_textCache[0].valid &&
+        (m_textCache[0].region == RegionFull ||
+         m_textCache[0].region == RegionCircle)) {
+      eraseTextRegion(m_textCache[0].region);
+      if (m_textCache[1].valid) {
+        eraseTextRegion(m_textCache[1].region);
+      }
+    }
+    else {
+      eraseTextRegion(RegionTop);
+    }
+    return;
+  }
+
+  if (m_textCache[0].valid &&
+      (m_textCache[0].region == RegionFull ||
+       m_textCache[0].region == RegionCircle)) {
+    eraseTextRegion(m_textCache[0].region);
+  }
+  eraseTextRegion(RegionBottom);
+}
+
+
+void gfxButton::renderCachedText(
+    const GFXfont &font,
+    unsigned long colour,
+    const String &text,
+    TextAlignX alignX,
+    TextRegionY regionY,
+    int16_t cursorX,
+    int16_t cursorY) {
+  TextRenderState &state = m_textCache[textCacheSlot(regionY)];
+  const uint32_t hash = textHash(text);
+  if (state.valid &&
+      state.region == regionY &&
+      state.textHash == hash &&
+      state.font == &font &&
+      state.colour == colour &&
+      state.alignment == alignX &&
+      state.cursorX == cursorX &&
+      state.cursorY == cursorY) {
+    return;
+  }
+
+  prepareTextRegion(regionY);
+  s_tft->setFont(&font);
   s_tft->setTextColor(colour);
-  s_tft->setCursor(xPos, yPos);
-  s_tft->print(btnText);
+  s_tft->setCursor(cursorX, cursorY);
+  s_tft->print(text);
+
+  state.valid = true;
+  state.region = regionY;
+  state.textHash = hash;
+  state.font = &font;
+  state.colour = colour;
+  state.alignment = alignX;
+  state.cursorX = cursorX;
+  state.cursorY = cursorY;
+  s_tft->getTextBounds(
+    text,
+    cursorX,
+    cursorY,
+    &state.boundsX,
+    &state.boundsY,
+    &state.boundsW,
+    &state.boundsH);
 }
 
 
-void gfxButton::replaceButtonLabel(const char* m_label, String aligned, int btnX, int btnY, int btnW, int btnH) {
-  replaceButtonText(m_label, m_label, aligned, btnX, btnY, btnW, btnH);
-}
-
-
-void gfxButton::replaceButtonValue(String value, String aligned, int btnX, int btnY, int btnW, int btnH) {
-  replaceButtonText(value, getPreviousText(), aligned, btnX, btnY, btnW, btnH);
+void gfxButton::invalidateTextCache() {
+  for (int i = 0; i < TextCacheSlots; ++i) {
+    m_textCache[i].valid = false;
+  }
 }
 
 
@@ -607,7 +713,7 @@ void gfxButton::hideButton() {
   }
 
   m_isHidden = true;
-  m_previousText = "";
+  invalidateTextCache();
 
   switch (m_shape) {
     case Shape::DrawRect:
@@ -662,72 +768,6 @@ void gfxButton::setVisible(bool visible) {
 bool gfxButton::isHidden() const {
   return m_isHidden;
 }
-
-
-/******************************************************
-/               Replace Button Text
-/ Replaces the previous text on a button with the
-/ colour of the button before new text is written to it
-******************************************************/
-void gfxButton::replaceButtonText(String newText, String prevText, String aligned, int btnX, int btnY, int btnW, int btnH) {
-  // only replace if there is text to replace and it's different from current text
-  if (prevText.length() > 0 && prevText != newText) {
-    unsigned long m_buttonColour = getButtonColour();
-    unsigned long backgroundColour = getBackgroundColour();
-    int16_t textX, textY;
-    uint16_t textW, textH;
-    // get size of previous text string
-    s_tft->getTextBounds(prevText, 0, 0, &textX, &textY, &textW, &textH);
-    // calculate previous text x,y co-ordinates
-    int prevXPos = 0, prevYPos = 0;
-    if (aligned == "centre") {
-      prevXPos = btnX + (abs(btnW - textW) / 2) + textX;
-      prevYPos = btnY - (abs(btnH - textH) / 2) + textY;
-    }
-    else if (aligned == "left") {
-      prevXPos = btnX + ceil(btnW * 0.05) + textX;
-      prevYPos = btnY - (abs(btnH - textH) / 2) + textY;
-    }
-    else if (aligned == "right") {;
-      prevXPos = (btnX + btnW) - (textW + ceil(btnW * 0.05)) + textX;
-      prevYPos = btnY - (abs(btnH - textH) / 2) + textY;
-    }
-
-    int btn_x_right = btnX + btnW;
-    int txt_x_right = prevXPos + textW;
-    int btn_y_bottom = btnY + btnH;
-    int txt_y_bottom = prevYPos + textH;
-    // if box fill larger than btn dimensions, fix
-    if (txt_x_right > btn_x_right) {
-      textW = textW - (txt_x_right - btn_x_right);
-    }
-    if (txt_y_bottom > btn_y_bottom) {
-      textH = textH - (txt_y_bottom - btn_y_bottom);
-    }
-
-    // if button type not a fill, use specified background colour to fill over previous text
-    if (m_shape == Shape::Blank ||
-        m_shape == Shape::DrawRect ||
-        m_shape == Shape::DrawRoundRect ||
-        m_shape == Shape::DrawCircle) {
-      s_tft->fillRect(prevXPos, prevYPos, textW, textH, backgroundColour);
-    }
-    else {
-      s_tft->fillRect(prevXPos, prevYPos, textW, textH, m_buttonColour);
-    }
-  }
-}
-
-
-String gfxButton::getPreviousText() const {
-  return m_previousText;
-}
-
-
-void gfxButton::setPreviousText(String _text) {
-  m_previousText = _text;
-}
-
 
 
 unsigned long gfxButton::getButtonColour() const {
