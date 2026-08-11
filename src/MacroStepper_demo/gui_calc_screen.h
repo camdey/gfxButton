@@ -8,7 +8,7 @@ namespace calc_screen {
   void populateCalcScreen();
   void checkCalcButtons(int touch_x, int touch_y);
   void func_Distance(bool active);
-  void func_Number(char* label);
+  void func_Number(const char* label);
   void incrementIndex();
   void decrementIndex();
   void func_Back(bool active);

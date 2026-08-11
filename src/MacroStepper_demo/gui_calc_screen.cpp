@@ -35,8 +35,8 @@ namespace calc_screen {
   gfxButton btn_Seven     =   btn.initButton("7",  "fillRoundRect", 264,  22,   60, 60,  5,   CUSTOM_BLUE,  true  );
   gfxButton btn_Eight     =   btn.initButton("8",  "fillRoundRect", 336,  22,   60, 60,  5,   CUSTOM_BLUE,  true  );
   gfxButton btn_Nine      =   btn.initButton("9",  "fillRoundRect", 408,  22,   60, 60,  5,   CUSTOM_BLUE,  true  );
-  gfxButton btn_Back      =   btn.initBitmapButton(backArrow,       172,  220,  80, 80,       WHITE,        true  );
-  gfxButton btn_Run       =   btn.initBitmapButton(rocket,          172,  20,   80, 80,       WHITE,        true  );
+  gfxButton btn_Back      =   btn.initBitmapButton(backArrow,       172,  220,  80, 80,       WHITE,        BLACK,  true  );
+  gfxButton btn_Run       =   btn.initBitmapButton(rocket,          172,  20,   80, 80,       WHITE,        BLACK,  true  );
   gfxButton btn_vacant    =   btn.initVacantButton();
 
 
@@ -153,7 +153,7 @@ namespace calc_screen {
   }
 
 
-  void func_Number(char* label) {
+  void func_Number(const char* label) {
     if (canEditDistance) {
       // if input starts with negative, increase max index
       maxInputIndex = inputValues[0] == '-' ? 6 : 5;

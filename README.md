@@ -68,6 +68,19 @@ Buttons can have have the following properties:
 - Default colour: default colour of the button
 - isTacticle: can the button change state / be interactive, if not it can still have text or colours updated but not store a function or be included in navigation
 
+## Button visibility
+
+Use `hideButton()` to erase a button and disable its touch handling, and
+`showButton()` to redraw it. For conditional UI elements, `setVisible(bool)`
+changes visibility only when necessary, avoiding redundant TFT redraws:
+
+```cpp
+btn_EndStack.setVisible(canEndCurrentStack);
+```
+
+Calling `contains()` or `actuateButton()` on a hidden or non-tactile button is
+ignored by the library.
+
 You can also add additional properties to the buttons such as a border or interactive type (toggle / momentary). When adding an interactive type, you can specify a function that should be called when the button state changes.
 
 ## Button interaction
