@@ -1,167 +1,379 @@
 # gfxButton
 
-gfxButton is an Arduino library for easily creating multi-screen User Interfaces with interactive buttons and components with multiple states or updating values. Functions can be associated with buttons so that they are called automatically on input or state change.
+gfxButton is an Arduino library for building button-based user interfaces on
+Adafruit GFX-compatible displays driven by `MCUFRIEND_kbv`. It provides shape,
+transparent, monochrome bitmap, RGB bitmap, and SD-card bitmap buttons with:
 
-## Intro
-Each button is intialised as an instance of the gfxButton class with parameters for the button dimension, its shape/draw style, a default button colour, a button label, and whether the button is interactive (tactile) or not.
+- touch and non-touch actuation
+- toggle, momentary, and input-key callbacks
+- configurable global or per-button debounce intervals
+- labels and dynamically updated, aligned text
+- borders for focus/navigation feedback
+- visibility control that also disables hidden buttons
+- helpers for arranging buttons across multiple screens
 
+The repository includes a two-screen calculator/MacroStepper demo with touch
+and joystick navigation in
+[`examples/MacroStepper_demo`](examples/MacroStepper_demo).
+
+## Requirements
+
+The included PlatformIO environments target the Arduino Due and Adafruit Grand
+Central M4. The library currently depends on:
+
+- Arduino framework
+- [Adafruit GFX Library](https://github.com/adafruit/Adafruit-GFX-Library)
+- [MCUFRIEND_kbv](https://github.com/prenticedavid/MCUFRIEND_kbv)
+- [Adafruit TouchScreen](https://github.com/adafruit/Adafruit_TouchScreen)
+- [Adafruit BusIO](https://github.com/adafruit/Adafruit_BusIO)
+- [Adafruit's SdFat fork](https://github.com/adafruit/SdFat)
+
+The exact versions used by this project are listed in
+[`examples/MacroStepper_demo/platformio.ini`](examples/MacroStepper_demo/platformio.ini).
+
+## Installation
+
+For PlatformIO, clone the repository and build the included demo:
+
+```sh
+git clone https://github.com/camdey/gfxButton.git
+cd gfxButton
+cd examples/MacroStepper_demo
+pio run
 ```
-gfxButton btn_StepSize = btn.initButton("Step Size", "fillRoundRect", 0, 20, 160, 80, 15, DARKGRAY, true);
+
+The default environment is `adafruit_grandcentral_m4`. To build for Arduino
+Due instead:
+
+```sh
+cd examples/MacroStepper_demo
+pio run -e due
 ```
 
-If the button is tactile, you can add two types of interaction to the button: momentary or toggle. A momentary button has a defined on/off state and can't be triggered multiple times from touch or other input without first being released. A momentary button can be triggered continuously as long as it is touched or interacted with.  
+To use gfxButton in another project, copy `src/gfxButton.h` and
+`src/gfxButton.cpp` into that project and install the dependencies above.
 
-## Multiple pages
-gfxButton makes it easy to have multiple different pages/screens of your UI without having the code all in one place. It is recommended to use namespaces to clearly demarcate which buttons belong to which "screen" of your UI as you may use similar button or function names for other screens.
-  
-## Detecting touches
-The easiest way to detect a touch on a specific button from a specific screen is to store the buttons for each page in an array and loop over that array for that page when it is active.
+## Quick start
 
-```
-if (millis() - prevButtonCheck >= 100) {
-    checkTouch(getCurrentScreen());
-    prevButtonCheck = millis();
+Create one controller object, initialize it with the display, then use it to
+create and configure buttons. Display, background, screen-size, and global
+debounce settings are shared by all button instances.
+
+```cpp
+#include <gfxButton.h>
+#include <Fonts/FreeSans12pt7b.h>
+
+MCUFRIEND_kbv tft;
+gfxButton ui;
+
+gfxButton powerButton = ui.initButton(
+    "Power",          // label (must remain valid for the button's lifetime)
+    "fillRoundRect",  // Adafruit GFX drawing primitive
+    20, 20,           // x, y
+    140, 60,          // width, height
+    10,               // corner radius
+    0x39E7,           // RGB565 default colour
+    true              // tactile/interactable
+);
+
+void onPowerChanged(bool active) {
+  powerButton.drawButton(active ? 0x07E0 : 0x39E7);
+  powerButton.writeTextCentre(FreeSans12pt7b, 0xFFFF);
+}
+
+void setup() {
+  tft.reset();
+  tft.begin(tft.readID());
+  tft.setRotation(1);
+
+  ui.begin(&tft);
+  ui.setScreenSize(tft.width(), tft.height());
+  ui.setBackgroundColour(0x0000);
+  ui.setToggleDelay(200);
+  ui.setMomentaryDelay(75);
+
+  powerButton.addToggle(onPowerChanged, 0);
+  powerButton.drawButton();
+  powerButton.writeTextCentre(FreeSans12pt7b, 0xFFFF);
 }
 ```
-From loop() you can run the above with a predetermined frequency to check for touch inputs on a specific screen:
+
+Pass mapped display coordinates to `contains()` while a touch is active. A
+toggle uses a shared press latch so one physical press only changes state once;
+reset that latch when all touch/press input has been released:
+
+```cpp
+if (touchIsActive) {
+  powerButton.contains(touchX, touchY);
+} else if (ui.isToggleActive()) {
+  ui.setToggleActive(false);
+}
 ```
-void checkTouch(String screen) {
-  TSPoint point = ts.getPoint();
 
-  // reset pinModes for tft (otherwise can't draw!)
-  pinMode(XM, OUTPUT);
-  pinMode(YP, OUTPUT);
+The demo's
+[`checkTouch()`](examples/MacroStepper_demo/gui_control.cpp) shows a complete
+example using `TouchScreen`, including restoring shared TFT pins after a touch
+read.
 
-  int touch_z = point.z;
+## Creating buttons
 
-  int touch_x = map(point.y, TS_MINY, TS_MAXY, 0, tft.width());
-  int touch_y = map(point.x, TS_MINX, TS_MAXX, 0, tft.height());
+The `init...` helpers return a configured `gfxButton` object.
 
-  
-  if (touch_z >= 50 && touch_z <= 1000) {
-    if (screen == "Foo") {
-        foo_screen::checkFootButtons(touch_x, touch_y);
-    }
-    else if (screen == "Bar") {
-        bar_screen::checkBartButtons(touch_x, touch_y);
-    }
+| Button type | Initializer | Notes |
+| --- | --- | --- |
+| GFX shape | `initButton(label, shape, x, y, w, h, r, colour, tactile)` | Supports `drawRect`, `fillRect`, `drawRoundRect`, `fillRoundRect`, `drawCircle`, and `fillCircle` |
+| Transparent | `initTransparentButton(x, y, w, h, tactile)` | Defines a text/touch region without drawing a shape |
+| Labeled transparent | `initTransparentButton(label, x, y, w, h, tactile)` | Transparent region with a default label |
+| Monochrome bitmap | `initBitmapButton(bitmap, x, y, w, h, colour, bg, tactile)` | Uses Adafruit GFX `drawBitmap()` data |
+| RGB bitmap | `initRGBBitmapButton(bitmap, x, y, w, h, tactile)` | Uses RGB565 `uint16_t` data |
+| SD-card BMP | `initSDBitmapButton(filename, x, y, tactile)` | Reads dimensions from the BMP file; requires the two-argument `begin()` |
+| Vacant | `initVacantButton()` | Non-tactile placeholder for rectangular navigation grids |
+
+Rectangle coordinates use the top-left corner. For circle shapes, `x` and `y`
+are the centre and `r` is the radius; pass zero for `w` and `h`.
+
+Labels and SD filenames are stored as non-owning `const char*` pointers. String
+literals, global/static character arrays, or other storage that outlives the
+button are safe. Do not pass a pointer to a temporary or short-lived buffer.
+New buttons start visible and inactive; a vacant button is non-tactile.
+
+## Drawing and updating
+
+Call `drawButton()` to draw the default state or `drawButton(colour, bg)` to
+draw with a state-specific colour. The current draw colour is remembered so
+later text updates erase old text using the correct button colour.
+
+```cpp
+statusButton.drawButton(0xF800);
+statusButton.updateColour(0x07E0);  // change the default for future draws
+statusButton.updateLabel("Ready");
+```
+
+`updateColour()`, `updateLabel()`, `updateBitmap()`, and `updateRGBBitmap()`
+only change the stored value; call `drawButton()` afterward to redraw. In
+contrast, `drawNewBitmap()` stores and immediately draws a replacement bitmap:
+
+```cpp
+flashButton.drawNewBitmap(flashOn, 0x07E0, 0x0000); // monochrome
+photoButton.drawNewBitmap(activePhoto);              // RGB565
+```
+
+Set the UI background with `setBackgroundColour()` before hiding buttons or
+updating text on outline/transparent buttons. The library uses this colour to
+erase previous content.
+
+## Text and labels
+
+Text methods take an Adafruit GFX `GFXfont`, an RGB565 colour, and an optional
+`String`. When the text argument is omitted, the button label is used.
+
+```cpp
+valueButton.writeTextTopCentre(FreeSans12pt7b, 0xFFFF);          // label
+valueButton.writeTextBottomCentre(FreeSans12pt7b, 0xFFE0, "42"); // value
+```
+
+Available layouts are:
+
+- `writeTextCentre()`
+- `writeTextTopCentre()` and `writeTextBottomCentre()`
+- `writeTextLeft()` and `writeTextRight()`
+- `writeTextTopLeft()` and `writeTextBottomLeft()`
+- `writeTextCircle()`
+
+The library tracks the previous dynamic text and erases it before drawing a
+different value. Drawing a button or a new bitmap clears that text history.
+
+## Interaction modes
+
+Only tactile buttons respond to `contains()` or `actuateButton()`. Configure an
+interaction mode before reading input:
+
+```cpp
+toggleButton.addToggle(onToggle, 0);
+repeatButton.addMomentary(onRepeat, 10);
+keyButton.addInputKey(onKey, 0);
+```
+
+The final argument is touch padding as a percentage. Positive values enlarge
+the hit area around the button, subject to the dimensions set with
+`setScreenSize()`.
+
+### Toggle
+
+```cpp
+void onToggle(bool active) {
+  // active is the button's new on/off state
+}
+```
+
+A toggle changes its stored state once per press and calls the callback with
+that new state. The client must call `setToggleActive(false)` after input is
+released, as shown in Quick start. You may also inspect or set a button's state
+with `isButtonActive()` and `setButtonActive()`.
+
+### Momentary
+
+```cpp
+void onRepeat(bool active) {
+  if (active) {
+    // Runs on every accepted actuation while the button is held.
   }
 }
 ```
-This can then call a function for that specific screen to loop through the array of buttons:
-```
-void checkTestButtons(int touch_x, int touch_y) {
-    for (int i=0; i < num_btns; i++) {
-        if (btn_array[i]->isTactile()) {
-            btn_array[i]->contains(touch_x, touch_y);
-        }
-    }
+
+Momentary callbacks receive `true`. If input is polled continuously while held,
+they repeat at the configured momentary delay.
+
+### Input key
+
+```cpp
+void onKey(const char* label) {
+  // A keyboard/keypad can route every key to this one callback.
 }
 ```
 
-## Button properties
-Buttons can have have the following properties:
+`addInputKey()` behaves like a momentary button but passes the button's label to
+a `void(const char*)` callback. See the calculator keypad in
+[`gui_calc_screen.cpp`](examples/MacroStepper_demo/gui_calc_screen.cpp).
 
-- Label: default text for the button that should not change frequently
-- Shape: shape of button / draw type as used in Adafruit's GFX library (e.g. drawRect() and fillRect())
-- Dimensions: x, y, w, h, and r for rounded shapes including circles
-- Default colour: default colour of the button
-- isTacticle: can the button change state / be interactive, if not it can still have text or colours updated but not store a function or be included in navigation
+## Debouncing
 
-## Button visibility
-
-Use `hideButton()` to erase a button and disable its touch handling, and
-`showButton()` to redraw it. For conditional UI elements, `setVisible(bool)`
-changes visibility only when necessary, avoiding redundant TFT redraws:
+Global debounce intervals, in milliseconds, apply to every button of the
+corresponding type:
 
 ```cpp
-btn_EndStack.setVisible(canEndCurrentStack);
+ui.setToggleDelay(200);
+ui.setMomentaryDelay(75);
 ```
 
-Calling `contains()` or `actuateButton()` on a hidden or non-tactile button is
-ignored by the library.
+The latest release also supports per-button overrides:
 
-You can also add additional properties to the buttons such as a border or interactive type (toggle / momentary). When adding an interactive type, you can specify a function that should be called when the button state changes.
-
-## Button interaction
-Add the function to be called on state change when intialising the interaction type (e.g. addToggle, addMomentary)
+```cpp
+repeatButton.setButtonMomentaryDelay(25);
+slowToggle.setButtonToggleDelay(500);
 ```
-btn_StepSize.addToggle(func_StepDistance, 0);
+
+An override of `0` uses the global value. Each button tracks its own last state
+change, so interacting with one button does not debounce another.
+
+## Visibility
+
+`hideButton()` disables a button's touch and direct actuation, then redraws its
+shape in the configured background colour. Filled shapes, bitmaps, and
+transparent regions are cleared; outline shapes are redrawn in the background
+colour, so clear any separately rendered label/value yourself if needed.
+
+`showButton()` calls `drawButton()`, redrawing the base button with its stored
+default colour and bitmap. It does not restore separately drawn text or a
+state-specific colour supplied only to `drawButton(colour, bg)`; redraw those
+after showing the button. `setVisible(bool)` changes visibility only when
+necessary, avoiding redundant display writes in frequently evaluated UI logic:
+
+```cpp
+endButton.setVisible(canEndCurrentStack);
+
+if (!endButton.isHidden()) {
+  // The button is displayed and can accept input.
+}
 ```
-The only functions currently supported are those that do not return any value and take as an argument a bool, which is used by the library to send the current state of the button.
 
-You can also change the touch-sensitive area of a button by providing an optional padding value in percent. A value of 10 would increase the button's dimensions by 10% and any touches in that boundary will trigger the button.
+Calls to `contains()` and `actuateButton(true)` are ignored for hidden or
+non-tactile buttons.
 
-## Non-Touch Navigation
-It is also possible to interact with the buttons via input from a joystick or similar. You can have both touch and joystick capable interaction simultaneously or one or the other. When controlled with a joystick, a border is drawn around each button to signal the currently selected button. You can then have a separate digital input (e.g. a button) to act as the "press" or "touch" to interact with that button.
+## Borders and non-touch navigation
 
-Navigation with a joystick takes directional input to determine which button the "cursor" should move to next. You could also use a series of buttons in an arrow-key configuration instead.
+Buttons can also be actuated from a joystick, encoder button, keypad, or other
+input by calling `actuateButton(true)`. `drawBorder()` can indicate keyboard or
+joystick focus:
 
-To aid in navigating through the buttons it's best to define your button layout as a 2-dimensional array. Buttons will be referenced by a row and column index that reflects the actual order of buttons as drawn on your screen:
+```cpp
+currentButton->drawBorder(3, 0xFFE0); // focused
+currentButton->actuateButton(pressIsActive);
 ```
-gfxButton *nav_array[totalRows][totalCols] = {
-    // three rows, three columns
-    {&btn_StepSize,  &btn_Flash, &btn_ArrowUp},   // top row
-    {&btn_StepNr,    &btn_Reset, &btn_vacant},    // middle row
-    {&btn_RailPos,   &btn_Back,  &btn_ArrowDown}  // bottom row
+
+For persistent borders on filled shape buttons, configure one with
+`addBorder(width, colour)` before drawing. Calling `drawBorder(width)` restores
+the configured border colour. Bitmap borders are drawn outside the image.
+
+For grid navigation, arrange pointers in a two-dimensional array that mirrors
+the display layout. Use a vacant button where a row has no selectable item:
+
+```cpp
+gfxButton *navButtons[3][3] = {
+  {&stepSize, &flash, &up},
+  {&stepCount, &reset, &vacant},
+  {&position, &back, &down}
 };
 ```
 
-The arrangement of buttons in this 2D array should also be the same as the order of your buttons in your button array, though it is possible to use only one array for both purposes.
+The full navigation implementation is in
+[`gui_test_screen.cpp`](examples/MacroStepper_demo/gui_test_screen.cpp).
 
-A `btn_vacant` button can be intialised to fill in gaps where you may have a lesser number of buttons in a particular row or column. This prevents the cursor from getting "stuck" in a gap in the array. Non-tactile buttons are also ignored.
+## SD-card BMP buttons
 
-Detecting interaction with non-Touch navigation is largely the same as with touch navigation:
+Pass an initialized `SdFat` instance when using BMP files:
 
-loop() function
-```
-if (millis() - prevJoystickCheck >= 50) {
-    checkNavigationInput(getCurrentScreen());
-    prevJoystickCheck = millis();
-}
-```
-determine which "screen" is active and then check the buttons on that screen
-```
-void checkNavigation(String screen) {
-    readXStick();
-    readYStick();
+```cpp
+SdFat sd;
+gfxButton ui;
 
-    if (screen == "Test" && millis() - lastNavUpdate >= navDelay) {
-        test_screen::checkTestNav();
-    }
-}
-```
-See `checkTestNav()` in `gui_test_screen.cpp` to see an example of how to determine where next to draw the cursor border.
-
-## Icons or Bitmaps as Buttons
-gfxButton supports creating buttons from a bitmap image or icon. These buttons work largely the same as regular buttons except that they do not have a text label or button shape. It's not recommended to draw text with bitmap buttons but it is possible.
-
-These buttons are intialised the same way as regular buttons:
-```
-gfxButton btn_Back = btn.initBitmapButton(backArrow, 220, 220, 80, 80, WHITE, true);
+ui.begin(&tft, &sd);
+gfxButton logo = ui.initSDBitmapButton("logo.bmp", 20, 20, true);
+logo.addMomentary(onLogoPressed, 0); // dimensions are read for the hit area
+logo.drawButton();
 ```
 
-## Button functions
-These should be kept very simple and be declared as follows: `void func_name(bool active){...}` where the name of the function and parameter can be changed as needed.
+The BMP reader supports 16-bit and 24-bit BMP pixel data and crops images at
+the display edge. Width and height are read as 32-bit little-endian values;
+negative top-down BMP heights are handled when determining the button
+dimensions.
 
-For a toggle button, the function should do one thing when the button is active and do another thing when it is in-active. For momentary buttons, the function should execute the same thing each time and the function parameter is not necessary.
+## Multi-screen interfaces
 
-```
-void func_Flash(bool active) {
-if (active) {
-    isShutterEnabled = true;
-    btn_Flash.drawNewBitmap(flashOn, CUSTOM_GREEN);
-}
-else if (!active) {
-    isShutterEnabled = false;
-    // use drawNewButton so previous bitmap is filled over
-    btn_Flash.drawNewBitmap(flashOff, CUSTOM_RED);
-}
-Serial.println("flash btn");
+A convenient pattern is to keep each screen in its own namespace, store its
+buttons in an array, and only check the active screen's array:
+
+```cpp
+void checkButtons(gfxButton *buttons[], size_t count, int x, int y) {
+  for (size_t i = 0; i < count; ++i) {
+    buttons[i]->contains(x, y);
+  }
 }
 ```
 
-## More info
-See the provided example under "MacroStepper_demo" for an example implementation for a single page UI, though easily adaptable to multi-page, with touch and joystick navigation.
+`contains()` already ignores non-tactile and hidden buttons, so callers do not
+need a separate `isTactile()` guard.
 
-Otherwise https://github.com/camdey/MacroStepper provides a more complete demonstration of the library with six different UI screens and button states and values linked across multiple functions.
+## Public API summary
+
+- Setup: `begin()`, `setScreenSize()`, `setBackgroundColour()`,
+  `getBackgroundColour()`
+- Creation: `initButton()`, `initTransparentButton()`,
+  `initBitmapButton()`, `initRGBBitmapButton()`, `initSDBitmapButton()`,
+  `initVacantButton()`
+- Drawing: `drawButton()`, `drawNewBitmap()`, `addBorder()`, `drawBorder()`
+- Content: `updateLabel()`, `updateColour()`, `updateBitmap()`,
+  `updateRGBBitmap()`, `setButtonColour()`, `getButtonColour()`, and the
+  `writeText...()` methods
+- Interaction: `addToggle()`, `addMomentary()`, `addInputKey()`, `contains()`,
+  `actuateButton()`, `setTactile()`, `isTactile()`
+- State: `setButtonActive()`, `isButtonActive()`, `setToggleActive()`,
+  `isToggleActive()`
+- Timing: `setToggleDelay()`, `setMomentaryDelay()`,
+  `setButtonToggleDelay()`, `setButtonMomentaryDelay()`
+- Visibility: `hideButton()`, `showButton()`, `setVisible()`, `isHidden()`
+
+## Examples
+
+The included demo starts in the calculator screen and demonstrates:
+
+- multiple screen namespaces
+- touch and joystick input
+- toggle, momentary, and keypad callbacks
+- dynamic labels/values and text alignment
+- monochrome bitmap buttons
+- focus borders and vacant navigation cells
+
+See [`examples/MacroStepper_demo/main.cpp`](examples/MacroStepper_demo/main.cpp) for setup
+and [MacroStepper](https://github.com/camdey/MacroStepper) for a larger project
+using the library across several UI screens.
