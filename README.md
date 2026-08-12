@@ -42,6 +42,21 @@ cd examples/MacroStepper_demo
 pio run
 ```
 
+## Typed shapes
+
+Shape buttons use the `gfxButton::Shape` enum rather than string primitive
+names:
+
+```cpp
+gfxButton btn_StepSize = btn.initButton(
+    "Step Size",
+    gfxButton::Shape::FillRoundRect,
+    0, 20, 160, 80, 15,
+    DARKGRAY,
+    true
+);
+```
+
 The default environment is `adafruit_grandcentral_m4`. To build for Arduino
 Due instead:
 
@@ -68,7 +83,7 @@ gfxButton ui;
 
 gfxButton powerButton = ui.initButton(
     "Power",          // label (must remain valid for the button's lifetime)
-    "fillRoundRect",  // Adafruit GFX drawing primitive
+    gfxButton::Shape::FillRoundRect,
     20, 20,           // x, y
     140, 60,          // width, height
     10,               // corner radius
@@ -121,7 +136,7 @@ The `init...` helpers return a configured `gfxButton` object.
 
 | Button type | Initializer | Notes |
 | --- | --- | --- |
-| GFX shape | `initButton(label, shape, x, y, w, h, r, colour, tactile)` | Supports `drawRect`, `fillRect`, `drawRoundRect`, `fillRoundRect`, `drawCircle`, and `fillCircle` |
+| GFX shape | `initButton(label, shape, x, y, w, h, r, colour, tactile)` | `shape` is a `gfxButton::Shape` value: `DrawRect`, `FillRect`, `DrawRoundRect`, `FillRoundRect`, `DrawCircle`, or `FillCircle` |
 | Transparent | `initTransparentButton(x, y, w, h, tactile)` | Defines a text/touch region without drawing a shape |
 | Labeled transparent | `initTransparentButton(label, x, y, w, h, tactile)` | Transparent region with a default label |
 | Monochrome bitmap | `initBitmapButton(bitmap, x, y, w, h, colour, bg, tactile)` | Uses Adafruit GFX `drawBitmap()` data |
@@ -252,6 +267,23 @@ The latest release also supports per-button overrides:
 repeatButton.setButtonMomentaryDelay(25);
 slowToggle.setButtonToggleDelay(500);
 ```
+
+## Updating button text
+
+The full, top and bottom text regions are cached independently. Repeating a
+text call with the same value, font, colour and alignment does not send any
+new drawing commands to the TFT:
+
+```cpp
+btn_Progress.writeTextTopCentre(Roboto_Medium_30, BLACK, "Progress");
+btn_Progress.writeTextBottomCentre(Roboto_Black_30, BLACK, progressValue);
+```
+
+When a value changes, the exact bounds of its previous rendering are erased
+before the new value is drawn. Calling `drawButton()`, `drawNewBitmap()` or
+`hideButton()` invalidates all cached text automatically. If application code
+directly overwrites a button using the TFT object, call
+`invalidateTextCache()` before writing the button text again.
 
 An override of `0` uses the global value. Each button tracks its own last state
 change, so interacting with one button does not debounce another.

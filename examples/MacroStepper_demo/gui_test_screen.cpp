@@ -20,9 +20,9 @@ namespace test_screen {
   int colNr = 0; // keep track of column
 
 
-  gfxButton btn_StepSize    =   btn.initButton("Step Size", "fillRoundRect", 0,   20,  160,  80,  15,  DARKGRAY, true  );
-  gfxButton btn_StepNr      =   btn.initButton("Step Nr.",  "fillRoundRect", 0,  120,  160,  80,  15,  DARKGRAY, false );
-  gfxButton btn_RailPos     =   btn.initButton("Rail Pos.", "fillRoundRect", 0,  220,  160,  80,  15,  DARKGRAY, false );
+  gfxButton btn_StepSize    =   btn.initButton("Step Size", gfxButton::Shape::FillRoundRect, 0,   20,  160,  80,  15,  DARKGRAY, true  );
+  gfxButton btn_StepNr      =   btn.initButton("Step Nr.",  gfxButton::Shape::FillRoundRect, 0,  120,  160,  80,  15,  DARKGRAY, false );
+  gfxButton btn_RailPos     =   btn.initButton("Rail Pos.", gfxButton::Shape::FillRoundRect, 0,  220,  160,  80,  15,  DARKGRAY, false );
   gfxButton btn_Flash       =   btn.initBitmapButton(flashOff,   220,  20,   80,   80,   CUSTOM_RED,   BLACK,  true  );
   gfxButton btn_Reset       =   btn.initBitmapButton(cancel,     220,  120,  80,   80,   WHITE,        BLACK,  true  );
   gfxButton btn_Back        =   btn.initBitmapButton(backArrow,  220,  220,  80,   80,   WHITE,        BLACK,  true  );
